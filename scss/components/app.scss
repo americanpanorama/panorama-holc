@@ -1,0 +1,31 @@
+.donut, .donuthole {
+	stroke-opacity: 0;
+	stroke: #333;
+}
+
+.ringArea {
+	stroke: black;
+	stroke-width: 1;
+}
+.ringArea.gradeA {
+	fill: green;
+}
+.ringArea.gradeB {
+	fill: blue;
+}
+.ringArea.gradeC {
+	fill: yellow;
+}
+.ringArea.gradeD {
+	fill: red;
+}
+
+.selected1 {
+	visibility: visible !important;
+	fill-opacity: 1;
+}
+
+.ringMask {
+	stroke: none;
+	fill: #333;
+}
