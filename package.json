@@ -1,5 +1,5 @@
 {
-  "name": holc",
+  "name": "holc",
   "version": "0.0.1",
   "description": "Template for starting new projects using the @panorama toolkit.",
   "main": "index.js",
