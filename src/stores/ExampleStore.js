@@ -2,33 +2,27 @@ import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 
-import sampleData from '../../static/sampleData.json';
-
+// TODO: load this in as a panorama module
+// import CartoDBLoader from '../utils/CartoDBLoader';
 
 const ExampleStore = {
 
-	data: null,
+	data: [],
 
-	/**
-	 * Sample data loader, with setTimeout
-	 * emulating network response delay,
-	 * returning sample data from a local json file.
-	 * A real data loader would follow the same pattern,
-	 * but probably make an XHR and return the response data.
-	 */
+	// dataLoader: CartoDBLoader,
+
+	// Sample data loader, with setTimeout
+	// emulating network response delay
 	dataLoader: {
 		query: (value) => {
 			return new Promise((resolve, reject) => {
 				setTimeout(() => {
-					return resolve(sampleData);
+					return resolve(value);
 				}, 1000);
 			});
 		}
 	},
 
-	/**
-	 * Make a request for data needed on application init.
-	 */
 	getInitialData: function () {
 
 		console.log(`[3b] ExampleStore makes a data request...`);
@@ -54,38 +48,18 @@ const ExampleStore = {
 
 	},
 
-	/**
-	 * Retrieve data from the store.
-	 */
-	getData: function () {
+	setData: function (...data) {
 
-		// For simplicity of example, we return all of the data.
-		// A real application would more likely return a copy
-		// (to avoid accidental mutation by consumers) 
-		// of a subset of the data.
-		return this.data;
+		// TODO: implement (update cached data)
 
-	},
-
-	/**
-	 * Cache the loaded, parsed data for future use by the application.
-	 */
-	setData: function (data) {
-
-		this.data = data;
-
-		console.log(`[3c] ExampleStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from ExampleStore.setData().`);
+		console.log(`[3b] ExampleStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from ExampleStore.setData().`);
 		this.emit(AppActionTypes.storeChanged);
 
 	},
 
-	/**
-	 * Parse returned data as necessary.
-	 */
 	parseData: function (...data) {
 
-		let firstResponse = data[0];
-		return firstResponse;
+		//
 
 	}
 
@@ -101,7 +75,7 @@ AppDispatcher.register((action) => {
 	switch (action.type) {
 
 		case AppActionTypes.getInitialData:
-			console.log(`[3a] The '${ AppActionTypes.getInitialData }' action is handled by ExampleStore....`);
+			console.log(`[3a] The '${ AppActionTypes.getInitialData }' event is handled by ExampleStore....`);
 			ExampleStore.getInitialData(action.state);
 			break;
 

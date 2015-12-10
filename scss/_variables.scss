@@ -1,17 +1,8 @@
 // sizes
 // (be sure to copy any changes to App.jsx#computeComponentDimensions)
 $container-padding: 20px;
-$header-height: 90px;
-$bottom-row-height-short: 230px;
-$bottom-row-height-tall: 310px;
-
-// breakpoints
-$breakpoint-width-narrow: 750px;
-$breakpoint-width-wide: 1280px;
+$header-height: 60px;
+$bottom-row-height: 230px;
 
 // colors
-$background-color: rgb(245, 245, 245);
-$modal-overlay-color: rgba(51, 51, 51, 0.25);
 $text-color: #454545;
-$text-link-color: #207a9e;
-$tile-border-color: rgb(225, 225, 225);

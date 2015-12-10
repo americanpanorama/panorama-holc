@@ -1,7 +1,7 @@
 {
 	"layers": [
 		{
-			"url": "http://sm.mapstack.stamen.com/openterrain_2163/{z}/{x}/{y}.png"
+			"url": "http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
 		}
 	]
 }

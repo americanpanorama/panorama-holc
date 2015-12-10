@@ -790,32 +790,25 @@ body,
 html {
   height: 100%;
   width: 100%;
-  background-color: whitesmoke; }
+  background-color: #b8cdcb; }
 
 body {
-  line-height: 1.0; }
-
-body,
-svg text {
+  line-height: 1.0;
   /* ----------- Phones ----------- */
   /* ----------- Tablets ----------- */
   /* ----------- Non-Retina Screens ----------- */
   /* ----------- Retina Screens ----------- */ }
   @media screen and (max-width: 750px) {
-    body,
-    svg text {
+    body {
       font-size: 16px; } }
   @media screen and (min-width: 750px) and (max-width: 1280px) {
-    body,
-    svg text {
+    body {
       font-size: 20px; } }
   @media screen and (min-width: 1280px) and (-webkit-min-device-pixel-ratio: 1) {
-    body,
-    svg text {
+    body {
       font-size: 24px; } }
   @media screen and (min-width: 1280px) and (-webkit-min-device-pixel-ratio: 2) and (min-resolution: 192dpi) {
-    body,
-    svg text {
+    body {
       font-size: 24px; } }
 
 h1 {
@@ -835,9 +828,6 @@ h5 {
 
 h6 {
   font-size: 0.35em; }
-
-a:link, a:over, a:hover, a:active {
-  color: #207a9e; }
 
 .container {
   padding: 20px; }
@@ -860,94 +850,81 @@ a:link, a:over, a:hover, a:active {
     right: 0;
     bottom: 0;
     left: 0;
-    border: solid 1px #e1e1e1;
-    pointer-events: none; }
-  .template-tile::after {
-    position: absolute;
-    display: block;
-    content: '';
-    top: 0.2em;
-    right: 0.2em;
-    bottom: 0.2em;
-    left: 0.2em;
-    border: solid 2px #e1e1e1;
+    border: solid 2px #92a3a1;
     pointer-events: none; }
 
 .top-row {
   margin-bottom: 20px; }
 
 .bottom-row {
-  /* ----------- Tablets and below ----------- */
-  /* ----------- Desktop and above ----------- */ }
-  @media screen and (min-width: 750px) and (max-width: 1280px) {
-    .bottom-row {
-      height: 230px; } }
-  @media screen and (min-width: 1280px) {
-    .bottom-row {
-      height: 310px; } }
+  height: 230px; }
 
 header {
   position: relative;
-  height: 90px; }
+  height: 60px;
+  padding-top: 0px;
+  text-align: center; }
   header h1 {
     margin: 0; }
-  header h4 {
-    display: inline-block;
-    position: relative;
-    top: -0.25em;
-    margin: 0 0 0 0.3em;
-    font-size: 0.66667em;
-    cursor: pointer; }
+  header .header-main {
+    text-transform: uppercase;
+    font-size: 0.7em; }
+  header .header-sub {
+    font-size: 0.5em;
+    margin-left: 0.9em; }
 
 .leaflet-container {
-  width: 100%;
-  height: 100%; }
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  padding: 2px 0 0 2px; }
 
-.ReactModalPortal .ReactModal__Overlay {
-  z-index: 2000;
-  background-color: rgba(51, 51, 51, 0.25); }
-
-.ReactModalPortal .ReactModal__Content {
-  position: absolute;
-  width: 30em;
-  top: 2em;
-  bottom: 2em;
-  padding: 2.5em;
-  left: 50%;
-  margin-left: -15em;
-  background-color: whitesmoke;
-  line-height: 0.9em; }
-  .ReactModalPortal .ReactModal__Content li {
-    list-style-type: none; }
-  .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__Content ul {
-    font-size: 0.7em; }
-  .ReactModalPortal .ReactModal__Content h1, .ReactModalPortal .ReactModal__Content h2, .ReactModalPortal .ReactModal__Content h3, .ReactModalPortal .ReactModal__Content h4, .ReactModalPortal .ReactModal__Content h5, .ReactModalPortal .ReactModal__Content h6 {
-    text-transform: uppercase; }
-  .ReactModalPortal .ReactModal__Content button.close {
-    position: absolute;
-    top: 1em;
-    right: 1em;
-    border: none;
-    background: none;
-    padding: 0; }
-    .ReactModalPortal .ReactModal__Content button.close span {
-      font-size: 2.25em; }
-
-header .header-main, .ReactModalPortal .ReactModal__Content h1, .ReactModalPortal .ReactModal__Content h2, .ReactModalPortal .ReactModal__Content h3, .ReactModalPortal .ReactModal__Content h4, .ReactModalPortal .ReactModal__Content h5, .ReactModalPortal .ReactModal__Content h6 {
-  font-family: 'Merriweather', serif;
-  font-weight: 300;
+header .header-main, header .header-sub {
+  font-family: 'Lora', serif;
+  font-weight: 100;
   color: #454545; }
 
-body,
-svg text, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__Content ul {
+body {
   font-family: 'Lato', sans-serif;
   font-weight: 300;
   color: #454545; }
 
-.example-component {
-  display: inline-block;
-  background-color: #efe6d0;
-  padding: 10px; }
-  .example-component h3 {
-    line-height: 1.0;
-    margin-bottom: 0; }
+.donut, .donuthole {
+  stroke-opacity: 0;
+  stroke: #333; }
+
+.ringArea {
+  stroke: black;
+  stroke-width: 1; }
+
+.ringArea.gradeA {
+  fill: green; }
+
+.ringArea.gradeB {
+  fill: blue; }
+
+.ringArea.gradeC {
+  fill: yellow; }
+
+.ringArea.gradeD {
+  fill: red; }
+
+.selected1 {
+  visibility: visible !important;
+  fill-opacity: 1; }
+
+.ringMask {
+  stroke: none;
+  fill: #333; }
+
+.city-selector {
+  font-size: 0.6em; }
+  .city-selector ul, .city-selector li {
+    list-style: none; }
+
+.panorama.nestedpiechart {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; }
+  .panorama.nestedpiechart svg {
+    display: inline-block;
+    shape-rendering: 'crispEdges'; }

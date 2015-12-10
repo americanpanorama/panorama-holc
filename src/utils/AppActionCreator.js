@@ -7,21 +7,40 @@ export const AppActionTypes = {
 	// it's enumerated here for ease of access.
 	storeChanged: 'storeChanged',
 
-	getInitialData: 'getInitialData'
+	loadInitialData: 'loadInitialData',
+	getInitialData: 'getInitialData',
+	citySelected: 'citySelected',
+	ringAreaSelected: 'ringAreaSelected'
 
 };
 
-export const ExampleActions = {
+export const AppActions = {
 
 	/**
 	 * Load data needed by the application on init.
 	 */
-	getInitialData: (state) => {
-		console.log(`[2] A '${ AppActionTypes.getInitialData }' action is broadcast globally from AppActionCreator.getInitialData().`);
+	loadInitialData: (state) => {
+		//console.log(`[1a] A '${ AppActionTypes.loadInitialData }' event is broadcast globally from AppActionCreator.loadInitialData().`);
 		AppDispatcher.dispatch({
-			type: AppActionTypes.getInitialData,
+			type: AppActionTypes.loadInitialData,
 			state: state
+		});
+	},
+
+	citySelected: (city) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.citySelected,
+			value: city
+		});
+	},
+
+	ringAreaSelected: (ringId, grade) => {
+		console.log(`[1a] A '${ AppActionTypes.ringAreaSelected }' event is broadcast globally from AppActionCreator.loadInitialData().`);
+		AppDispatcher.dispatch({
+			type: AppActionTypes.ringAreaSelected,
+			value: {ringId: ringId, grade: grade}
 		});
 	}
 
-}
+};
+
