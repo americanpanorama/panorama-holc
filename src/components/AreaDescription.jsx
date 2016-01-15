@@ -47,39 +47,34 @@ export default class AreaDescription extends React.Component {
 	render () {
 
 		if (typeof(this.props.areaData.areaDesc) == 'undefined') {
-			return (<span></span>);
+			return false;
 		}
-
-		console.log(this.props.areaData);
-
 
 		return (
 			<div className='area_description'>
 				<div id="neighborhood">
-					<div className="data_title">Neighborhood</div>
+					<h2 className="data_title">Neighborhood</h2>
 					<div id="neighborhood_name"></div>
 					<div id="neighborhood_location"></div>
 					<div id="neighborhood_id"></div>
 					<div id="holc_grade">{ this.props.areaData.holc_grade }</div>
 				</div>
 				<div className='area_desc'>
-					<div className='data_title'>Area Description</div>
+					<h2 className='data_title'>Area Description</h2>
 					<ul className="area_data">
 						{ Object.keys(this.props.areaData.areaDesc).map((catNum) => {
 							let catData = this.props.areaData.areaDesc[catNum];
 							let subcats = null;
 							if (!catData.hasOwnProperty("question")) {
 								subcats = Object.keys(this.props.areaData.areaDesc[catNum]).sort().map((subcatLetter) => {
-									console.log(catNum, subcatLetter);
 									return (
-										<li key={ catNum + subcatLetter }><span className="category">{ subcatLetter }.</span> { catData[subcatLetter].question + ":"}  { catData[subcatLetter].answer }</li>
+										<li key={ catNum + subcatLetter }>{ subcatLetter }. { catData[subcatLetter].question }:  { catData[subcatLetter].answer }</li>
 									)
 								});
 							}
-							console.log(subcats);
 							return (
 								<li key={ catNum }>
-									<span className="category">{ catNum }.</span> { catData.question + ":"}  { catData.answer }
+									<span className="category">{ catNum }. { catData.question }</span>  { catData.answer }
 									<ul>{ subcats }</ul>
 								</li>
 							)

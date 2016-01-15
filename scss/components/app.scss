@@ -7,16 +7,21 @@
 	stroke: black;
 	stroke-width: 1;
 }
-.ringArea.gradeA {
+
+.neighborhoodPolygon {
+	stroke: none;
+}
+
+.gradeA {
 	fill: green;
 }
-.ringArea.gradeB {
+.gradeB {
 	fill: blue;
 }
-.ringArea.gradeC {
+.gradeC {
 	fill: yellow;
 }
-.ringArea.gradeD {
+.gradeD {
 	fill: red;
 }
 
@@ -29,3 +34,8 @@
 	stroke: none;
 	fill: #333;
 }
+
+body {
+	font-size: 16px;
+}
+

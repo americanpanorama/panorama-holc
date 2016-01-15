@@ -54,7 +54,7 @@ export default class CityStats extends React.Component {
 	}
 
 	render () {
-		console.log('citystat render() executed');
+
 		return (
 			<div className='panorama nestedpiechart'>
 				<h3>{this.props.name}</h3>

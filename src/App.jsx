@@ -5,7 +5,7 @@ import { Map, TileLayer, LayerGroup, GeoJson, Circle, MultiPolygon } from 'react
 import _ from 'lodash';
 
 // import example module from @panorama
-import { Legend, Punchcard } from '@panorama/toolkit';
+import { Legend, Punchcard, ItemSelector } from '@panorama/toolkit';
 
 // load from local copy of @panorama/toolkit repo.
 // for development of panorama-template and @panorama/toolkit only.
@@ -30,7 +30,7 @@ import CityStore from './stores/CityStore';
 
 // TODO: move this to another repo, probably @panorama/toolkit
 import CartoDBTileLayer from './components/CartoDBTileLayer.jsx';
-import ItemSelector from './components/ItemSelector.jsx';
+//import ItemSelector from './components/ItemSelector.jsx';
 import HolcTileLayers from './components/HolcTileLayers.jsx';
 import CityStats from './components/CityStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
@@ -61,6 +61,8 @@ export default class App extends React.Component {
 		this.storeChanged = this.storeChanged.bind(this);
 		this.ringAreaSelected = this.ringAreaSelected.bind(this);
 		this.ringAreaUnselected = this.ringAreaUnselected.bind(this);
+		this.onNeighborhoodClick = this.onNeighborhoodClick.bind(this);
+
 	}
 
 	componentWillMount () {
@@ -107,6 +109,7 @@ export default class App extends React.Component {
 
 		return {
 			selectedCity: 168, // Richmond
+			selectedNeighborhood: null,
 			rasters: {},
 			ringStats: {},
 			outerRingRadius: null,
@@ -146,6 +149,19 @@ export default class App extends React.Component {
 				grade: ""
 			}
 		});
+	}
+
+	neighborhoodSelected (id) {
+		this.setState({selectedNeighborhood: id});
+	}
+
+	onNeighborhoodClick (event) {
+
+		let neighborhoodId = event.target.options.neighborhoodId;
+		if (neighborhoodId) {
+			this.neighborhoodSelected(neighborhoodId);
+		}
+
 	}
 
 	clearLayers() {
@@ -197,9 +213,7 @@ export default class App extends React.Component {
 	render () {
 
 		console.log('render called');
-		if (typeof(this.state.areaDescriptions.B4) !== 'undefined') {
-			console.log(this.state.areaDescriptions.B4);
-		}
+		console.log(CityStore.queryCategory(5, 'a'));
 
 		// restructure rastersMetadata to a simple list for rendering
 		// move in store or store changed
@@ -236,6 +250,29 @@ export default class App extends React.Component {
 		citiesList.sort(function(a,b) {return (a.city > b.city) ? 1 : ((b.city > a.city) ? -1 : 0);} );
 		citiesList.sort(function(a,b) {return (a.state > b.state) ? 1 : ((b.state > a.state) ? -1 : 0);} );
 
+		let citiesListNew = [];
+		citiesList.map((city, i) => {
+			//citiesListNew.push( { id: city.cityId, name: '<span className="state">' + city.state + '</span> ' + city.name });
+			citiesListNew.push( { id: city.cityId, name:  city.state + ' ' + city.name });
+		});
+		citiesList = citiesListNew;
+
+		let itemSelectorConfig = {
+			title: 'Select an item:',
+			items: citiesList,
+			data: citiesList[1],
+			onItemSelected: (value, index) => {
+				// @panorama/toolkit components strive to be stateless.
+				// Therefore, consumers of ItemSelector are expected to
+				// pass selection state back into the component.
+				this.setState({
+					selectedItem: value
+				});
+			}
+		};
+
+		console.log(citiesList);
+
 		return (
 			<div className='container full-height'>
 				<div className='row full-height'>
@@ -269,23 +306,40 @@ export default class App extends React.Component {
 							</LayerGroup>
 							{ this.renderDonuts() }
 							{ this.renderDonutholes() }
+							{ this.renderNeighborhoodPolygons() }
 
 							</Map>
 						</div>
 					</div>
 					<div className='columns four full-height'>
 						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
-							<AreaDescription areaData={ (typeof(this.state.areaDescriptions.B4) !== 'undefined') ? this.state.areaDescriptions.B4 : {} } ></AreaDescription>
+							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ (this.state.selectedNeighborhood != null) ? this.state.areaDescriptions[this.state.selectedNeighborhood] : {} } ></AreaDescription>
 							<CityStats name={(typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : ''} ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected }/>
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
-							<ItemSelector items={ citiesList }  />
+							<ItemSelector {...itemSelectorConfig} />
 						</div>
 					</div>
 				</div>
 			</div>
 		);
 
+	}
+
+	renderNeighborhoodPolygons () {
+		let layers = [],
+			className;
+
+		Object.keys(this.state.areaDescriptions).map((id, i) => {
+			let opacity=0;
+			className = 'neighborhoodPolygon grade' + this.state.areaDescriptions[id].holc_grade;
+			if (id == this.state.selectedNeighborhood) {
+				opacity = 1;
+			}
+			layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className } key={ 'neighborhoodPolygon' + id} onClick={ this.onNeighborhoodClick } neighborhoodId={ id } fillColor="green" fillOpacity={ opacity } />);
+		});
+
+		return layers; 
 	}
 
 	renderGeoJsonLayers () {
@@ -300,7 +354,6 @@ export default class App extends React.Component {
 				opacity = 1;
 			}
 
-
 			// hack to allow manipulating class on selection;
 			// React does not update the className of the selected element below,
 			// most likely because GeoJson passes className through to its <path>
@@ -310,15 +363,6 @@ export default class App extends React.Component {
 
 			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } className={ className } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);
 		});
-
-		/* if (this.state.outerRingRadius > 0) {
-			for (let ringNum = 4; ringNum >= 1; ringNum--) {
-				let multiplier = (ringNum * 2 - 1) / 7 * this.state.outerRingRadius;
-				layers.push(<Circle center={ this.state.loopLatLng } radius={ multiplier } className='ring' ref={ "ring" + String(ringNum) }/>);
-			}
-		} */
-
-		console.log(layers);
 
 		return layers;
 	}

@@ -40,7 +40,7 @@ body {
 		and (min-width: 1280px) 
 		and (-webkit-min-device-pixel-ratio: 2)
 		and (min-resolution: 192dpi) {
-			font-size: 24px;
+			font-size: 2px;
 	}
 }
 
@@ -63,22 +63,9 @@ h6 { font-size: 0.35em; }
 	position: relative;
 	padding: $container-padding;
 	box-sizing: border-box;
-	white-space: nowrap;
-	overflow-x: hidden;
-	overflow-y: auto;
-
-	// double border
-	&::before {
-		position: absolute;
-		display: block;
-		content: '';
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		border: solid 2px rgb(146, 163, 161);
-		pointer-events: none;
-	}
+	overflow-x: initial;
+	overflow-y: scroll;
+	border: solid 2px rgb(146, 163, 161);
 }
 
 .top-row {

@@ -809,7 +809,7 @@ body {
       font-size: 24px; } }
   @media screen and (min-width: 1280px) and (-webkit-min-device-pixel-ratio: 2) and (min-resolution: 192dpi) {
     body {
-      font-size: 24px; } }
+      font-size: 2px; } }
 
 h1 {
   font-size: 2em; }
@@ -839,19 +839,9 @@ h6 {
   position: relative;
   padding: 20px;
   box-sizing: border-box;
-  white-space: nowrap;
-  overflow-x: hidden;
-  overflow-y: auto; }
-  .template-tile::before {
-    position: absolute;
-    display: block;
-    content: '';
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    border: solid 2px #92a3a1;
-    pointer-events: none; }
+  overflow-x: initial;
+  overflow-y: scroll;
+  border: solid 2px #92a3a1; }
 
 .top-row {
   margin-bottom: 20px; }
@@ -896,16 +886,19 @@ body {
   stroke: black;
   stroke-width: 1; }
 
-.ringArea.gradeA {
+.neighborhoodPolygon {
+  stroke: none; }
+
+.gradeA {
   fill: green; }
 
-.ringArea.gradeB {
+.gradeB {
   fill: blue; }
 
-.ringArea.gradeC {
+.gradeC {
   fill: yellow; }
 
-.ringArea.gradeD {
+.gradeD {
   fill: red; }
 
 .selected1 {
@@ -916,10 +909,11 @@ body {
   stroke: none;
   fill: #333; }
 
-.city-selector {
-  font-size: 0.6em; }
-  .city-selector ul, .city-selector li {
-    list-style: none; }
+body {
+  font-size: 16px; }
+
+.city-selector ul, .city-selector li {
+  list-style: none; }
 
 .panorama.nestedpiechart {
   height: 100%;
@@ -928,3 +922,46 @@ body {
   .panorama.nestedpiechart svg {
     display: inline-block;
     shape-rendering: 'crispEdges'; }
+
+.area_description {
+  font-family: 'Myriad Pro';
+  font-size: 14px;
+  color: #333;
+  font-weight: normal; }
+
+.neighborhood, .area_desc {
+  margin-bottom: 1.5em; }
+
+h1, h2 {
+  margin: 0.5em 0;
+  letter-spacing: 0.75px; }
+
+h1.data_header {
+  font-size: 1.5em;
+  text-align: center; }
+
+h2.data_title {
+  font-size: 1.15em;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  color: #397b6f;
+  padding: 5px; }
+
+.area_description ul {
+  list-style: none;
+  margin: 1em 0 0 0;
+  padding: 0; }
+  .area_description ul li {
+    margin-bottom: 0.5em; }
+    .area_description ul li :last-child {
+      margin-bottom: 1em; }
+    .area_description ul li ul {
+      margin-left: 1em; }
+
+.area_description li .category {
+  font-weight: bold; }
+
+.panorama.item-selector {
+  width: 100%; }
+  .panorama.item-selector ul {
+    height: 100%; }

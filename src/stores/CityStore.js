@@ -66,7 +66,7 @@ const CityStore = {
 				format: "JSON"
 			},
 			{
-				query: "SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.city_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.neighborho, hp.name, hp.location, ST_asgeojson (hp.the_geom_webmercator) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.neighborho = ad.neighborhood_id WHERE city_id=" + cityId,
+				query: "SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.city_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.neighborho, hp.name, hp.location, ST_asgeojson (hp.the_geom) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.neighborho = ad.neighborhood_id WHERE city_id=" + cityId,
 				format: "JSON"
 			}
 		]).then((response) => {
@@ -121,6 +121,78 @@ const CityStore = {
 
 	getAreaDescriptions: function() {
 		return this.data.areaDescriptions;
+	},
+
+	queryCategory: function(catNum, catLetter) {
+		if (Object.keys(this.data.areaDescriptions).length === 0) {
+			return [];
+		}
+
+		let arr = []; // array to store results
+
+		Object.keys(this.data.areaDescriptions).map((neighborhoodId, i) => {
+			if (this.data.areaDescriptions[neighborhoodId].areaDesc.hasOwnProperty(catNum) && typeof(catLetter) == "undefined") {
+				arr.push( { neighborhoodId: neighborhoodId, answer: this.data.areaDescriptions[neighborhoodId].areaDesc[catNum].a });
+			} else if (this.data.areaDescriptions[neighborhoodId].areaDesc.hasOwnProperty(catNum) &&this.data.areaDescriptions[neighborhoodId].areaDesc[catNum].hasOwnProperty(catLetter)) {
+				arr.push( { neighborhoodId: neighborhoodId, answer: this.data.areaDescriptions[neighborhoodId].areaDesc[catNum][catLetter].a });
+			} else {
+				arr.push({ neighborhoodId: neighborhoodId, answer: null });
+			}
+		});
+
+		/* alphanum.js (C) Brian Huisman
+		* Based on the Alphanum Algorithm by David Koelle
+		* The Alphanum Algorithm is discussed at http://www.DaveKoelle.com
+		*
+		* Distributed under same license as original
+		* 
+		* This library is free software; you can redistribute it and/or
+		* modify it under the terms of the GNU Lesser General Public
+		* License as published by the Free Software Foundation; either
+		* version 2.1 of the License, or any later version.
+		* 
+		* This library is distributed in the hope that it will be useful,
+		* but WITHOUT ANY WARRANTY; without even the implied warranty of
+		* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+		* Lesser General Public License for more details.
+		* 
+		* You should have received a copy of the GNU Lesser General Public
+		* License along with this library; if not, write to the Free Software
+		* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+		*/
+
+		let alphanumCase = function(a, b) {
+			function chunkify(t) {
+				var tz = new Array();
+				var x = 0, y = -1, n = 0, i, j;
+
+				while (i = (j = t.charAt(x++)).charCodeAt(0)) {
+					var m = (i == 46 || (i >=48 && i <= 57));
+					if (m !== n) {
+						tz[++y] = "";
+						n = m;
+					}
+					tz[y] += j;
+				}
+				return tz;
+			}
+	
+			var aa = chunkify(a.neighborhoodId.toLowerCase());
+			var bb = chunkify(b.neighborhoodId.toLowerCase());		
+			for (let x = 0; aa[x] && bb[x]; x++) {
+				if (aa[x] !== bb[x]) {
+					var c = Number(aa[x]), d = Number(bb[x]);
+					if (c == aa[x] && d == bb[x]) {
+						return c - d;
+					} else return (aa[x] > bb[x]) ? 1 : -1;
+				}
+			}
+			return aa.length - bb.length;
+		}
+
+		arr.sort(alphanumCase);
+
+		return arr;
 	},
 
 	parseRingStats: function(ringAreaGeometry) {
