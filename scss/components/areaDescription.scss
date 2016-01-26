@@ -1,51 +1,110 @@
-.area_description {
+ul.area_description {
     font-family: 'Myriad Pro';
-    font-size: 14px;
+    font-size: 16px;
     color: #333;
-    font-weight: normal;
-}
-
-.neighborhood, .area_desc {
-    margin-bottom: 1.5em;
-}
-
-h1, h2 {
-    margin: 0.5em 0;
-    letter-spacing: 0.75px;
-}
-
-h1.data_header {
-    font-size: 1.5em;
-    text-align: center;
-}
-
-h2.data_title {
-    font-size: 1.15em;
-    font-weight: bold;
-    background-color: #f4f4f4 ;
-    color: #397b6f;
-    padding: 5px;
-}
-
-.area_description ul {
     list-style: none;
     margin: 1em 0 0 0;
     padding: 0;
 
+    ul {
+        margin: 7px 0 3px 20px;
+    }
+
     li {
-        margin-bottom: 0.5em;
+        list-style: none;
+    }
 
-        :last-child {
-            margin-bottom: 1em;
-        }
-
-        ul {
-            margin-left: 1em;
+    .catNum, .catLetter {
+        width: 10px;
+        text-align: right;
+        display: inline-block;
+        color: grey;
+        margin-right: 10px;
+        &:after {
+            content: '.';
         }
     }
 
+    .catName, .subcatName {
+        color: grey;
+    }
+
+    .subcatName:after {
+        content: ':';
+    }
+
+    .catData {
+        display: block;
+        margin: 7px 0 7px 20px;
+    }
+
+    .subcatData {
+        margin-left: 5px;
+    }
+
+    .empty {
+        color: #888;
+        font-style: italic;
+    }
 }
 
-.area_description li .category {
-    font-weight: bold;
+
+
+
+
+/* .area_description {
+    font-family: 'Myriad Pro';
+    font-size: 16px;
+    color: #333;
+
+    h1.data_header {
+        font-size: 1.5em;
+        text-align: center;
+        margin: 0.5em 0;
+        letter-spacing: 0.75px;
+    }
+
+    h2.data_title {
+        font-size: 1.15em;
+        font-weight: bold;
+        background-color: #f4f4f4 ;
+        color: #397b6f;
+        padding: 5px;
+        margin: 0.5em 0;
+        letter-spacing: 0.75px;
+    }
+
+    ul {
+        list-style: none;
+        margin: 1em 0 0 0;
+        padding: 0;
+
+        li {
+            margin-bottom: 0.5em;
+
+            :last-child {
+                margin-bottom: 1em;
+            }
+
+            ul {
+                margin-left: 1em;
+            }
+
+            .answer {
+               font-weight: bold;
+            }
+        }
+    }
 }
+
+.neighborhood, .area_desc {
+    margin-bottom: 1.5em;
+} */
+
+
+
+
+
+
+
+

@@ -59,7 +59,7 @@ const RasterStore = {
 			this.data.selectedCity = state.selectedCity;
 
 			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
-			this.emit(AppActionTypes.storeChanged);
+			this.emit(AppActionTypes.initialDataLoaded);
 		},
 		(error) => {
 
@@ -84,22 +84,28 @@ const RasterStore = {
 
 	},
 
-	getAllRasters: function () {
-		return this.data.maps;
-	},
+	getAllRasters: function () { return this.data.maps; },
 
-	getSelectedCity: function () {
-		return this.data.selectedCity;
-	},
+	getSelectedCity: function () { return this.data.selectedCity; },
 
-	getSelectedCityMetadata: function() {
-		return this.data.maps[this.getSelectedCity()];
+	// returns everything or a specified attribute
+	getSelectedCityMetadata: function(key=null) { 
+		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
 	},
 
 	// return a flat list of the HOLC maps for rendering
-	getMapsList: function() {
-		return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]);
-	},
+	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
+
+	// returns raster metadata as a simple list for rendering
+	/* getCitiesList: function() {
+		return Object.keys(this.data.maps).map( cityId => ({
+			state: this.data.maps[cityId].state,
+			name: this.data.maps[cityId].name,
+			year: this.data.maps[cityId].year,
+			display: this.data.maps[cityId].name + ", " + this.data.maps[cityId].state,
+			cityId: this.data.maps[cityId].cityId
+		})
+	)}, */
 
 	/* getAllMapsForTileLayer: function () {
 		let mapsList = [];
@@ -129,6 +135,7 @@ const RasterStore = {
 		data[0].forEach(mapData => {
 			maps[mapData.city_id] = {
 				cityId : mapData.city_id,
+				id: mapData.city_id,
 				name: mapData.name,
 				state: mapData.state,
 				minZoom: mapData.minzoom,

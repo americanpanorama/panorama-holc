@@ -8,9 +8,11 @@ export const AppActionTypes = {
 	storeChanged: 'storeChanged',
 
 	loadInitialData: 'loadInitialData',
+	initialDataLoaded: 'initialDataLoaded',
 	getInitialData: 'getInitialData',
 	citySelected: 'citySelected',
-	ringAreaSelected: 'ringAreaSelected'
+	ringAreaSelected: 'ringAreaSelected',
+	mapMoved: 'mapMoved'
 
 };
 
@@ -27,6 +29,13 @@ export const AppActions = {
 		});
 	},
 
+	initialDataLoaded: (state) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.initialDataLoaded,
+			state: state
+		});
+	},
+
 	citySelected: (city) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.citySelected,
@@ -39,6 +48,17 @@ export const AppActions = {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.ringAreaSelected,
 			value: {ringId: ringId, grade: grade}
+		});
+	},
+
+	/**
+	 * Dispatch action when map is zoomed or panned.
+	 * @param {Object} mapState 	{ zoom, center: { lat, lng } }
+	 */
+	mapMoved: (mapState) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.mapMoved,
+			value: mapState
 		});
 	}
 

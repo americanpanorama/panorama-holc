@@ -50,7 +50,7 @@ const CityStore = {
 	// can be used here.
 	dataLoader: CartoDBLoader,
 
-	loadData: function (cityId) {
+	loadData: function (cityId, initial=false) {
 		//console.log('[4a] CityStore makes a data request ...');
 		this.dataLoader.query([
 			{
@@ -86,7 +86,11 @@ const CityStore = {
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[3]);
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
-			this.emit(AppActionTypes.storeChanged);
+			if (initial) {
+				this.emit(AppActionTypes.initialDataLoaded);
+			} else {
+				this.emit(AppActionTypes.storeChanged);
+			}
 
 		}, (error) => {
 			// TODO: handle this.
@@ -272,7 +276,7 @@ AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			//console.log(`[2] The '${ AppActionTypes.loadInitialData }' event is handled by CityStore....`);
-			CityStore.loadData(action.state.selectedCity);
+			CityStore.loadData(action.state.selectedCity, true);
 			break;
 
 		case AppActionTypes.citySelected:

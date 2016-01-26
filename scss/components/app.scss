@@ -8,9 +8,6 @@
 	stroke-width: 1;
 }
 
-.neighborhoodPolygon {
-	stroke: none;
-}
 
 .gradeA {
 	fill: green;
@@ -38,4 +35,30 @@
 body {
 	font-size: 16px;
 }
+
+
+
+.neighborhoodPolygon {
+	fill-opacity: 0;
+	stroke-opacity: 1;
+
+	&.deemphasize {
+		fill: white;
+		fill-opacity: 0.5;
+	}
+
+	&.gradeA {
+		stroke: green;
+	}
+	&.gradeB {
+		stroke: blue;
+	}
+	&.gradeC {
+		stroke: yellow;
+	}
+	&.gradeD {
+		stroke: red;
+	}
+}
+
 
