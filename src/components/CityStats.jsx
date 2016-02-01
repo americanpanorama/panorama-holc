@@ -8,7 +8,6 @@ export default class CityStats extends React.Component {
 
 	// property validation
 	static propTypes = {
-		name: PropTypes.string,
 		ringStats: PropTypes.object,
 		areaSelected: PropTypes.func,
 		areaUnselected: PropTypes.func
@@ -57,7 +56,6 @@ export default class CityStats extends React.Component {
 
 		return (
 			<div className='panorama nestedpiechart'>
-				<h3>{this.props.name}</h3>
 				<div className='content' ref='content'></div>
 			</div>
 		);

@@ -46,9 +46,7 @@ export default class AreaDescription extends React.Component {
 
 	render () {
 
-		console.log(this.props.areaData.areaDesc);
-
-		if (typeof(this.props.areaData.areaDesc) == 'undefined') {
+		if (typeof(this.props.areaData) == 'undefined' || typeof(this.props.areaData.areaDesc) == 'undefined') {
 			return false;
 		}
 

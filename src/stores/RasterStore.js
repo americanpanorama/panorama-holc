@@ -51,7 +51,7 @@ const RasterStore = {
 
 		this.dataLoader.query([
 			{
-				query: "SELECT *, st_xmin(the_geom) as minLng, st_xmax(the_geom) as maxLng, st_ymin(the_geom) as minLat, st_ymax(the_geom) as maxLat, st_x(st_centroid(the_geom)) as centerLng, st_y(st_centroid(the_geom)) as centerLat FROM holc_cities order by state, name",
+				query: "SELECT *, st_xmin(the_geom) as minLng, st_xmax(the_geom) as maxLng, st_ymin(the_geom) as minLat, st_ymax(the_geom) as maxLat, st_x(st_centroid(the_geom)) as centerLng, st_y(st_centroid(the_geom)) as centerLat FROM holc_maps order by state, file_name",
 				format: "JSON"
 			}
 		]).then((response) => {
@@ -133,10 +133,10 @@ const RasterStore = {
 		let maps = {};
 
 		data[0].forEach(mapData => {
-			maps[mapData.city_id] = {
-				cityId : mapData.city_id,
-				id: mapData.city_id,
-				name: mapData.name,
+			maps[mapData.id] = {
+				cityId : mapData.id,
+				id: mapData.id,
+				name: mapData.file_name,
 				state: mapData.state,
 				minZoom: mapData.minzoom,
 				maxZoom: mapData.maxzoom,
@@ -149,7 +149,7 @@ const RasterStore = {
 				centerLng: mapData.centerlng,
 				loopLat: mapData.looplat,
 				loopLng: mapData.looplng,
-				url: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.name.replace(/\s+/, "")  + "/" + mapData.year + "/{z}/{x}/{y}.png"
+				url: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/, "")  + "/" + mapData.year + "/{z}/{x}/{y}.png"
 			}
 
 		});

@@ -1,7 +1,7 @@
 ul.area_description {
-    font-family: 'Myriad Pro';
+    font-family: 'Lato';
     font-size: 16px;
-    color: #333;
+    color: #0c789a;
     list-style: none;
     margin: 1em 0 0 0;
     padding: 0;
@@ -25,7 +25,12 @@ ul.area_description {
         }
     }
 
-    .catName, .subcatName {
+    .catName {
+        font-style: bold;
+        color: #555;
+    }
+
+    .subcatName {
         color: grey;
     }
 
@@ -36,10 +41,12 @@ ul.area_description {
     .catData {
         display: block;
         margin: 7px 0 7px 20px;
+        font-weight: bold;
     }
 
     .subcatData {
         margin-left: 5px;
+        font-weight: bold;
     }
 
     .empty {
@@ -53,7 +60,7 @@ ul.area_description {
 
 
 /* .area_description {
-    font-family: 'Myriad Pro';
+    font-family: 'Lato';
     font-size: 16px;
     color: #333;
 

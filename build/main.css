@@ -880,7 +880,8 @@ body {
 
 .donut, .donuthole {
   stroke-opacity: 0;
-  stroke: #333; }
+  stroke: #000;
+  fill: #000; }
 
 .ringArea {
   stroke: black;
@@ -913,7 +914,7 @@ body {
   fill-opacity: 0;
   stroke-opacity: 1; }
   .neighborhoodPolygon.deemphasize {
-    fill: white;
+    fill: #000;
     fill-opacity: 0.5; }
   .neighborhoodPolygon.gradeA {
     stroke: green; }
@@ -936,9 +937,9 @@ body {
     shape-rendering: 'crispEdges'; }
 
 ul.area_description {
-  font-family: 'Myriad Pro';
+  font-family: 'Lato';
   font-size: 16px;
-  color: #333;
+  color: #0c789a;
   list-style: none;
   margin: 1em 0 0 0;
   padding: 0; }
@@ -954,21 +955,26 @@ ul.area_description {
     margin-right: 10px; }
     ul.area_description .catNum:after, ul.area_description .catLetter:after {
       content: '.'; }
-  ul.area_description .catName, ul.area_description .subcatName {
+  ul.area_description .catName {
+    font-style: bold;
+    color: #555; }
+  ul.area_description .subcatName {
     color: grey; }
   ul.area_description .subcatName:after {
     content: ':'; }
   ul.area_description .catData {
     display: block;
-    margin: 7px 0 7px 20px; }
+    margin: 7px 0 7px 20px;
+    font-weight: bold; }
   ul.area_description .subcatData {
-    margin-left: 5px; }
+    margin-left: 5px;
+    font-weight: bold; }
   ul.area_description .empty {
     color: #888;
     font-style: italic; }
 
 /* .area_description {
-    font-family: 'Myriad Pro';
+    font-family: 'Lato';
     font-size: 16px;
     color: #333;
 

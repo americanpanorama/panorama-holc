@@ -1,14 +1,9 @@
 import * as React from 'react';
 import { render } from 'react-dom';
 import { Map, TileLayer, LayerGroup, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
-console.log(Object.getPrototypeOf(MultiPolygon.prototype));
-
 import leafletsnogylop from 'leaflet.snogylop';
-console.log(Object.getPrototypeOf(MultiPolygon.prototype));
 
 import _ from 'lodash';
-
-console.log(leafletsnogylop);
 
 // import example module from @panorama
 import { HashManager, ItemSelector, Legend } from '@panorama/toolkit';
@@ -122,8 +117,8 @@ export default class App extends React.Component {
 
 		// this can be read from the url or defaults to Richmond
 		return {
-			selectedCity: (hashState.city) ? hashState.city : 125, // Richmond
-			selectedNeighborhood: null,
+			selectedCity: (hashState.city) ? hashState.city : 168, // Richmond
+			selectedNeighborhood: (hashState.area) ? hashState.area : null,
 			rasters: {},
 			ringStats: {},
 			outerRingRadius: null,
@@ -171,6 +166,8 @@ export default class App extends React.Component {
 
 	neighborhoodSelected (id) {
 		this.setState({selectedNeighborhood: id});
+
+		this.changeHash();
 	}
 
 	onCitySelected (value, index) {
@@ -221,7 +218,6 @@ export default class App extends React.Component {
 
 	// a little different from storeChanged as the hash values are used if there are any
 	initialDataLoaded () {
-		console.log('initialDataLoaded called');
 		this.setState({
 			rasters: RasterStore.getAllRasters(),
 			ringStats: CityStore.getRingStats(),
@@ -255,13 +251,21 @@ export default class App extends React.Component {
 			}
 		});
 
+		this.changeHash();
+
+	}
+
+	changeHash () {
+
 		let newState = { city: this.state.selectedCity };
+		console.log(this.state.map);
+		if (this.state.selectedNeighborhood) {
+			newState.area = this.state.selectedNeighborhood;
+		}
 		newState[HashManager.MAP_STATE_KEY] = {
 			zoom: this.state.map.zoom,
 			center: this.state.map.center
 		};
-
-		console.log(newState);
 
 		HashManager.updateHash(newState);
 
@@ -376,8 +380,11 @@ export default class App extends React.Component {
 					</div>
 					<div className='columns four full-height'>
 						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
-							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ (this.state.selectedNeighborhood != null) ? this.state.areaDescriptions[this.state.selectedNeighborhood] : {} } ></AreaDescription>
-							<CityStats name={(typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : ''} ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected }/>
+							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }</h2>
+							{ (this.state.selectedNeighborhood !== null) ?
+							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } /> :
+							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } />
+							}
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
 							<ItemSelector { ...this.getItemSelectorConfig() } />
