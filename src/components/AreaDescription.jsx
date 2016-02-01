@@ -158,63 +158,71 @@ export default class AreaDescription extends React.Component {
 					<span className='catNum'>7</span>
 					<span className='catName'>History</span>
 					<table>
-						<tr>
-							<th>Sales Values</th>
-						</tr>
-						<tr>
-							<th>Year</th>
-							<th>Range</th>
-							<th>Predominating</th>
-							<th>%</th>
-						</tr>
-						<tr>
-							<th>1929 level</th>
-							<td>{ (AD[7] && AD[7][1] ) ? AD[7][1] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][2] ) ? AD[7][2] : <span className='empty'>empty</span> }</td>
-							<td>100%</td>
-						</tr>
-						<tr>
-							<th>{ AD[7][5] } level</th>
-							<td>{ (AD[7] && AD[7][6] ) ? AD[7][6] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][7] ) ? AD[7][7] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][8] ) ? AD[7][8] : <span className='empty'>empty</span> }</td>
-						</tr>
-						<tr>
-							<th>{ AD[7][12] }  level</th>
-							<td>{ (AD[7] && AD[7][13] ) ? AD[7][13] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][14] ) ? AD[7][14] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][15] ) ? AD[7][15] : <span className='empty'>empty</span> }</td>
-						</tr>
+						<thead>
+							<tr>
+								<th>Sales Values</th>
+							</tr>
+							<tr>
+								<th>Year</th>
+								<th>Range</th>
+								<th>Predominating</th>
+								<th>%</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th>1929 level</th>
+								<td>{ (AD[7] && AD[7][1] ) ? AD[7][1] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][2] ) ? AD[7][2] : <span className='empty'>empty</span> }</td>
+								<td>100%</td>
+							</tr>
+							<tr>
+								<th>{ AD[7][5] } level</th>
+								<td>{ (AD[7] && AD[7][6] ) ? AD[7][6] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][7] ) ? AD[7][7] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][8] ) ? AD[7][8] : <span className='empty'>empty</span> }</td>
+							</tr>
+							<tr>
+								<th>{ AD[7][12] }  level</th>
+								<td>{ (AD[7] && AD[7][13] ) ? AD[7][13] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][14] ) ? AD[7][14] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][15] ) ? AD[7][15] : <span className='empty'>empty</span> }</td>
+							</tr>
+						</tbody>
 					</table>
 
 					<table>
-						<tr>
-							<th>Rental Values</th>
-						</tr>
-						<tr>
-							<th>Year</th>
-							<th>Range</th>
-							<th>Predominating</th>
-							<th>%</th>
-						</tr>
-						<tr>
-							<th>1929 level</th>
-							<td>{ (AD[7] && AD[7][3] ) ? AD[7][3] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][4] ) ? AD[7][4] : <span className='empty'>empty</span> }</td>
-							<td>100%</td>
-						</tr>
-						<tr>
-							<th>{ AD[7][5] } level</th>
-							<td>{ (AD[7] && AD[7][9] ) ? AD[7][9] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][10] ) ? AD[7][10] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][11] ) ? AD[7][11] : <span className='empty'>empty</span> }</td>
-						</tr>
-						<tr>
-							<th>{ AD[7][12] }  level</th>
-							<td>{ (AD[7] && AD[7][16] ) ? AD[7][16] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][17] ) ? AD[7][17] : <span className='empty'>empty</span> }</td>
-							<td>{ (AD[7] && AD[7][18] ) ? AD[7][18] : <span className='empty'>empty</span> }</td>
-						</tr>
+						<thead>
+							<tr>
+								<th>Rental Values</th>
+							</tr>
+							<tr>
+								<th>Year</th>
+								<th>Range</th>
+								<th>Predominating</th>
+								<th>%</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<th>1929 level</th>
+								<td>{ (AD[7] && AD[7][3] ) ? AD[7][3] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][4] ) ? AD[7][4] : <span className='empty'>empty</span> }</td>
+								<td>100%</td>
+							</tr>
+							<tr>
+								<th>{ AD[7][5] } level</th>
+								<td>{ (AD[7] && AD[7][9] ) ? AD[7][9] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][10] ) ? AD[7][10] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][11] ) ? AD[7][11] : <span className='empty'>empty</span> }</td>
+							</tr>
+							<tr>
+								<th>{ AD[7][12] }  level</th>
+								<td>{ (AD[7] && AD[7][16] ) ? AD[7][16] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][17] ) ? AD[7][17] : <span className='empty'>empty</span> }</td>
+								<td>{ (AD[7] && AD[7][18] ) ? AD[7][18] : <span className='empty'>empty</span> }</td>
+							</tr>
+						</tbody>
 					</table>
 					<div>
 						<span className='subcatName'>Peak Sales values occurred in</span>
