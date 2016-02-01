@@ -66,7 +66,8 @@ const CityStore = {
 				format: "JSON"
 			},
 			{
-				query: "SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
+				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson FROM digitalscholarshiplab.holc_ad_data join holc_polygons on digitalscholarshiplab.holc_ad_data.polygon_id = holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_ads.id = holc_polygons.ad_id where digitalscholarshiplab.holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
+				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
 				format: "JSON"
 			}
 		]).then((response) => {
@@ -84,6 +85,8 @@ const CityStore = {
 			this.data.outerRingRadius = response[2][0].distintv;
 			this.data.loopLatLng = [response[2][0].looplat, response[2][0].looplng];
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[3]);
+
+			console.log(this.data.areaDescriptions.A1.areaDesc[2]);
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
 			if (initial) {
@@ -225,6 +228,8 @@ const CityStore = {
 	parseAreaDescriptions: function(rawAdData) {
 		let adData = {};
 
+		console.log(rawAdData);
+
 		for(var row in rawAdData) {
 			// define id if undefined
 			if(typeof adData[rawAdData[row].holc_id] == "undefined") {
@@ -240,25 +245,31 @@ const CityStore = {
 				adData[rawAdData[row].holc_id].areaDesc = {};
 			}
 			
-			// define category id for area description if undefined                
-			if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_label] == "undefined") {
-				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_label] = {};
+			// define category id for area description if undefined
+			if (rawAdData[row].sub_cat_id == "" && rawAdData[row].order == null) {
+				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] = rawAdData[row].data;
+			} else if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] == "undefined") {
+				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] = {};
 			}
-			// check for labels, i.e. subcategories
-			if(rawAdData[row].label != "") {
+			// check for subcategories
+			if(rawAdData[row].sub_cat_id !== "") {
 				// create sub-object if we have a subcategory...
-				if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_label][rawAdData[row].label] == "undefined") {
-					adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_label][rawAdData[row].label] = {
-						'question'     : rawAdData[row].question,
-						'answer'    : rawAdData[row].answer
+				if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] == "undefined") {
+					adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] = {};
+
+					// look for order
+					if(rawAdData[row].order) {
+						adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id][rawAdData[row].order] =rawAdData[row].data;
+					} else {
+						adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] = rawAdData[row].data;
 					}
 				}
-			} else { // ...otherwise create q+a fields within category
-				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_label] = {
-					'question'     : rawAdData[row].question,
-					'answer'    : rawAdData[row].answer
-				}
-			}    // end for
+			} 
+
+			// look for order
+			else if (rawAdData[row].order) { 
+				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].order] = rawAdData[row].data;
+			} 
 		}  // end if
 
 		return adData;

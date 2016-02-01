@@ -99,8 +99,19 @@ export default class AreaDescription extends React.Component {
 	}
 
 	renderNSForm8_19370203() {
+		console.log(this.props.areaData.areaDesc);
+		let AD = this.props.areaData.areaDesc;
 		return (
 			<ul className='area_description NSForm8'>
+				<li>
+					<span className='catNum'>1</span>
+					<span className='subcatName'>Name of City</span>
+					<span className='subcatData'>{ (AD[1] && AD[1][1] ) ? AD[1][1] : <span className='empty'>empty</span> }</span>
+					<span className='subcatName'> Security Grade </span>
+					<span className='subcatData'>{ (AD[1] && AD[1][2] ) ? AD[1][2] : <span className='empty'>empty</span> }</span>
+					<span className='subcatName'> Area No. </span>
+					<span className='subcatData'>{ (AD[1] && AD[1][3] ) ? AD[1][3] : <span className='empty'>empty</span> }</span>
+				</li>
 				{ this.renderSimpleCategory(2, 'Description of Terrain') }
 				{ this.renderSimpleCategory(3, 'Favorable Influences') }
 				{ this.renderSimpleCategory(4, 'Detrimental Influences') }
@@ -110,11 +121,27 @@ export default class AreaDescription extends React.Component {
 					<ul>
 						{ this.renderSimpleSubcategory(5, 'a', 'Type') }
 						{ this.renderSimpleSubcategory(5, 'b', 'Estimated annual family income') }
-						{ this.renderSimpleSubcategory(5, 'c', 'Foreign-born') }
-						{ this.renderSimpleSubcategory(5, 'd', 'Negro') }
+						<li>
+							<span className='catLetter'>c</span>
+							<span className='subcatName'>Foreign-born</span>
+							<span className='subcatData'>{ (AD[5] && AD[5]['c']['1'] ) ? AD[5]['c']['1'] : <span className='empty'>empty</span> }; { (AD[5] && AD[5]['c']['2'] ) ? AD[5]['c']['2'] : <span className='empty'>empty</span> }</span>
+						</li>
+						<li>
+							<span className='catLetter'>d</span>
+							<span className='subcatName'>Negro</span>
+							<span className='subcatData'>{ (AD[5] && AD[5]['d']['1'] ) ? AD[5]['d']['1'] : <span className='empty'>empty</span> }; { (AD[5] && AD[5]['d']['2'] ) ? AD[5]['d']['2'] : <span className='empty'>empty</span> }</span>
+						</li>
 						{ this.renderSimpleSubcategory(5, 'e', 'Infiltration of') }
 						{ this.renderSimpleSubcategory(5, 'f', 'Relief families') }
-						{ this.renderSimpleSubcategory(5, 'g', 'Population is') }
+						<li>
+							<span className='catLetter'>g</span>
+							<span className='subcatName'>Population is increasing</span>
+							<span className='subcatData'>{ (AD[5] && AD[5]['g']['1'] ) ? AD[5]['g']['1'] : <span className='empty'>empty</span> }</span>
+							<span className='subcatName'>; decreasing</span>
+							<span className='subcatData'>{ (AD[5] && AD[5]['g']['2'] ) ? AD[5]['g']['2'] : <span className='empty'>empty</span> }</span>; 
+							<span className='subcatName'>; static</span>
+						</li>
+						
 					</ul>
 				</li>
 				<li>
@@ -126,6 +153,83 @@ export default class AreaDescription extends React.Component {
 						{ this.renderSimpleSubcategory(6, 'c', 'Average age') }
 						{ this.renderSimpleSubcategory(6, 'd', 'Repair') }
 					</ul>
+				</li>
+				<li>
+					<span className='catNum'>7</span>
+					<span className='catName'>History</span>
+					<table>
+						<tr>
+							<th>Sales Values</th>
+						</tr>
+						<tr>
+							<th>Year</th>
+							<th>Range</th>
+							<th>Predominating</th>
+							<th>%</th>
+						</tr>
+						<tr>
+							<th>1929 level</th>
+							<td>{ (AD[7] && AD[7][1] ) ? AD[7][1] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][2] ) ? AD[7][2] : <span className='empty'>empty</span> }</td>
+							<td>100%</td>
+						</tr>
+						<tr>
+							<th>{ AD[7][5] } level</th>
+							<td>{ (AD[7] && AD[7][6] ) ? AD[7][6] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][7] ) ? AD[7][7] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][8] ) ? AD[7][8] : <span className='empty'>empty</span> }</td>
+						</tr>
+						<tr>
+							<th>{ AD[7][12] }  level</th>
+							<td>{ (AD[7] && AD[7][13] ) ? AD[7][13] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][14] ) ? AD[7][14] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][15] ) ? AD[7][15] : <span className='empty'>empty</span> }</td>
+						</tr>
+					</table>
+
+					<table>
+						<tr>
+							<th>Rental Values</th>
+						</tr>
+						<tr>
+							<th>Year</th>
+							<th>Range</th>
+							<th>Predominating</th>
+							<th>%</th>
+						</tr>
+						<tr>
+							<th>1929 level</th>
+							<td>{ (AD[7] && AD[7][3] ) ? AD[7][3] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][4] ) ? AD[7][4] : <span className='empty'>empty</span> }</td>
+							<td>100%</td>
+						</tr>
+						<tr>
+							<th>{ AD[7][5] } level</th>
+							<td>{ (AD[7] && AD[7][9] ) ? AD[7][9] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][10] ) ? AD[7][10] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][11] ) ? AD[7][11] : <span className='empty'>empty</span> }</td>
+						</tr>
+						<tr>
+							<th>{ AD[7][12] }  level</th>
+							<td>{ (AD[7] && AD[7][16] ) ? AD[7][16] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][17] ) ? AD[7][17] : <span className='empty'>empty</span> }</td>
+							<td>{ (AD[7] && AD[7][18] ) ? AD[7][18] : <span className='empty'>empty</span> }</td>
+						</tr>
+					</table>
+					<div>
+						<span className='subcatName'>Peak Sales values occurred in</span>
+						<span className='subcatData'>{ (AD[7] && AD[7][19] ) ? AD[7][19] : <span className='empty'>empty</span> }</span>
+						<span className='subcatName'> and were </span>
+						<span className='subcatData'>{ (AD[7] && AD[7][20] ) ? AD[7][20] : <span className='empty'>empty</span> }</span>
+						<span className='subcatName'>% of the 1929 level.</span>
+					</div>
+					<div>
+						<span className='subcatName'>Peak rental values occurred in</span>
+						<span className='subcatData'>{ (AD[7] && AD[7][21] ) ? AD[7][21] : <span className='empty'>empty</span> }</span>
+						<span className='subcatName'> and were </span>
+						<span className='subcatData'>{ (AD[7] && AD[7][22] ) ? AD[7][22] : <span className='empty'>empty</span> }</span>
+						<span className='subcatName'>% of the 1929 level.</span>
+					</div>
 				</li>
 				<li>
 					<span className='catNum'>8</span>
@@ -225,7 +329,7 @@ export default class AreaDescription extends React.Component {
 			<li>
 				<span className='catNum'>{ catNum }</span>
 				<span className='catName'>{ catName }</span>
-				<span className='catData'>{ (AD[catNum] && AD[catNum].answer ) ? AD[catNum].answer : <span className='empty'>empty</span>}</span>
+				<span className='catData'>{ (AD[catNum] ) ? AD[catNum] : <span className='empty'>empty</span>}</span>
 			</li>
 		);
 	}
@@ -236,7 +340,7 @@ export default class AreaDescription extends React.Component {
 			<li>
 				<span className='catLetter'>{ catLetter }</span>
 				<span className='subcatName'>{ subcatName }</span>
-				<span className='subcatData'>{ (AD[catNum] && AD[catNum][catLetter] ) ? AD[catNum][catLetter].answer : <span className='empty'>empty</span>}</span>
+				<span className='subcatData'>{ (AD[catNum] && AD[catNum][catLetter] ) ? AD[catNum][catLetter] : <span className='empty'>empty</span>}</span>
 			</li>
 		);
 	}

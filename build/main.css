@@ -960,8 +960,6 @@ ul.area_description {
     color: #555; }
   ul.area_description .subcatName {
     color: grey; }
-  ul.area_description .subcatName:after {
-    content: ':'; }
   ul.area_description .catData {
     display: block;
     margin: 7px 0 7px 20px;
