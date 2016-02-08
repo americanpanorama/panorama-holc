@@ -69,6 +69,7 @@ export default class ItemSelector extends React.Component {
 	render () {
 		return (
 			<div className='panorama item-selector'>
+			::before
 				<ul>
 				{ this.props.items.map((item, i) => {
 					return (
@@ -83,6 +84,7 @@ export default class ItemSelector extends React.Component {
 					);
 				}) }
 				</ul>
+				::after
 			</div>
 		);
 

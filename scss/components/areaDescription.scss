@@ -15,7 +15,7 @@ ul.area_description {
     }
 
     .catNum, .catLetter {
-        width: 10px;
+        width: 12px;
         text-align: right;
         display: inline-block;
         color: grey;
@@ -37,6 +37,7 @@ ul.area_description {
         display: block;
         margin: 7px 0 7px 20px;
         font-weight: bold;
+        line-height: 26px;
     }
 
     .subcatData {
@@ -48,9 +49,57 @@ ul.area_description {
         color: #888;
         font-style: italic;
     }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin-left: 20px;
+    }
+
+    tr {
+        display: table-row;
+        vertical-align: inherit;
+        border-color: inherit;
+    }
+
+    tbody {
+        display: table-row-group;
+        vertical-align: middle;
+        border-color: inherit;
+    }
+
+    th, td {
+        padding: 12px 5px;
+        text-align: center;
+        border-bottom: 1px solid #e1e1e1;
+        color: grey;
+    }
+
+    td, .empty {
+        color: #0c789a;
+        padding-right: 4px;
+    }
+
+    .percentage, .span {
+        font-size: 14px;
+        padding-left: 20px;
+        line-height: 20px;
+    }
+
+    .indent {
+       padding-left: 20px;
+       white-space: pre-wrap;
+    }
+
+    ul.area_description .empty {
+        padding-right: 4px;
+    }
+
 }
 
-
+h2 {
+    text-align: center;
+}
 
 
 

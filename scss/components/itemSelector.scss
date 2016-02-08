@@ -1,8 +1,28 @@
 .panorama.item-selector {
 	width: 100%;
+	min-width: 10em;
+	margin-right: 20px;
+	margin-top: 10px;
+	margin-bottom: 20px;
+	height: calc(100% - 50px - 20px);
 
 	ul {
 		height: 100%;
+	}
+
+	li {
+		text-transform: capitalize !important;
+	}
+
+	li.selected {
+		color: #0c789a;
+		opacity: 0.7;
+		background-color: white;
+		border-width: 0px !important;
+	}
+
+	h3 {
+		text-transform: uppercase;
 	}
 
 }
