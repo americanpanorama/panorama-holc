@@ -110,14 +110,20 @@ export default class AreaDescription extends React.Component {
 		console.log(this.props.areaData.areaDesc);
 		let AD = this.props.areaData.areaDesc;
 		return (
+
 			<ul className='area_description NSForm8'>
+
 				<li>
 					<span className='catNum'>1</span>
 					<span className='subcatName'>Name of City</span>
 					<span className='subcatData'>{ (AD[1] && AD[1][1] ) ? AD[1][1] : <span className='empty'>empty</span> }</span>
-					<span className='subcatName'> Security Grade </span>
+				</li>
+				<li>				
+					<span className='subcatName indent'> Security Grade </span>
 					<span className='subcatData'>{ (AD[1] && AD[1][2] ) ? AD[1][2] : <span className='empty'>empty</span> }</span>
-					<span className='subcatName'> Area No. </span>
+				</li>
+				<li>
+					<span className='subcatName indent'> Area No. </span>
 					<span className='subcatData'>{ (AD[1] && AD[1][3] ) ? AD[1][3] : <span className='empty'>empty</span> }</span>
 				</li>
 				{ this.renderSimpleCategory(2, 'Description of Terrain') }
@@ -232,14 +238,14 @@ export default class AreaDescription extends React.Component {
 							</tr>
 						</tbody>
 					</table>
-					<div>
+					<div className='percentage'>
 						<span className='subcatName'>Peak Sales values occurred in</span>
 						<span className='subcatData'>{ (AD[7] && AD[7][19] ) ? AD[7][19] : <span className='empty'>empty</span> }</span>
 						<span className='subcatName'> and were </span>
 						<span className='subcatData'>{ (AD[7] && AD[7][20] ) ? AD[7][20] : <span className='empty'>empty</span> }</span>
 						<span className='subcatName'>% of the 1929 level.</span>
 					</div>
-					<div>
+					<div className='percentage'>
 						<span className='subcatName'>Peak rental values occurred in</span>
 						<span className='subcatData'>{ (AD[7] && AD[7][21] ) ? AD[7][21] : <span className='empty'>empty</span> }</span>
 						<span className='subcatName'> and were </span>

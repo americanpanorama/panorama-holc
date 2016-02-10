@@ -64,8 +64,11 @@ h6 { font-size: 0.35em; }
 	padding: $container-padding;
 	box-sizing: border-box;
 	overflow-x: initial;
-	overflow-y: scroll;
+	overflow-y: auto;
 	border: solid 2px rgb(146, 163, 161);
+	
+
+
 }
 
 .top-row {
@@ -92,14 +95,16 @@ header {
 	.header-main {
 		@extend %lora-light;
 		text-transform: uppercase;
-		font-size: 0.7em;
+		font-size: 0.9em;
+		letter-spacing: 0.04em;
 
 	}
 
 	.header-sub {
 		@extend %lora-light;
-		font-size: 0.5em;
+		font-size: 0.7em;
 		margin-left: 0.9em;
+		letter-spacing: 0.002em;
 	}
 }
 
@@ -108,3 +113,4 @@ header {
 	height: calc(100% - 4px);
 	padding: 2px 0 0 2px;
 }
+

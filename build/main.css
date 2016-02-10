@@ -840,7 +840,7 @@ h6 {
   padding: 20px;
   box-sizing: border-box;
   overflow-x: initial;
-  overflow-y: scroll;
+  overflow-y: auto;
   border: solid 2px #92a3a1; }
 
 .top-row {
@@ -858,10 +858,12 @@ header {
     margin: 0; }
   header .header-main {
     text-transform: uppercase;
-    font-size: 0.7em; }
+    font-size: 0.9em;
+    letter-spacing: 0.04em; }
   header .header-sub {
-    font-size: 0.5em;
-    margin-left: 0.9em; }
+    font-size: 0.7em;
+    margin-left: 0.9em;
+    letter-spacing: 0.002em; }
 
 .leaflet-container {
   width: calc(100% - 4px);
@@ -931,7 +933,8 @@ body {
 .panorama.nestedpiechart {
   height: 100%;
   overflow-x: hidden;
-  overflow-y: auto; }
+  overflow-y: auto;
+  text-align: center; }
   .panorama.nestedpiechart svg {
     display: inline-block;
     shape-rendering: 'crispEdges'; }
@@ -948,7 +951,7 @@ ul.area_description {
   ul.area_description li {
     list-style: none; }
   ul.area_description .catNum, ul.area_description .catLetter {
-    width: 10px;
+    width: 12px;
     text-align: right;
     display: inline-block;
     color: grey;
@@ -963,13 +966,46 @@ ul.area_description {
   ul.area_description .catData {
     display: block;
     margin: 7px 0 7px 20px;
-    font-weight: bold; }
+    font-weight: bold;
+    line-height: 26px; }
   ul.area_description .subcatData {
     margin-left: 5px;
     font-weight: bold; }
   ul.area_description .empty {
     color: #888;
     font-style: italic; }
+  ul.area_description table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-left: 20px; }
+  ul.area_description tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit; }
+  ul.area_description tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    border-color: inherit; }
+  ul.area_description th, ul.area_description td {
+    padding: 12px 5px;
+    text-align: center;
+    border-bottom: 1px solid #e1e1e1;
+    color: grey; }
+  ul.area_description td, ul.area_description .empty {
+    color: #0c789a;
+    padding-right: 4px; }
+  ul.area_description .percentage, ul.area_description .span {
+    font-size: 14px;
+    padding-left: 20px;
+    line-height: 20px; }
+  ul.area_description .indent {
+    padding-left: 20px;
+    white-space: pre-wrap; }
+  ul.area_description ul.area_description .empty {
+    padding-right: 4px; }
+
+h2 {
+  text-align: center; }
 
 /* .area_description {
     font-family: 'Lato';
@@ -1020,6 +1056,20 @@ ul.area_description {
     margin-bottom: 1.5em;
 } */
 .panorama.item-selector {
-  width: 100%; }
+  width: 100%;
+  min-width: 10em;
+  margin-right: 20px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  height: calc(100% - 50px - 20px); }
   .panorama.item-selector ul {
     height: 100%; }
+  .panorama.item-selector li {
+    text-transform: capitalize !important; }
+  .panorama.item-selector li.selected {
+    color: #0c789a;
+    opacity: 0.7;
+    background-color: white;
+    border-width: 0px !important; }
+  .panorama.item-selector h3 {
+    text-transform: uppercase; }
