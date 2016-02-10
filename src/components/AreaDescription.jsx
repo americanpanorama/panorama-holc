@@ -50,7 +50,15 @@ export default class AreaDescription extends React.Component {
 			return false;
 		}
 
-		return this.renderNSForm8_19370203();
+		console.log(this.props.formId);
+
+		switch(this.props.formId) {
+			case '19370203':
+			case '19370826':
+				return this.renderNSForm8_19370203();
+			case '19371001':
+				return this.renderNSForm8_19371001();
+		}
 
 	}
 
@@ -292,6 +300,7 @@ export default class AreaDescription extends React.Component {
 
 	renderNSForm8_19371001() {
 		console.log(this.props.areaData.areaDesc);
+		let AD = this.props.areaData.areaDesc;
 		return (
 			<ul className='area_description NSForm8'>
 				<li>
@@ -311,12 +320,38 @@ export default class AreaDescription extends React.Component {
 					<ul>
 						{ this.renderSimpleSubcategory(2, 'a', 'Occupation') }
 						{ this.renderSimpleSubcategory(2, 'b', 'Estimated Annual Family Income') }
-						{ this.renderSimpleSubcategory(2, 'c', 'Foreign-born families') }
-						{ this.renderSimpleSubcategory(2, 'd', 'Negro') }
+						<li>
+							<span className='catLetter'>c</span>
+							<span className='catName'>Foreign-born families</span>
+							<span className='subcatData'>{ this.renderSimpleData(2, 'c', 1) }</span>
+							<span className='catName'>%;</span>
+							<span className='subcatData'> { this.renderSimpleData(2, 'c', 2) }</span>
+							<span className='catName'>  predominating</span>
+						</li>
+						<li>
+							<span className='catLetter'>d</span>
+							<span className='catName'>Negro</span>
+							<span className='subcatData'>{ this.renderSimpleData(2, 'd', 1) }</span>
+							<span className='catName'>%;</span>
+							<span className='subcatData'> { this.renderSimpleData(2, 'd', 2) }</span>
+							<span className='catName'>  predominating</span>
+						</li>
 						{ this.renderSimpleSubcategory(2, 'e', 'Infiltration of') }
 						{ this.renderSimpleSubcategory(2, 'f', 'Relief families') }
-						{ this.renderSimpleSubcategory(2, 'g', 'Population is') }
+						<li>
+							<span className='catLetter'>g</span>
+							<span className='catName'>Population is increasing</span>
+							<span className='subcatData'> { this.renderSimpleData(2, 'g', 1) }</span>
+							<span className='catName'>; decreasing</span>
+							<span className='subcatData'> { this.renderSimpleData(2, 'g', 2) }</span>
+							<span className='catName'>; static</span>
+							<span className='subcatData'> { this.renderSimpleData(2, 'g', 3) }</span>
+						</li>
 					</ul>
+				</li>
+				<li>
+					<span className='catNum'>3</span>
+					<span className='catName'>Buildings</span>
 				</li>
 				<li>
 					<span className='catNum'>4</span>
@@ -327,6 +362,15 @@ export default class AreaDescription extends React.Component {
 					</ul>
 				</li>
 				{ this.renderSimpleCategory(5, 'Clarifying Remarks') }
+				<li>
+					<span className='catNum'>6</span>
+					<span className='catName'>Name and Location</span>
+					<span className='subcatData'>{ (AD[6] && AD[6][1] ) ? AD[6][1] : <span className='empty'>empty</span> }</span>
+					<span className='catName'>Security Grade</span>
+					<span className='subcatData'>{ (AD[6] && AD[6][2] ) ? AD[6][2] : <span className='empty'>empty</span> }</span>
+					<span className='catName'>Area No.</span>
+					<span className='subcatData'>{ (AD[6] && AD[6][3] ) ? AD[6][3] : <span className='empty'>empty</span> }</span>
+				</li>
 			</ul>
 		);
 	}
@@ -351,6 +395,23 @@ export default class AreaDescription extends React.Component {
 				<span className='subcatData'>{ (AD[catNum] && AD[catNum][catLetter] ) ? AD[catNum][catLetter] : <span className='empty'>empty</span>}</span>
 			</li>
 		);
+	}
+
+	renderSimpleData(catNum, subcatLetter = '', order = null) {
+		let AD = this.props.areaData.areaDesc;
+		if (order == null) {
+			return (
+				<span>{ (AD[catNum] && AD[catNum][subcatLetter] ) ? AD[catNum][subcatLetter] : <span className='empty'>empty</span> }</span>
+			);
+		} else if (subcatLetter == '') {
+			return (
+				<span>{ (AD[catNum] && AD[catNum][order] ) ? AD[catNum][order] : <span className='empty'>empty</span> }</span>
+			);
+		} else {
+			return (
+				<span>{ (AD[catNum] && AD[catNum][subcatLetter] && AD[catNum][subcatLetter][order] ) ? AD[catNum][subcatLetter][order] : <span className='empty'>empty</span> }</span>
+			);
+		}
 	}
 
 }
