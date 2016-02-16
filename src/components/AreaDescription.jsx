@@ -50,8 +50,6 @@ export default class AreaDescription extends React.Component {
 			return false;
 		}
 
-		console.log(this.props.formId);
-
 		switch(this.props.formId) {
 			case '19370203':
 			case '19370826':
@@ -305,7 +303,6 @@ export default class AreaDescription extends React.Component {
 	}
 
 	renderNSForm8_19371001() {
-		console.log(this.props.areaData.areaDesc);
 		let AD = this.props.areaData.areaDesc;
 		return (
 			<ul className='area_description NSForm8'>
@@ -358,6 +355,171 @@ export default class AreaDescription extends React.Component {
 				<li>
 					<span className='catNum'>3</span>
 					<span className='catName'>Buildings</span>
+					<table>
+						<thead>
+							<tr>
+								<th></th>
+								<th>Predominating { this.renderSimpleData(3, null, 1) }%</th>
+								<th>Other Type { this.renderSimpleData(3, null, 2) }%</th>
+								<th>Other Type { this.renderSimpleData(3, null, 3) }%</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<span className='catLetter'>a</span>
+									<span className='catName'>Type</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'a', 1) }</td>
+								<td>{ this.renderSimpleData(3, 'a', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'a', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>b</span>
+									<span className='catName'>Construction</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'b', 1) }</td>
+								<td>{ this.renderSimpleData(3, 'b', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'b', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>c</span>
+									<span className='catName'>Average age</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'c', 1) } <span className='catName'>Years</span></td>
+								<td>{ this.renderSimpleData(3, 'c', 2) } <span className='catName'>Years</span></td>
+								<td>{ this.renderSimpleData(3, 'c', 3) } <span className='catName'>Years</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>d</span>
+									<span className='catName'>Repair</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'd', 1) }</td>
+								<td>{ this.renderSimpleData(3, 'd', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'd', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>e</span>
+									<span className='catName'>Occupancy</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'e', 1) }<span className='catName'>%</span></td>
+								<td>{ this.renderSimpleData(3, 'e', 2) }<span className='catName'>%</span></td>
+								<td>{ this.renderSimpleData(3, 'e', 3) }<span className='catName'>%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>f</span>
+									<span className='catName'>Home Ownership</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'f', 1) }<span className='catName'>%</span></td>
+								<td>{ this.renderSimpleData(3, 'f', 2) }<span className='catName'>%</span></td>
+								<td>{ this.renderSimpleData(3, 'f', 3) }<span className='catName'>%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>g</span>
+									<span className='catName'>Constructed past yr.</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'g', 1) }</td>
+								<td>{ this.renderSimpleData(3, 'g', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'g', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>h</span>
+									<span className='catName'>1929 Price range</span>
+								</td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'h', 1) } <span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'h', 2) } <span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'h', 3) } <span className='catName'>100%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>i</span>
+									<span className='catName'>{ this.renderSimpleData(3, 'i', 1) } Price range</span>
+								</td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'i', 2) } { this.renderSimpleData(3, 'i', 3) }<span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'i', 4) } { this.renderSimpleData(3, 'i', 5) }<span className='catName'>%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'i', 6) } { this.renderSimpleData(3, 'i', 7) }<span className='catName'>%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>j</span>
+									<span className='catName'>{ this.renderSimpleData(3, 'j', 1) } Price range</span>
+								</td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'j', 2) } { this.renderSimpleData(3, 'j', 3) }<span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'j', 4) } { this.renderSimpleData(3, 'j', 5) }<span className='catName'>%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'j', 6) } { this.renderSimpleData(3, 'j', 7) }<span className='catName'>%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>k</span>
+									<span className='catName'>Sales demand Up to</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'k', 1) }</td>
+								<td>Up to { this.renderSimpleData(3, 'k', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'k', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>l</span>
+									<span className='catName'>Activity</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'l', 1) }</td>
+								<td>{ this.renderSimpleData(3, 'l', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'l', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>m</span>
+									<span className='catName'>1929 Rent range</span>
+								</td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'm', 1) } <span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'm', 2) } <span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'm', 3) } <span className='catName'>100%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>n</span>
+									<span className='catName'>{ this.renderSimpleData(3, 'n', 1) } Rent range</span>
+								</td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'n', 2) } { this.renderSimpleData(3, 'n', 3) }<span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'n', 4) } { this.renderSimpleData(3, 'n', 5) }<span className='catName'>%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'n', 6) } { this.renderSimpleData(3, 'n', 7) }<span className='catName'>%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>o</span>
+									<span className='catName'>{ this.renderSimpleData(3, 'o', 1) } Rent range</span>
+								</td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'o', 2) } { this.renderSimpleData(3, 'o', 3) }<span className='catName'>100%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'o', 4) } { this.renderSimpleData(3, 'o', 5) }<span className='catName'>%</span></td>
+								<td><span className='catName'>$</span>{ this.renderSimpleData(3, 'o', 6) } { this.renderSimpleData(3, 'o', 7) }<span className='catName'>%</span></td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>p</span>
+									<span className='catName'>Rental demand Up to</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'p', 1) }</td>
+								<td>Up to { this.renderSimpleData(3, 'p', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'p', 3) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>q</span>
+									<span className='catName'>Activity</span>
+								</td>
+								<td>{ this.renderSimpleData(3, 'q', 1) }</td>
+								<td>{ this.renderSimpleData(3, 'q', 2) }</td>
+								<td>{ this.renderSimpleData(3, 'q', 3) }</td>
+							</tr>
+						</tbody>
+					</table>
 				</li>
 				<li>
 					<span className='catNum'>4</span>

@@ -70,12 +70,13 @@ ul.area_description {
 
     th, td {
         padding: 12px 5px;
-        text-align: center;
+        text-align: left;
         border-bottom: 1px solid #e1e1e1;
         color: grey;
+        font-size: 14px;
     }
 
-    td, .empty {
+    td {
         color: #0c789a;
         padding-right: 4px;
     }
@@ -93,6 +94,11 @@ ul.area_description {
 
     ul.area_description .empty {
         padding-right: 4px;
+    }
+
+    .empty {
+        color: #888;
+        font-style: italic;
     }
 
 }

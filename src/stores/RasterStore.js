@@ -4,6 +4,8 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
 import _ from 'lodash';
 
+import stateAbbrs from '../../data/state_abbr.json';
+
 const RasterStore = {
 
 	data: {
@@ -31,6 +33,8 @@ const RasterStore = {
 		 * }
 		 */
 		 maps : {},
+		 citiesWithPolygons: {}, 
+		 cityIdsWithADs: [],
 
 		 layersMetadata : [],
 
@@ -53,9 +57,20 @@ const RasterStore = {
 			{
 				query: "SELECT *, st_xmin(the_geom) as minLng, st_xmax(the_geom) as maxLng, st_ymin(the_geom) as minLat, st_ymax(the_geom) as maxLat, st_x(st_centroid(the_geom)) as centerLng, st_y(st_centroid(the_geom)) as centerLat FROM holc_maps order by state, file_name",
 				format: "JSON"
+			},
+			{
+				query: "SELECT distinct(digitalscholarshiplab.holc_ads.id) FROM digitalscholarshiplab.holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = digitalscholarshiplab.holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_polygons.ad_id = digitalscholarshiplab.holc_ads.id",
+				format: "JSON"
+			},
+			{
+				query: "SELECT distinct(digitalscholarshiplab.holc_ads.id), city, state, st_xmin(digitalscholarshiplab.holc_polygons.the_geom) as minLng, st_xmax(digitalscholarshiplab.holc_polygons.the_geom) as maxLng, st_ymin(digitalscholarshiplab.holc_polygons.the_geom) as minLat, st_ymax(digitalscholarshiplab.holc_polygons.the_geom) as maxLat, st_x(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerLng, st_y(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerLat, looplat, looplng FROM digitalscholarshiplab.holc_polygons join digitalscholarshiplab.holc_ads on ad_id = digitalscholarshiplab.holc_ads.id order by state, city",
+				format: "JSON"
 			}
 		]).then((response) => {
-			this.data.maps = this.parseData(response);
+			this.data.maps = this.parseMapData(response[0]);
+			this.data.cityIdsWithADs = response[1].map((row) => row.id);
+			this.data.citiesWithPolygons = this.parseCitiesWithPolygonsData(response[2]);
+			
 			this.data.selectedCity = state.selectedCity;
 
 			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
@@ -88,11 +103,16 @@ const RasterStore = {
 
 	getSelectedCity: function () { return this.data.selectedCity; },
 
+	getAllCitiesWithPolygons: function() { return this.data.citiesWithPolygons; },
+
 	// returns everything or a specified attribute
 	getSelectedCityMetadata: function(key=null) { 
 		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
 	},
 
+	// return a flat list of the HOLC maps for rendering
+	getCitiesList: function() { return Object.keys(this.data.citiesWithPolygons).map((cityId) => this.data.citiesWithPolygons[cityId]); },
+	
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
 
@@ -129,10 +149,10 @@ const RasterStore = {
 		return mapsList;
 	}, */
 
-	parseData: function (data) {
+	parseMapData: function (data) {
 		let maps = {};
 
-		data[0].forEach(mapData => {
+		data.forEach(mapData => {
 			maps[mapData.id] = {
 				cityId : mapData.id,
 				id: mapData.id,
@@ -156,7 +176,33 @@ const RasterStore = {
 
 		return maps;
 
+	},
+
+	parseCitiesWithPolygonsData: function (data) {
+		let cities = {};
+
+		data.forEach(citiesData => {
+			cities[citiesData.id] = {
+				adId:  citiesData.id,
+				id: citiesData.id,
+				city: citiesData.city,
+				state: citiesData.state,
+				name: citiesData.city + " " + stateAbbrs[citiesData.state] + ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? "*" : ''),
+				minLat: citiesData.minlat,
+				maxLat: citiesData.maxlat,
+				minLng: citiesData.minlng,
+				maxLng: citiesData.maxlng,
+				centerLat: citiesData.centerlat,
+				centerLng: citiesData.centerlng,
+				loopLat: citiesData.looplat,
+				loopLng: citiesData.looplng,
+				hasADs: (this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1)
+			}
+		});
+
+		return cities;
 	}
+
 };
 
 // Mixin EventEmitter functionality
@@ -168,7 +214,6 @@ AppDispatcher.register((action) => {
 	switch (action.type) {
 
 		case AppActionTypes.loadInitialData:
-			//console.log(`[2] The '${ AppActionTypes.loadInitialData }' event is handled by RasterStore....`);
 			RasterStore.loadInitialData(action.state);
 			break;
 

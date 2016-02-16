@@ -913,7 +913,7 @@ body {
   font-size: 16px; }
 
 .neighborhoodPolygon {
-  fill-opacity: 0;
+  fill-opacity: 0.5;
   stroke-opacity: 1; }
   .neighborhoodPolygon.deemphasize {
     fill: #000;
@@ -988,10 +988,11 @@ ul.area_description {
     border-color: inherit; }
   ul.area_description th, ul.area_description td {
     padding: 12px 5px;
-    text-align: center;
+    text-align: left;
     border-bottom: 1px solid #e1e1e1;
-    color: grey; }
-  ul.area_description td, ul.area_description .empty {
+    color: grey;
+    font-size: 14px; }
+  ul.area_description td {
     color: #0c789a;
     padding-right: 4px; }
   ul.area_description .percentage, ul.area_description .span {
@@ -1003,6 +1004,9 @@ ul.area_description {
     white-space: pre-wrap; }
   ul.area_description ul.area_description .empty {
     padding-right: 4px; }
+  ul.area_description .empty {
+    color: #888;
+    font-style: italic; }
 
 h2 {
   text-align: center; }

@@ -35,7 +35,7 @@ import AreaDescription from './components/AreaDescription.jsx';
 import Donut from './components/Donut/Donut.jsx';
 
 // utils
-import { AppActions, AppActionTypes, ExampleActions } from './utils/AppActionCreator';
+import { AppActions, AppActionTypes } from './utils/AppActionCreator';
 
 // config
 import tileLayers from '../basemaps/tileLayers.json';
@@ -172,6 +172,20 @@ export default class App extends React.Component {
 
 	onCitySelected (value, index) {
 
+		this.removeLayerGroup('shards');
+
+		this.setState({selectedNeighborhood: null});
+
+		// remove polygons
+		/* if(typeof(this.refs.the_map) !== 'undefined') {
+			let theMap = this.refs.shards.leafletElement;
+			theMap.eachLayer( function(layer) {
+				console.log(layer);
+				//theMap.removeLayer(layer);
+			});
+		}; */
+
+
 		if (value && value.id) {
 			AppActions.citySelected(value.id);
 		}
@@ -218,6 +232,7 @@ export default class App extends React.Component {
 
 	// a little different from storeChanged as the hash values are used if there are any
 	initialDataLoaded () {
+		console.log(this.getZoom());
 		this.setState({
 			rasters: RasterStore.getAllRasters(),
 			ringStats: CityStore.getRingStats(),
@@ -238,6 +253,7 @@ export default class App extends React.Component {
 
 		this.setState({
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
+			selectedNeighborhood: null,
 			rasters: RasterStore.getAllRasters(),
 			ringStats: CityStore.getRingStats(),
 			ringAreasGeometry: CityStore.getRingAreasGeometry(),
@@ -247,7 +263,7 @@ export default class App extends React.Component {
 			loopLatLng: CityStore.getLoopLatLng(),
 			map: {
 				center: [ RasterStore.getSelectedCityMetadata('centerLat'), RasterStore.getSelectedCityMetadata('centerLng')],
-				zoom: 12
+				zoom: this.refs.the_map.leafletElement.getBoundsZoom([ [ RasterStore.getSelectedCityMetadata('minLat'), RasterStore.getSelectedCityMetadata('minLng') ], [ RasterStore.getSelectedCityMetadata('maxLat'), RasterStore.getSelectedCityMetadata('maxLng') ] ])
 			}
 		});
 
@@ -258,10 +274,8 @@ export default class App extends React.Component {
 	changeHash () {
 
 		let newState = { city: this.state.selectedCity };
+		newState.area = this.state.selectedNeighborhood;
 		console.log(this.state.map);
-		if (this.state.selectedNeighborhood) {
-			newState.area = this.state.selectedNeighborhood;
-		}
 		newState[HashManager.MAP_STATE_KEY] = {
 			zoom: this.state.map.zoom,
 			center: this.state.map.center
@@ -317,28 +331,32 @@ export default class App extends React.Component {
 	getZoom() {
 		// if it's specified in the url
 		let hashState = HashManager.getState();
-		console.log(hashState);
 		if (hashState.loc && hashState.loc.zoom) {
-			return hashState.zoom;
+			return hashState.loc.zoom;
 		}
+		
+		return this.refs.the_map.leafletElement.getBoundsZoom([ [ RasterStore.getSelectedCityMetadata('minLat'), RasterStore.getSelectedCityMetadata('minLng') ], [ RasterStore.getSelectedCityMetadata('maxLat'), RasterStore.getSelectedCityMetadata('maxLng') ] ]);
 
-		return 12;
 	}
 
 	getItemSelectorConfig() {
 		return {
 			title: 'Select a city:',
-			items: RasterStore.getMapsList(),
+			items: RasterStore.getCitiesList(),
 			selectedItem: { id: this.state.selectedCity },
 			//data: citiesList[1],
 			onItemSelected: this.onCitySelected
 		};
 	}
 
+	removeLayerGroup(ref) {
+		if (this.refs[ref]) {
+			this.refs[ref].leafletElement.clearLayers();
+		}
+	}
+
 
 	render () {
-
-		console.log('render called');
 
 		return (
 			<div className='container full-height'>
@@ -348,7 +366,7 @@ export default class App extends React.Component {
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
-							<Map ref={"the_map"} center={ this.state.map.center } zoom={ this.state.map.zoom }  onLeafletMoveend={ this.onMapMoved } >
+							<Map ref="the_map" center={ this.state.map.center } zoom={ this.state.map.zoom }  onLeafletMoveend={ this.onMapMoved } >
 							{ tileLayers.layers.map((item, i) => {
 								return (
 									<TileLayer
@@ -368,12 +386,13 @@ export default class App extends React.Component {
 								);
 							}) }
 
-							<LayerGroup key='shards'>
+							<LayerGroup ref='cityPolygons' className={ 'city' + this.state.selectedCity }>
 								{ this.renderGeoJsonLayers() }
+								{ this.renderDonuts() }
+								{ this.renderDonutholes() }
+								{ this.renderNeighborhoodPolygons() }
 							</LayerGroup>
-							{ this.renderDonuts() }
-							{ this.renderDonutholes() }
-							{ this.renderNeighborhoodPolygons() }
+
 
 							</Map>
 						</div>
@@ -403,7 +422,7 @@ export default class App extends React.Component {
 		Object.keys(this.state.areaDescriptions).map((id, i) => {
 			let opacity=0,
 				strokeWidth=0;
-			className = 'neighborhoodPolygon grade' + this.state.areaDescriptions[id].holc_grade;
+			className = 'neighborhoodPolygon city' + this.state.selectedCity + ' grade' + this.state.areaDescriptions[id].holc_grade;
 			if (id == this.state.selectedNeighborhood) {
 				layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className + " deemphasize" } key={ 'neighborhoodPolygon-invert' + id} neighborhoodId={ id } clickable={ false } invert={ true } weight={ strokeWidth } />);
 				strokeWidth = 2;
@@ -420,7 +439,7 @@ export default class App extends React.Component {
 
 		this.state.ringAreasGeometry.map((item, i) => {
 			let opacity = 0;
-			className = 'ringArea ring' + item.ring_id + ' grade' + item.holc_grade;
+			className = 'ringArea city' + this.state.selectedCity + ' ring' + item.ring_id + ' grade' + item.holc_grade;
 			if (item.ring_id == this.state.ringAreaSelected.ringId && item.holc_grade == this.state.ringAreaSelected.grade) {
 				className += ' selected';
 				opacity = 1;
@@ -448,7 +467,7 @@ export default class App extends React.Component {
 				let outerRadius = this.state.outerRingRadius * 100;
 				let innerRadius = (ringNum * 2 - 1) / 7 * this.state.outerRingRadius;
 				let opacity = (ringNum == this.state.ringAreaSelected.ringId) ? 0.5 : 0;
-				layers.push(<Donut center={ this.state.loopLatLng } outerRadius={ outerRadius } innerRadius={ innerRadius } fillOpacity={ opacity } className='donut' key={ 'donut' + String(ringNum) } ref={ "donut" + String(ringNum) }/>);
+				layers.push(<Donut center={ this.state.loopLatLng } outerRadius={ outerRadius } innerRadius={ innerRadius } fillOpacity={ opacity } className={ 'donut city' + this.state.selectedCity } key={ 'donut' + String(ringNum) } ref={ "donut" + String(ringNum) }/>);
 			}
 		}
 
@@ -463,7 +482,7 @@ export default class App extends React.Component {
 			for (let ringNum = 4; ringNum >= 2; ringNum--) {
 				let radius = (ringNum * 2 - 3) / 7 * this.state.outerRingRadius;
 				let opacity = (ringNum == this.state.ringAreaSelected.ringId) ? 0.5 : 0;
-				layers.push(<Circle center={ this.state.loopLatLng } radius={ radius } fillOpacity={ opacity } className='donuthole' key={ 'donuthole' + String(ringNum) } />);
+				layers.push(<Circle center={ this.state.loopLatLng } radius={ radius } fillOpacity={ opacity } className={ 'donuthole city' + this.state.selectedCity } key={ 'donuthole' + String(ringNum) } />);
 			}
 		}
 

@@ -85,10 +85,7 @@ const CityStore = {
 			this.data.ringStats = this.parseRingStats(this.data.ringAreasGeometry);
 			this.data.outerRingRadius = response[2][0].distintv;
 			this.data.loopLatLng = [response[2][0].looplat, response[2][0].looplng];
-			console.log(response[3]);
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[3]);
-
-			console.log(this.data.areaDescriptions.A1.areaDesc[2]);
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
 			if (initial) {
@@ -234,8 +231,6 @@ const CityStore = {
 	parseAreaDescriptions: function(rawAdData) {
 		let adData = {};
 
-		console.log(rawAdData);
-
 		for(var row in rawAdData) {
 			// define id if undefined
 			if(typeof adData[rawAdData[row].holc_id] == "undefined") {
@@ -252,10 +247,7 @@ const CityStore = {
 			}
 			
 			// define category id for area description if undefined
-			console.log(rawAdData[row]);
-			console.log(rawAdData[row].sub_cat_id, rawAdData[row].order);
 			if (rawAdData[row].sub_cat_id == "" && rawAdData[row].order == null) {
-				console.log(rawAdData[row].data);
 				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] = rawAdData[row].data;
 			} else if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] == "undefined") {
 				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] = {};
@@ -264,8 +256,6 @@ const CityStore = {
 			if(rawAdData[row].sub_cat_id !== "") {
 				// create sub-object if we have a subcategory...
 				if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] == "undefined") {
-					console.log(adData);
-					console.log(rawAdData[row]);
 					adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] = {};
 
 					// look for order
