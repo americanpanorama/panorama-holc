@@ -16,7 +16,7 @@ import { Legend, Punchcard } from '@panorama/toolkit';
  */
 
 // stores
-import ExampleStore from './stores/ExampleStore';
+/*import ExampleStore from './stores/ExampleStore';*/
 
 // local (not installed via npm) components (views)
 import ExampleComponent from './components/ExampleComponent.jsx';

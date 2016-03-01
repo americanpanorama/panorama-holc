@@ -11,14 +11,17 @@
 	}
 
 	li {
-		text-transform: capitalize !important;
+		text-transform: none;
 	}
 
 	li.selected {
 		color: #0c789a;
-		opacity: 0.7;
-		background-color: white;
+		background-color: #d3e0df;
 		border-width: 0px !important;
+	}
+
+	li.selected:hover {
+		color: #000;
 	}
 
 	h3 {

@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { render } from 'react-dom';
+import Modal from 'react-modal';
 import { Map, TileLayer, LayerGroup, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
 
 import _ from 'lodash';
 
 // import example module from @panorama
-import { HashManager, ItemSelector, Legend } from '@panorama/toolkit';
+import { HashManager, ItemSelector, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
 // load from local copy of @panorama/toolkit repo.
 // for development of panorama-template and @panorama/toolkit only.
@@ -38,9 +39,11 @@ import Donut from './components/Donut/Donut.jsx';
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
 
 // config
+import appConfig from '../data/appConfig.json';
 import tileLayers from '../basemaps/tileLayers.json';
 import cartodbConfig from '../basemaps/cartodb/config.json';
 import cartodbLayers from '../basemaps/cartodb/basemaps.json';
+import panoramaNavData from '../data/panorama_nav.json';
 
 // main app container
 export default class App extends React.Component {
@@ -57,13 +60,17 @@ export default class App extends React.Component {
 		// since React no longer does this automatically when using ES6
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.hashChanged = this.hashChanged.bind(this);
+		this.toggleAbout = this.toggleAbout.bind(this);
 		this.initialDataLoaded = this.initialDataLoaded.bind(this);
 		this.storeChanged = this.storeChanged.bind(this);
 		this.ringAreaSelected = this.ringAreaSelected.bind(this);
 		this.ringAreaUnselected = this.ringAreaUnselected.bind(this);
 		this.onCitySelected = this.onCitySelected.bind(this);
 		this.onNeighborhoodClick = this.onNeighborhoodClick.bind(this);
+		this.triggerIntro = this.triggerIntro.bind(this);
+		this.onIntroExit = this.onIntroExit.bind(this);
 		this.onMapMoved = this.onMapMoved.bind(this);
+		this.onPanoramaMenuClick = this.onPanoramaMenuClick.bind(this);
 
 	}
 
@@ -314,6 +321,55 @@ export default class App extends React.Component {
 
 	}
 
+	toggleAbout () {
+
+		this.setState({
+			aboutModalOpen: !this.state.aboutModalOpen
+		});
+
+	}
+
+	triggerIntro (event) {
+
+		if (this.state.aboutModalOpen) {
+			this.toggleAbout();
+		}
+
+		this.setState({
+			intro: {
+				open: true,
+				step: (event && event.currentTarget) ? parseInt(event.currentTarget.dataset.step) : null,
+				config: {
+					showStepNumbers: false,
+					skipLabel: '×',
+					nextLabel: '⟩',
+					prevLabel: '⟨',
+					doneLabel: '×'
+				},
+
+				steps: appConfig.introSteps,
+				onExit: this.onIntroExit
+			}
+		});
+
+	}
+
+	onIntroExit () {
+
+		this.setState({
+			intro: {
+				open: false
+			}
+		});
+
+	}
+
+	onPanoramaMenuClick () {
+		this.setState({
+			show_panorama_menu: !this.state.show_panorama_menu
+		});
+	}
+
 	getLoc () {
 
 		// if it's specified in the url
@@ -355,15 +411,46 @@ export default class App extends React.Component {
 		}
 	}
 
+	getNavData () {
+
+		// remove the current map from the list
+		return panoramaNavData.filter((item, i) => {
+			return (item.url.indexOf('holc') === -1);
+		});
+
+	}
+
 
 	render () {
 
+		const TIMELINE_INITIAL_WIDTH = 500;
+		let modalStyle = {
+				overlay : {
+					backgroundColor: null
+				},
+				content : {
+					top: null,
+					left: null,
+					right: null,
+					bottom: null,
+					border: null,
+					background: null,
+					borderRadius: null,
+					padding: null,
+					position: null
+				}
+			},
+			mapConfig = this.state.map || this.state.mapConfig;
+
 		return (
 			<div className='container full-height'>
+			<Navigation show_menu={ this.state.show_panorama_menu } on_hamburger_click={ this.onPanoramaMenuClick } nav_data={ this.getNavData() }  />
 				<div className='row full-height'>
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
+							<h4 onClick={ this.toggleAbout }>ABOUT THIS MAP</h4>
+							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
 							<Map ref="the_map" center={ this.state.map.center } zoom={ this.state.map.zoom }  onLeafletMoveend={ this.onMapMoved } >
@@ -399,7 +486,7 @@ export default class App extends React.Component {
 					</div>
 					<div className='columns four full-height'>
 						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
-							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }</h2>
+							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#"></div></h2>
 							{ (this.state.selectedNeighborhood !== null) ?
 							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } /> :
 							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } />
@@ -407,8 +494,15 @@ export default class App extends React.Component {
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
 							<ItemSelector { ...this.getItemSelectorConfig() } />
+							<button className='intro-button' data-step='2' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</div>
 					</div>
+					<Modal isOpen={ this.state.aboutModalOpen } onRequestClose={ this.toggleAbout } style={ modalStyle }>
+					<button className='close' onClick={ this.toggleAbout }><span>×</span></button>
+					<div dangerouslySetInnerHTML={ this.parseAboutModalCopy() }></div>
+				</Modal>
+
+				<IntroManager { ...this.state.intro } />
 				</div>
 			</div>
 		);
@@ -487,6 +581,25 @@ export default class App extends React.Component {
 		}
 
 		return layers;
+
+	}
+
+	parseAboutModalCopy () {
+
+		let modalCopy = '';
+
+		try {
+			modalCopy = appConfig.aboutModalContent.join('\n');
+		} catch (error) {
+			console.warn('Error parsing modal copy: ', error);
+			modalCopy = 'Error parsing modal copy.';
+		}
+
+		// React requires this format to render a string as HTML,
+		// via dangerouslySetInnerHTML.
+		return {
+			__html: modalCopy
+		};
 
 	}
 

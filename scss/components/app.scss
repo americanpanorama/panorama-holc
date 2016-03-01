@@ -11,16 +11,16 @@
 
 
 .gradeA {
-	fill: green;
+	fill: #418e41;
 }
 .gradeB {
-	fill: blue;
+	fill: #4a4ae4;
 }
 .gradeC {
-	fill: yellow;
+	fill: #f4f570;
 }
 .gradeD {
-	fill: red;
+	fill: #eb3f3f;
 }
 
 .selected1 {
@@ -49,15 +49,15 @@ body {
 	}
 
 	&.gradeA {
-		stroke: green;
+		stroke: #418e41;
 	}
 	&.gradeB {
-		stroke: blue;
+		stroke: #4a4ae4;
 	}
 	&.gradeC {
-		stroke: yellow;
+		stroke: #f4f570;
 	}
 	&.gradeD {
-		stroke: red;
+		stroke: #eb3f3f;
 	}
 }

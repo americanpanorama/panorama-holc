@@ -44,7 +44,7 @@ body {
 	}
 }
 
-h1 { font-size: 2em; }
+h1 { font-size: 2.1vw; }
 h2 { font-size: 1.4em; }
 h3 { font-size: 1em; }
 h4 { font-size: 0.67em; }
@@ -66,15 +66,18 @@ h6 { font-size: 0.35em; }
 	overflow-x: initial;
 	overflow-y: auto;
 	border: solid 2px rgb(146, 163, 161);
-	
-
-
 }
 
 .top-row {
 	// flexible top row height, set in JS
 	// by App.jsx#computeComponentDimensions
 	margin-bottom: $container-padding;
+}
+
+.citydownloads h3 {
+	background-color: #eaf0ef;
+	text-align: center;
+	cursor: pointer;
 }
 
 .bottom-row {
@@ -106,11 +109,120 @@ header {
 		margin-left: 0.9em;
 		letter-spacing: 0.002em;
 	}
+
+	h4 {
+		cursor: pointer;
+		display: inline-block;
+	}
 }
 
 .leaflet-container {
 	width: calc(100% - 4px);
 	height: calc(100% - 4px);
 	padding: 2px 0 0 2px;
+}
+
+.intro-button {
+	display: block;
+	position: absolute;
+	width: auto;
+	height: auto;
+	border: none;
+	background: none;
+	padding: 0;
+	color: #777;
+
+	header & {
+		bottom: 0.5em;
+		right: 0.1em;
+	}
+	.left-column .bottom-row & {
+		left: 0.8333em;
+		bottom: 0.8333em;
+	}
+	.right-column .top-row & {
+		top: 0.8333em;
+		right: 0.8333em;
+		&.has-scrollbar {
+			right: 1.5em;
+		}
+	}
+	.right-column .bottom-row & {
+		bottom: 0.8333em;
+		right: 0.8333em;
+	}
+}
+.icon.info {
+	display: block;
+	width: 0.8em;
+	height: 0.8em;
+	border: 1px solid #777;
+	border-radius: 50%;
+	&::before {
+		content: 'i';
+		position: absolute;
+		top: 0.25em;
+		left: 0.625em;
+		font-size: 0.6em;
+		font-family: serif;
+	}
+}
+
+.ReactModalPortal {
+
+	.ReactModal__Overlay {
+		// lift above Leaflet controls
+		z-index: 2000;
+		background-color: rgba(51,51,51,.25);
+
+	}
+
+	.ReactModal__Content {
+		position: absolute;
+		width: 30em;
+		top: 2em;
+		bottom: 2em;
+		padding: 2.5em;
+		left: 50%;
+		margin-left: -15em;
+
+		background-color: #b8cdcb;
+		line-height: 1.9em;
+
+		li {
+			list-style-type: none;
+		}
+
+		p, ul {
+			@extend %lato-light;
+			font-size: 1em;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			@extend %merriweather-light;
+			text-transform: uppercase;
+		}
+
+		button.close {
+			position: absolute;
+			top: 1em;
+			right: 1em;
+			border: none;
+			background: none;
+			padding: 0;
+
+			span {
+				font-size: 2.25em;
+			}
+		}
+	}
+}
+
+#hamburger {
+	position: fixed;
+	left: 30px;
+	top: 28px;
+	z-index: 100;
+	cursor: pointer;
 }
 

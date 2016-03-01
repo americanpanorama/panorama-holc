@@ -1,0 +1,59 @@
+{
+	"defaults": {
+		"canal": 22,
+		"year": 1849
+	},
+	"map": {
+		"center": [ -1.5, 15.0 ],
+		"zoom": 6,
+		"minZoom": 4,
+		"maxZoom": 10,
+	},
+	"timelineData": {
+		"minYear": 1820,
+		"maxYear": 1860,
+		"minTonnage": 0,
+		"maxTonnage": 3000000
+	},
+	"introSteps": [
+		{
+			"element": ".row.template-tile .leaflet-container",
+			"intro": "<p><strong>The construction of canals in the nineteenth century connected the interior of the US to the east across the Appalachian Mountains.</strong></p><p>The Appalachians made it prohibitively expensive to transport commodities and goods east. Settlement of the what we now call the midwest was greatly accelerated by the construction of a network of artificial waterways in the first half of the nineteenth century. These canals also helped shape American regionalism, encouraging the emergence of the \"North\" by connecting the midwest to the northeast rather than to the South via the Ohio and Mississippi Rivers.</p>",
+			"position": "right"
+		},
+		{
+			"element": ".city-selector",
+			"intro": "<p><strong>Canals were first and foremost about connecting&#8212;or making&#8212;markets.</strong></p><p>Canals were vital arteries of trade that mostly carried commodities east&#8212;countless bushes of wheat, tons of coal, and cords of woods&#8212;and finished goods west. The canals not only connected the upper midwest to eastern but also to Atlantic markets, particularly through the port of New York.</p><p>The dots represent the relative quantity of an item shipped across a canal that year. Hovering over the dot will show the specific quantity.</p>",
+			"position": "top"
+		},
+		{
+			"element": ".left-column .bottom-row.template-tile",
+			"intro": "<p><strong>The completion of the Erie Canal in the mid-1820s, undoubtedly the most significant and successful of the American canals, set off a wave of construction.</strong></p><p>No other canal matched that extraordinary success. While many canals were used into the twentieth century and a few until today, most canals went into decline with the construction of the railroad network in the mid nineteenth century.</p> ",
+			"position": "top"
+		}
+	],
+	"aboutModalContent": [
+		"<h3>About this Map</h3>",
+		"<p>In the final sentence of his study of nineteenth‐century canals, Ronald E. Shaw points to the limitations of most canal maps: “The long lines of canals now drawn on our maps ... are but the skeletal remains of a once vital dimension of American life.” Hoping to produce a map that conveys more of the \"vitality\" of canals as engines of trade, economic development, and travel in antebellum America, this maps not only shows the spaces that canals connected but information about the goods they carried.</p>",
+		"<h3>Sources</h3>",
+		"<p>The spatial data and metadata about canals came was amassed by Jeremy Attack's <a href='https://my.vanderbilt.edu/jeremyatack/files/2015/09/19thC_Canals2.zip'>\"19th Century Canals,\"</a> Historical Transportation SHP Files.</p>",
+		"<p>The data about commodities came from the following sources. A word of caution: undoubtedly some of the data collected by canal boards were estimates.</p>",
+		"<ul>",
+			"<li><cite>Annual Report of the Canal Commissioners</cite> (Harrisburg: J.M.G. Lescure, Printer to the State, 1845).</li>",
+			"<li><cite>Annual Report of the Canal Commissioners of the State of New York</cite> (Albany: C. Van Benthuysen, Printer to the Legislature, 1857).</li>",
+			"<li>Charles Cist, <cite>Cincinnati in 1841: Its Early Annals and Future Prospects</cite> (Cincinnati: C. Cist, 1841).</li>",
+			"<li>John D. Defrees, <cite>Annual Report of the Trustees of the Wabash and Erie Canal, to the General Assembly of the State of Indiana</cite>j, (Indianapolis: John D. Defrees., 1848).</li>",
+			"<li><cite>Documents Including Messages and Other Communications Made to the Forty-Seventh General Assembly of the State of Ohio</cite>, Vol. 8. (Columbus: Chas. Scott, State Printer, 1849).</li>",
+			"<li><cite>Governor's Message and Annual Reports of the Public Officers of the State, and of the Board of Directors, Visitors, Superintendents, and Other Agents of Public Institutions or Interests of Virginia.</cite> Vol. 1. (Richmond: William F. Ritchie, 1849).</li>",
+			"<li>Balthaser H. Meyer and Caroline E. MacGill, <cite>History of the Transportation in the United States before 1860</cite> (Washington: Carnegie Institution of Washington, 1917).</li>",
+			"<li>Henry V. Poor, <cite>History of the Railroads and Canals of the United States of America</cite>, Vol. 1. (New York: John H. Schultz &, 1860).</li>",
+			"<li><cite>Reports of the Officers of State of the State of Indiana, to the Governor, for the Year Ending Nov. 31, 1855.</cite>, Vol. 1. (Indianapolis: William J. Brown, State Printer, 1856.)</li>",
+			"<li>Harlan D. Unrau, <cite> Historic Resource Study: Chesapeake & Ohio Canal</cite> (Hagerstown: Chespaeake & Ohio Canal National Historic Park, Aug. 2007).</li>",
+			"<li>Noble E. Whitford, <cite>History of the Canal System of the State of New York Together with Brief Histories of the Canals of the United States and Canada</cite>, Vol. 1. (Albany: Brandow Printing, 1906.)</li>",
+		"</ul>",
+		"<h3>Acknowledgements</h3>",
+		"<p>This map is authored by the staff of the Digital Scholarship Lab: Robert K. Nelson, Scott Nesbit, Edward L. Ayers, Justin Madron, Nathaniel Ayers, and Beaumont Smith. Carlton Fleenor, Haley Fortner, Erica Havens, Anthony Joga, and Radha Zanzal did data collection, database organization, and many other things.</p>",
+		"<p>The developers, designers, and staff at <a href='http://stamen.com'>Stamen Design</a> have been exceptional partners on this project. Our thanks to Kai Chang, Jon Christensen, Sean Connelley, Seth Fitzsimmons, Nicolette Hayes, Alan McConchie, Michael Neuman, Dan Rademacher, Eric Rodenbeck, and Eric Socolofsky.</p>",
+		"<p><a href='http://mellon.org'>The Andrew W. Mellon Foundation</a> generously provided grant finding to develop American Panorama.</p>"
+	]
+}
