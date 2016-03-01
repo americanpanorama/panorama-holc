@@ -107,7 +107,7 @@ export default class App extends React.Component {
 
 	componentDidUpdate () {
 
-		//
+		this.updateCityPolygons();
 
 	}
 
@@ -178,20 +178,7 @@ export default class App extends React.Component {
 	}
 
 	onCitySelected (value, index) {
-
-		this.removeLayerGroup('shards');
-
 		this.setState({selectedNeighborhood: null});
-
-		// remove polygons
-		/* if(typeof(this.refs.the_map) !== 'undefined') {
-			let theMap = this.refs.shards.leafletElement;
-			theMap.eachLayer( function(layer) {
-				console.log(layer);
-				//theMap.removeLayer(layer);
-			});
-		}; */
-
 
 		if (value && value.id) {
 			AppActions.citySelected(value.id);
@@ -228,18 +215,33 @@ export default class App extends React.Component {
 
 	}
 
-	clearLayers() {
-		if(typeof(this.refs.the_map) !== 'undefined') {
-			let theMap = this.refs.the_map.leafletElement;
-			theMap.eachLayer( function(layer) {
-				theMap.removeLayer(layer);
+	updateCityPolygons () {
+		// Update data in GeoJson layers, as described here:
+		// https://github.com/Leaflet/Leaflet/issues/1416
+		let layerComponent;
+		if (this.state.areaDescriptions) {
+			Object.keys(this.state.areaDescriptions).map((id, i) => {
+				layerComponent = this.refs['city-grade-' + this.state.selectedCity + '-' + id];
+				if (layerComponent) {
+					layerComponent.getLeafletElement().clearLayers();
+					layerComponent.getLeafletElement().addData(this.state.areaDescriptions[id].area_geojson);
+				}
 			});
-		};	
+		}
+
+		if (this.state.ringAreasGeometry) {
+			this.state.ringAreasGeometry.map((item, i) => {
+				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade];
+				if (layerComponent) {
+					layerComponent.getLeafletElement().clearLayers();
+					layerComponent.getLeafletElement().addData(JSON.parse(item.the_geojson));
+				}
+			});
+		}
 	}
 
 	// a little different from storeChanged as the hash values are used if there are any
 	initialDataLoaded () {
-		console.log(this.getZoom());
 		this.setState({
 			rasters: RasterStore.getAllRasters(),
 			ringStats: CityStore.getRingStats(),
@@ -280,9 +282,10 @@ export default class App extends React.Component {
 
 	changeHash () {
 
-		let newState = { city: this.state.selectedCity };
-		newState.area = this.state.selectedNeighborhood;
-		console.log(this.state.map);
+		let newState = { 
+			city: this.state.selectedCity,
+			area: this.state.selectedNeighborhood 
+		};
 		newState[HashManager.MAP_STATE_KEY] = {
 			zoom: this.state.map.zoom,
 			center: this.state.map.center
@@ -473,12 +476,14 @@ export default class App extends React.Component {
 								);
 							}) }
 
-							<LayerGroup ref='cityPolygons' className={ 'city' + this.state.selectedCity }>
-								{ this.renderGeoJsonLayers() }
-								{ this.renderDonuts() }
-								{ this.renderDonutholes() }
-								{ this.renderNeighborhoodPolygons() }
+							 
+							{ this.renderGeoJsonLayers() }
+							{ this.renderDonuts() }
+							{ this.renderDonutholes() }
+							<LayerGroup ref='cityPolygons' id={ 'cityPolygons' + this.state.selectedCity } key={ 'cityPolygons' + this.state.selectedCity } className={ 'city8777' + this.state.selectedCity }>
+								{ this.renderNeighborhoodPolygons() } 
 							</LayerGroup>
+							
 
 
 							</Map>
@@ -511,17 +516,20 @@ export default class App extends React.Component {
 
 	renderNeighborhoodPolygons () {
 		let layers = [],
-			className;
+			className,
+			ref,
+			key;
 
 		Object.keys(this.state.areaDescriptions).map((id, i) => {
 			let opacity=0,
 				strokeWidth=0;
-			className = 'neighborhoodPolygon city' + this.state.selectedCity + ' grade' + this.state.areaDescriptions[id].holc_grade;
+			className = 'neighborhoodPolygon city-grade-' + this.state.selectedCity + '-' + this.state.areaDescriptions[id].holc_grade + ' grade' + this.state.areaDescriptions[id].holc_grade + ' city' + this.state.selectedCity + ' grade' + this.state.areaDescriptions[id].holc_grade;
+			ref = 'city-grade-' + this.state.selectedCity + '-' + id;
 			if (id == this.state.selectedNeighborhood) {
-				layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className + " deemphasize" } key={ 'neighborhoodPolygon-invert' + id} neighborhoodId={ id } clickable={ false } invert={ true } weight={ strokeWidth } />);
 				strokeWidth = 2;
+				layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className + " deemphasize" } key={ 'neighborhoodPolygon-invert' + id} ref={ ref } neighborhoodId={ id } clickable={ false } invert={ true } weight={ strokeWidth } />);
 			} 
-			layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className } key={ 'neighborhoodPolygon' + id} onClick={ this.onNeighborhoodClick } neighborhoodId={ id } weight={ strokeWidth }/>);			
+			layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className } key={ 'neighborhoodPolygon' + id} ref={ ref } onClick={ this.onNeighborhoodClick } neighborhoodId={ id } weight={ strokeWidth }/>);
 		});
 
 		return layers; 
@@ -529,7 +537,8 @@ export default class App extends React.Component {
 
 	renderGeoJsonLayers () {
 		let layers = [],
-			className;
+			className,
+			ref;
 
 		this.state.ringAreasGeometry.map((item, i) => {
 			let opacity = 0;
@@ -544,9 +553,9 @@ export default class App extends React.Component {
 			// most likely because GeoJson passes className through to its <path>
 			// element instead of the dummy <div> it creates (which React probably
 			// uses for DOM diffing).
-			//className += ' random' + String(Math.random());
+			ref = 'ring-' + item.ring_id + '-grade-' + item.holc_grade;
 
-			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } className={ className } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);
+			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } className={ className } ref={ ref } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);
 		});
 
 		return layers;

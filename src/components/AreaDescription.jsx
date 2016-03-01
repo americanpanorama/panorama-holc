@@ -1,5 +1,4 @@
 import React, { PropTypes } from 'react';
-import ExampleStore from '../stores/ExampleStore';
 import { AppActionTypes } from '../utils/AppActionCreator';
 
 
@@ -66,8 +65,6 @@ export default class AreaDescription extends React.Component {
 			return false;
 		}
 
-		console.log(this.props.areaData);
-
 		return (
 			<div className='area_description'>
 				<div id="neighborhood">
@@ -105,7 +102,6 @@ export default class AreaDescription extends React.Component {
 	}
 
 	renderNSForm8_19370203() {
-		console.log(this.props.areaData.areaDesc);
 		let AD = this.props.areaData.areaDesc;
 		return (
 
