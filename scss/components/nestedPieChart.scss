@@ -7,6 +7,13 @@
 	svg {
 		display: inline-block;
 		shape-rendering: 'crispEdges';
+		margin-top: 20px;
 	}
 
+	#burgessDiagram {
+		position: relative;
+		top: -252px;
+		width: 250px;
+		pointer-events: none;	
+	}
 }

@@ -995,6 +995,9 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
 body {
   font-size: 16px; }
 
+.hidden {
+  visibility: hidden; }
+
 .neighborhoodPolygon {
   fill-opacity: 0;
   stroke-opacity: 1; }
@@ -1020,7 +1023,13 @@ body {
   text-align: center; }
   .panorama.nestedpiechart svg {
     display: inline-block;
-    shape-rendering: 'crispEdges'; }
+    shape-rendering: 'crispEdges';
+    margin-top: 20px; }
+  .panorama.nestedpiechart #burgessDiagram {
+    position: relative;
+    top: -252px;
+    width: 250px;
+    pointer-events: none; }
 
 ul.area_description {
   font-family: 'Lato';
@@ -1178,3 +1187,11 @@ h2 {
     color: #000; }
   .panorama.item-selector h3 {
     text-transform: uppercase; }
+
+.introjs-tooltiptext {
+  font-size: 16px; }
+
+.introjs-tooltip {
+  max-width: 600px;
+  width: 500px;
+  line-height: 1.4; }

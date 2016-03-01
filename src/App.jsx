@@ -61,6 +61,7 @@ export default class App extends React.Component {
 		this.onWindowResize = this.onWindowResize.bind(this);
 		this.hashChanged = this.hashChanged.bind(this);
 		this.toggleAbout = this.toggleAbout.bind(this);
+		this.toggleBurgessDiagram = this.toggleBurgessDiagram.bind(this);
 		this.initialDataLoaded = this.initialDataLoaded.bind(this);
 		this.storeChanged = this.storeChanged.bind(this);
 		this.ringAreaSelected = this.ringAreaSelected.bind(this);
@@ -136,6 +137,10 @@ export default class App extends React.Component {
 				grade: ''
 			},
 			areaDescriptions: {},
+			burgessDiagramVisible: false,
+			intro: {
+				open: false
+			},
 			dimensions: {
 				left: {
 					width: 0,
@@ -332,11 +337,24 @@ export default class App extends React.Component {
 
 	}
 
+	toggleBurgessDiagram () {
+		console.log(this.state.burgessDiagramVisible);
+		this.setState({
+			burgessDiagramVisible: !this.state.burgessDiagramVisible
+		});
+	}
+
 	triggerIntro (event) {
 
 		if (this.state.aboutModalOpen) {
 			this.toggleAbout();
 		}
+
+		// toggle off if the selected intro box is clicked
+		/* if (this.state.intro.open && event && event.currentTarget && this.state.intro.step == parseInt(event.currentTarget.dataset.step)) {
+			this.setState({intro: {open: false}})
+			return;
+		} */
 
 		this.setState({
 			intro: {
@@ -362,7 +380,8 @@ export default class App extends React.Component {
 		this.setState({
 			intro: {
 				open: false
-			}
+			},
+			burgessDiagramVisible: false
 		});
 
 	}
@@ -423,8 +442,10 @@ export default class App extends React.Component {
 
 	}
 
-
 	render () {
+
+		console.log(this.state.intro);
+
 
 		const TIMELINE_INITIAL_WIDTH = 500;
 		let modalStyle = {
@@ -452,40 +473,34 @@ export default class App extends React.Component {
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
-							<h4 onClick={ this.toggleAbout }>ABOUT THIS MAP</h4>
+							<h4 onClick={ this.toggleAbout }>Introduction</h4>
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
 							<Map ref="the_map" center={ this.state.map.center } zoom={ this.state.map.zoom }  onLeafletMoveend={ this.onMapMoved } >
-							{ tileLayers.layers.map((item, i) => {
-								return (
-									<TileLayer
-										key={ 'basetiles' + i }
-										url={ item.url }
-									/>
-								);
-							}) }
-							{ RasterStore.getMapsList().map((item, i) => {
-								return (
-									<TileLayer
-										key={ 'holctiles' + i }
-										url={ item.url }
-										minZoom={ item.minZoom }
-										bounds= { [[item.minLat,item.minLng],[item.maxLat,item.maxLng]]}
-									/>
-								);
-							}) }
+								{ tileLayers.layers.map((item, i) => {
+									return (
+										<TileLayer
+											key={ 'basetiles' + i }
+											url={ item.url }
+										/>
+									);
+								}) }
+								{ RasterStore.getMapsList().map((item, i) => {
+									return (
+										<TileLayer
+											key={ 'holctiles' + i }
+											url={ item.url }
+											minZoom={ item.minZoom }
+											bounds= { [[item.minLat,item.minLng],[item.maxLat,item.maxLng]]}
+										/>
+									);
+								}) }
 
-							 
-							{ this.renderGeoJsonLayers() }
-							{ this.renderDonuts() }
-							{ this.renderDonutholes() }
-							<LayerGroup ref='cityPolygons' id={ 'cityPolygons' + this.state.selectedCity } key={ 'cityPolygons' + this.state.selectedCity } className={ 'city8777' + this.state.selectedCity }>
+								{ this.renderGeoJsonLayers() }
+								{ this.renderDonuts() }
+								{ this.renderDonutholes() }
 								{ this.renderNeighborhoodPolygons() } 
-							</LayerGroup>
-							
-
-
 							</Map>
 						</div>
 					</div>
@@ -494,7 +509,7 @@ export default class App extends React.Component {
 							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#"></div></h2>
 							{ (this.state.selectedNeighborhood !== null) ?
 							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } /> :
-							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } />
+							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />
 							}
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
@@ -547,12 +562,6 @@ export default class App extends React.Component {
 				className += ' selected';
 				opacity = 1;
 			}
-
-			// hack to allow manipulating class on selection;
-			// React does not update the className of the selected element below,
-			// most likely because GeoJson passes className through to its <path>
-			// element instead of the dummy <div> it creates (which React probably
-			// uses for DOM diffing).
 			ref = 'ring-' + item.ring_id + '-grade-' + item.holc_grade;
 
 			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } className={ className } ref={ ref } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);

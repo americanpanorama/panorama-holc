@@ -10,7 +10,10 @@ export default class CityStats extends React.Component {
 	static propTypes = {
 		ringStats: PropTypes.object,
 		areaSelected: PropTypes.func,
-		areaUnselected: PropTypes.func
+		areaUnselected: PropTypes.func,
+		triggerIntro: PropTypes.func,
+		toggleBurgessDiagram: PropTypes.func,
+		burgessDiagramVisible: PropTypes.bool
 	};
 
 	// (instead of ES5-style getDefaultProps)
@@ -30,7 +33,7 @@ export default class CityStats extends React.Component {
 
 	shouldComponentUpdate(nextProps, nextState) {
 		// don't know why this is necessary, but the component is updating on mouseover--this prevents that.
-		return (nextProps.ringStats !== this.props.ringStats);
+		return (nextProps.burgessDiagramVisible !== this.props.burgessDiagramVisible || nextProps.ringStats !== this.props.ringStats);
 	};
 	
 	componentWillMount () {};
@@ -38,6 +41,7 @@ export default class CityStats extends React.Component {
 	componentDidMount() {
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
+		this.triggerIntro = this.triggerIntro.bind(this);
 		this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
 	}
 
@@ -52,11 +56,19 @@ export default class CityStats extends React.Component {
 		AppActions.ringAreaSelected(selectedRingId, selectedGrade);
 	}
 
+	triggerIntro (event) {
+		this.props.toggleBurgessDiagram();
+		this.props.triggerIntro(event);
+	}
+
 	render () {
+		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden';
 
 		return (
 			<div className='panorama nestedpiechart'>
+				<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
 				<div className='content' ref='content'></div>
+				<img src='static/burgess.png' className={ burgessClassName } ref="burgessDiagram" id='burgessDiagram' />
 			</div>
 		);
 	}
