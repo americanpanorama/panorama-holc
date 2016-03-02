@@ -232,44 +232,46 @@ const CityStore = {
 		let adData = {};
 
 		for(var row in rawAdData) {
+			let d = rawAdData[row];
 			// define id if undefined
-			if(typeof adData[rawAdData[row].holc_id] == "undefined") {
-				adData[rawAdData[row].holc_id] = {};
+			if(typeof adData[d.holc_id] == "undefined") {
+				adData[d.holc_id] = {};
 			}
 			// assign properties    
-			adData[rawAdData[row].holc_id].area_geojson = JSON.parse(rawAdData[row].the_geojson);
-			//adData[rawAdData[row].holc_id].name = rawAdData[row].name;
-			adData[rawAdData[row].holc_id].holc_grade = rawAdData[row].holc_grade;
+			adData[d.holc_id].area_geojson = JSON.parse(d.the_geojson);
+			//adData[d.holc_id].name = d.name;
+			adData[d.holc_id].holc_grade = d.holc_grade;
 			
 			// define area description if undefined
-			if(typeof adData[rawAdData[row].holc_id].areaDesc == "undefined") {
-				adData[rawAdData[row].holc_id].areaDesc = {};
+			if(typeof adData[d.holc_id].areaDesc == "undefined") {
+				adData[d.holc_id].areaDesc = {};
 			}
 			
 			// define category id for area description if undefined
-			if (rawAdData[row].sub_cat_id == "" && rawAdData[row].order == null) {
-				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] = rawAdData[row].data;
-			} else if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] == "undefined") {
-				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id] = {};
+			if (d.sub_cat_id === "" && d.order === null) {
+				adData[d.holc_id].areaDesc[d.cat_id] = d.data;
+			} else if(typeof adData[d.holc_id].areaDesc[d.cat_id] === "undefined") {
+				adData[d.holc_id].areaDesc[d.cat_id] = {};
 			}
 			// check for subcategories
-			if(rawAdData[row].sub_cat_id !== "") {
+			if(d.sub_cat_id !== "") {
 				// create sub-object if we have a subcategory...
-				if(typeof adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] == "undefined") {
-					adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] = {};
+				if(typeof adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] == "undefined") {
+					//console.log(d, adData[d.holc_id]);
+					adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] = {};
 
 					// look for order
-					if(rawAdData[row].order) {
-						adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id][rawAdData[row].order] =rawAdData[row].data;
+					if(d.order) {
+						adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id][d.order] =d.data;
 					} else {
-						adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].sub_cat_id] = rawAdData[row].data;
+						adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] = d.data;
 					}
 				}
 			} 
 
 			// look for order
-			else if (rawAdData[row].order) { 
-				adData[rawAdData[row].holc_id].areaDesc[rawAdData[row].cat_id][rawAdData[row].order] = rawAdData[row].data;
+			else if (d.order) { 
+				adData[d.holc_id].areaDesc[d.cat_id][d.order] = rawAdData[row].data;
 			} 
 		}  // end if
 

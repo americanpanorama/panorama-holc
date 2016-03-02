@@ -73,6 +73,9 @@ const RasterStore = {
 			
 			this.data.selectedCity = state.selectedCity;
 
+			console.log(this.data.maps);
+			console.log(this.data.citiesWithPolygons);
+
 			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
 			this.emit(AppActionTypes.initialDataLoaded);
 		},
@@ -111,7 +114,10 @@ const RasterStore = {
 	},
 
 	// return a flat list of the HOLC maps for rendering
-	getCitiesList: function() { return Object.keys(this.data.citiesWithPolygons).map((cityId) => this.data.citiesWithPolygons[cityId]); },
+	getCitiesList: function() { 
+		let cities = this.combineCitiesLists();
+		return Object.keys(cities).map((cityId) => cities[cityId]); 
+	},
 	
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
@@ -156,8 +162,9 @@ const RasterStore = {
 			maps[mapData.id] = {
 				cityId : mapData.id,
 				id: mapData.id,
-				name: mapData.file_name,
+				city: mapData.file_name,
 				state: mapData.state,
+				name: mapData.file_name + ", " + mapData.state,
 				minZoom: mapData.minzoom,
 				maxZoom: mapData.maxzoom,
 				bounds: mapData.bounds,
@@ -187,7 +194,7 @@ const RasterStore = {
 				id: citiesData.id,
 				city: citiesData.city,
 				state: citiesData.state,
-				name: citiesData.city + " " + stateAbbrs[citiesData.state] + ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? "*" : ''),
+				name: citiesData.city + ", " + stateAbbrs[citiesData.state] + ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? " **" : ' *'),
 				minLat: citiesData.minlat,
 				maxLat: citiesData.maxlat,
 				minLng: citiesData.minlng,
@@ -201,6 +208,15 @@ const RasterStore = {
 		});
 
 		return cities;
+	},
+
+	combineCitiesLists: function () {
+		let combinedList = {};
+		Object.keys(this.data.maps).map((id, i) => {
+			combinedList[id] = (this.data.citiesWithPolygons[id]) ? this.data.citiesWithPolygons[id] : this.data.maps[id];
+		});
+
+		return combinedList;
 	}
 
 };

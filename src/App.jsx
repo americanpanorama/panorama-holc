@@ -444,9 +444,6 @@ export default class App extends React.Component {
 
 	render () {
 
-		console.log(this.state.intro);
-
-
 		const TIMELINE_INITIAL_WIDTH = 500;
 		let modalStyle = {
 				overlay : {
@@ -473,7 +470,7 @@ export default class App extends React.Component {
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
-							<h4 onClick={ this.toggleAbout }>Introduction</h4>
+							<h3 onClick={ this.toggleAbout }>Introduction</h3>
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
@@ -564,7 +561,7 @@ export default class App extends React.Component {
 			}
 			ref = 'ring-' + item.ring_id + '-grade-' + item.holc_grade;
 
-			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } className={ className } ref={ ref } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);
+			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } clickable={ false } className={ className } ref={ ref } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);
 		});
 
 		return layers;
@@ -579,7 +576,7 @@ export default class App extends React.Component {
 				let outerRadius = this.state.outerRingRadius * 100;
 				let innerRadius = (ringNum * 2 - 1) / 7 * this.state.outerRingRadius;
 				let opacity = (ringNum == this.state.ringAreaSelected.ringId) ? 0.5 : 0;
-				layers.push(<Donut center={ this.state.loopLatLng } outerRadius={ outerRadius } innerRadius={ innerRadius } fillOpacity={ opacity } className={ 'donut city' + this.state.selectedCity } key={ 'donut' + String(ringNum) } ref={ "donut" + String(ringNum) }/>);
+				layers.push(<Donut center={ this.state.loopLatLng } outerRadius={ outerRadius } innerRadius={ innerRadius } clickable={ false } fillOpacity={ opacity } className={ 'donut city' + this.state.selectedCity } key={ 'donut' + String(ringNum) } ref={ "donut" + String(ringNum) }/>);
 			}
 		}
 
@@ -594,7 +591,7 @@ export default class App extends React.Component {
 			for (let ringNum = 4; ringNum >= 2; ringNum--) {
 				let radius = (ringNum * 2 - 3) / 7 * this.state.outerRingRadius;
 				let opacity = (ringNum == this.state.ringAreaSelected.ringId) ? 0.5 : 0;
-				layers.push(<Circle center={ this.state.loopLatLng } radius={ radius } fillOpacity={ opacity } className={ 'donuthole city' + this.state.selectedCity } key={ 'donuthole' + String(ringNum) } />);
+				layers.push(<Circle center={ this.state.loopLatLng } radius={ radius } fillOpacity={ opacity } className={ 'donuthole city' + this.state.selectedCity } clickable={ false } key={ 'donuthole' + String(ringNum) } />);
 			}
 		}
 
