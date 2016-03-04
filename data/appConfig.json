@@ -25,8 +25,8 @@
 		"<p><cite>Mapping Inequality</cite> brings one of the country's most important archives to the public.  HOLC's documents contain a wealth of information about how government officials, lenders, and real estate interests surveyed and ensured the economic health of American cities.  And with the help of ongoing research, we continue to learn at what cost such measures were realized.</p>",
 		"<p>Over the last thirty years especially, scholars have characterized HOLC's property assessment and risk management practices, as well as those of the Federal Housing Administration, Veterans Administration, and US. Housing Authority, as some of the most important factors in preserving racial segregation, intergenerational poverty, and the continued wealth gap between white Americans and most other groups in the U.S.  Many of these agencies operated under the influence of powerful real estate lobbies or wrote their policies steeped in what were, at the time, widespread assumptions about the profitability of racial segregation and the residential incompatibility of certain racial and ethnic groups.  Through HOLC, in particular, real estate appraisers used the apparent racial and cultural value of a community to determine its economic value.  <cite>Mapping Inequality</cite> offers a window into the New Deal era housing policies that helped set the course for contemporary America. This project provides visitors with a new view, and perhaps even a new language, for describing the relationship between wealth and poverty in America.</p>",
 
-		"<h3>Sources</h3>",
-		"<p>The spatial data and metadata about canals came was amassed by Jeremy Attack's <a href='https://my.vanderbilt.edu/jeremyatack/files/2015/09/19thC_Canals2.zip'>\"19th Century Canals,\"</a> Historical Transportation SHP Files.</p>",
+		"<h3>Sources</h3>"
+		/* "<p>The spatial data and metadata about canals came was amassed by Jeremy Attack's <a href='https://my.vanderbilt.edu/jeremyatack/files/2015/09/19thC_Canals2.zip'>\"19th Century Canals,\"</a> Historical Transportation SHP Files.</p>",
 		"<p>The data about commodities came from the following sources. A word of caution: undoubtedly some of the data collected by canal boards were estimates.</p>",
 		"<ul>",
 			"<li><cite>Annual Report of the Canal Commissioners</cite> (Harrisburg: J.M.G. Lescure, Printer to the State, 1845).</li>",
@@ -40,10 +40,10 @@
 			"<li><cite>Reports of the Officers of State of the State of Indiana, to the Governor, for the Year Ending Nov. 31, 1855.</cite>, Vol. 1. (Indianapolis: William J. Brown, State Printer, 1856.)</li>",
 			"<li>Harlan D. Unrau, <cite> Historic Resource Study: Chesapeake & Ohio Canal</cite> (Hagerstown: Chespaeake & Ohio Canal National Historic Park, Aug. 2007).</li>",
 			"<li>Noble E. Whitford, <cite>History of the Canal System of the State of New York Together with Brief Histories of the Canals of the United States and Canada</cite>, Vol. 1. (Albany: Brandow Printing, 1906.)</li>",
-		"</ul>",
+		"</ul>", 
 		"<h3>Acknowledgements</h3>",
 		"<p>This map is authored by the staff of the Digital Scholarship Lab: Robert K. Nelson, Scott Nesbit, Edward L. Ayers, Justin Madron, Nathaniel Ayers, and Beaumont Smith. Carlton Fleenor, Haley Fortner, Erica Havens, Anthony Joga, and Radha Zanzal did data collection, database organization, and many other things.</p>",
 		"<p>The developers, designers, and staff at <a href='http://stamen.com'>Stamen Design</a> have been exceptional partners on this project. Our thanks to Kai Chang, Jon Christensen, Sean Connelley, Seth Fitzsimmons, Nicolette Hayes, Alan McConchie, Michael Neuman, Dan Rademacher, Eric Rodenbeck, and Eric Socolofsky.</p>",
-		"<p><a href='http://mellon.org'>The Andrew W. Mellon Foundation</a> generously provided grant finding to develop American Panorama.</p>"
+		"<p><a href='http://mellon.org'>The Andrew W. Mellon Foundation</a> generously provided grant finding to develop American Panorama.</p>" */
 	]
 }

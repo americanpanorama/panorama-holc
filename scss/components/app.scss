@@ -1,7 +1,7 @@
 .donut, .donuthole {
-	stroke-opacity: 0;
-	stroke: #000;
-	fill: #000;
+	stroke-width: 1;
+	stroke: pink;
+	stroke-dasharray: 5,5;
 }
 
 .ringArea {
@@ -23,13 +23,12 @@
 	fill: #eb3f3f;
 }
 
-.selected1 {
+.selected {
 	visibility: visible !important;
 	fill-opacity: 1;
 }
 
 .ringMask {
-	stroke: none;
 	fill: #333;
 }
 
@@ -44,7 +43,6 @@ body {
 
 
 .neighborhoodPolygon {
-	fill-opacity: 0;
 	stroke-opacity: 1;
 
 	&.deemphasize {

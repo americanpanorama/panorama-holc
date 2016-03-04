@@ -1,38 +1,21 @@
 import * as React from 'react';
 import { render } from 'react-dom';
 import Modal from 'react-modal';
-import { Map, TileLayer, LayerGroup, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
+import { Map, TileLayer, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
-
 import _ from 'lodash';
 
-// import example module from @panorama
 import { HashManager, ItemSelector, Legend, IntroManager, Navigation } from '@panorama/toolkit';
-
-// load from local copy of @panorama/toolkit repo.
-// for development of panorama-template and @panorama/toolkit only.
-// import { Legend, Punchcard } from '../../panorama/';
-
-/*
- * Data flow via Flux:
- * https://facebook.github.io/flux/docsle/overview.html
- * 
- *                  ┌-----   actions  <-----┐
- *                  v                       |
- * actions --> dispatcher --> stores --> views
- */
 
 // stores
 import RasterStore from './stores/RasterStore';
 import CityStore from './stores/CityStore';
 
 // components (views)
-// TODO: move this to another repo, probably @panorama/toolkit
-import CartoDBTileLayer from './components/CartoDBTileLayer.jsx';
-//import ItemSelector from './components/ItemSelector.jsx';
-import HolcTileLayers from './components/HolcTileLayers.jsx';
 import CityStats from './components/CityStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
+import HolcTileLayers from './components/HolcTileLayers.jsx';
+import CartoDBTileLayer from './components/CartoDBTileLayer.jsx';
 import Donut from './components/Donut/Donut.jsx';
 
 // utils
@@ -49,7 +32,6 @@ import panoramaNavData from '../data/panorama_nav.json';
 export default class App extends React.Component {
 
 	constructor (props) {
-
 		super(props);
 
 		// set up initial state in constructor
@@ -72,18 +54,14 @@ export default class App extends React.Component {
 		this.onIntroExit = this.onIntroExit.bind(this);
 		this.onMapMoved = this.onMapMoved.bind(this);
 		this.onPanoramaMenuClick = this.onPanoramaMenuClick.bind(this);
-
 	}
 
 	componentWillMount () {
-
 		this.computeComponentDimensions();
-
 		AppActions.loadInitialData(this.state);
 	}
 
 	componentDidMount () {
-
 		window.addEventListener('resize', this.onWindowResize);	
 		RasterStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);
 		CityStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);	
@@ -94,33 +72,21 @@ export default class App extends React.Component {
 		// with initial values paired with keys to use in the hash.
 		let initialState = {};
 		initialState.city = this.state.selectedCity;
-
 		initialState[HashManager.MAP_STATE_KEY] = HashManager.getState(HashManager.MAP_STATE_KEY);
-
 		HashManager.updateHash(initialState);
 	}
 
-	componentWillUnmount () {
-
-		// 
-
-	}
+	componentWillUnmount () { }
 
 	componentDidUpdate () {
-
 		this.updateCityPolygons();
-
 	}
 
 	onWindowResize (event) {
-
 		this.computeComponentDimensions();
-
 	}
 
-
 	getDefaultState () {
-
 		let hashState = HashManager.getState();
 
 		// this can be read from the url or defaults to Richmond
@@ -177,22 +143,19 @@ export default class App extends React.Component {
 	}
 
 	neighborhoodSelected (id) {
-		this.setState({selectedNeighborhood: id});
-
+		this.setState({ selectedNeighborhood: id });
 		this.changeHash();
 	}
 
 	onCitySelected (value, index) {
-		this.setState({selectedNeighborhood: null});
+		this.setState({ selectedNeighborhood: null });
 
 		if (value && value.id) {
 			AppActions.citySelected(value.id);
 		}
-
 	}
 
 	onNeighborhoodClick (event) {
-
 		let neighborhoodId = event.target.options.neighborhoodId;
 		if (neighborhoodId !== this.state.selectedNeighborhood) {
 			this.neighborhoodSelected(neighborhoodId);
@@ -202,7 +165,6 @@ export default class App extends React.Component {
 	}
 
 	onMapMoved (event) {
-
 		if (event && event.target) {
 			AppActions.mapMoved({
 				zoom: event.target.getZoom(),
@@ -217,13 +179,16 @@ export default class App extends React.Component {
 		};
 
 		HashManager.updateHash(newState);
-
 	}
 
 	updateCityPolygons () {
 		// Update data in GeoJson layers, as described here:
 		// https://github.com/Leaflet/Leaflet/issues/1416
-		let layerComponent;
+		let layerComponent,
+			styling;
+
+		let colors = {A: '#00ff00', 'B': 'blue', 'C': 'yellow', 'D': 'red'};
+
 		if (this.state.areaDescriptions) {
 			Object.keys(this.state.areaDescriptions).map((id, i) => {
 				layerComponent = this.refs['city-grade-' + this.state.selectedCity + '-' + id];
@@ -236,10 +201,19 @@ export default class App extends React.Component {
 
 		if (this.state.ringAreasGeometry) {
 			this.state.ringAreasGeometry.map((item, i) => {
-				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade];
+				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id];
 				if (layerComponent) {
+					let isSelected = item.ring_id == this.state.ringAreaSelected.ringId && item.holc_grade == this.state.ringAreaSelected.grade;
+					styling = {
+						opacity: (isSelected) ? 1 : 0,
+						fillOpacity: (isSelected) ? 0.5 : 0,
+						fillColor: colors[item.holc_grade],
+						color: colors[item.holc_grade],
+						weight: 2
+					}
 					layerComponent.getLeafletElement().clearLayers();
 					layerComponent.getLeafletElement().addData(JSON.parse(item.the_geojson));
+					layerComponent.getLeafletElement().setStyle(styling);
 				}
 			});
 		}
@@ -262,9 +236,7 @@ export default class App extends React.Component {
 		});
 	}
 
-
 	storeChanged () {
-
 		this.setState({
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
 			selectedNeighborhood: null,
@@ -282,11 +254,9 @@ export default class App extends React.Component {
 		});
 
 		this.changeHash();
-
 	}
 
 	changeHash () {
-
 		let newState = { 
 			city: this.state.selectedCity,
 			area: this.state.selectedNeighborhood 
@@ -297,23 +267,19 @@ export default class App extends React.Component {
 		};
 
 		HashManager.updateHash(newState);
-
 	}
 
 	hashChanged (event, suppressRender) {
-
 		this.setState({
 			mapState: HashManager.getState(HashManager.MAP_STATE_KEY)
 		});
-
 	}
 
 	computeComponentDimensions () {
-
 		// based off of sizes stored within _variables.scss --
 		// if you change them there, change them here.
 		var containerPadding = 20,
-			headerHeight = 60,
+			headerHeight = 100,
 			bottomRowHeight = 230,
 			dimensions = {};
 
@@ -326,26 +292,21 @@ export default class App extends React.Component {
 		};
 
 		this.setState({ dimensions: dimensions });
-
 	}
 
 	toggleAbout () {
-
 		this.setState({
 			aboutModalOpen: !this.state.aboutModalOpen
 		});
-
 	}
 
 	toggleBurgessDiagram () {
-		console.log(this.state.burgessDiagramVisible);
 		this.setState({
 			burgessDiagramVisible: !this.state.burgessDiagramVisible
 		});
 	}
 
 	triggerIntro (event) {
-
 		if (this.state.aboutModalOpen) {
 			this.toggleAbout();
 		}
@@ -367,23 +328,19 @@ export default class App extends React.Component {
 					prevLabel: '⟨',
 					doneLabel: '×'
 				},
-
 				steps: appConfig.introSteps,
 				onExit: this.onIntroExit
 			}
 		});
-
 	}
 
 	onIntroExit () {
-
 		this.setState({
 			intro: {
 				open: false
 			},
 			burgessDiagramVisible: false
 		});
-
 	}
 
 	onPanoramaMenuClick () {
@@ -393,28 +350,21 @@ export default class App extends React.Component {
 	}
 
 	getLoc () {
-
 		// if it's specified in the url
 		let hashState = HashManager.getState();
 		if (hashState.loc && hashState.loc.center) {
 			return [ hashState.loc.center[0], hashState.loc.center[1] ]
+		} else {
+			// otherwise use the selected city
+			let rastersMetadata = RasterStore.getAllRasters();
+			return (typeof rastersMetadata[this.state.selectedCity] != 'undefined') ? [ rastersMetadata[this.state.selectedCity].centerLat, rastersMetadata[this.state.selectedCity].centerLng ] : [30, 90];
 		}
-
-		// otherwise use the selected city
-		let rastersMetadata = RasterStore.getAllRasters();
-		return (typeof rastersMetadata[this.state.selectedCity] != 'undefined') ? [ rastersMetadata[this.state.selectedCity].centerLat, rastersMetadata[this.state.selectedCity].centerLng ] : [30, 90];
-
 	}
 
 	getZoom() {
 		// if it's specified in the url
 		let hashState = HashManager.getState();
-		if (hashState.loc && hashState.loc.zoom) {
-			return hashState.loc.zoom;
-		}
-		
-		return this.refs.the_map.leafletElement.getBoundsZoom([ [ RasterStore.getSelectedCityMetadata('minLat'), RasterStore.getSelectedCityMetadata('minLng') ], [ RasterStore.getSelectedCityMetadata('maxLat'), RasterStore.getSelectedCityMetadata('maxLng') ] ]);
-
+		return (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : this.refs.the_map.leafletElement.getBoundsZoom([ [ RasterStore.getSelectedCityMetadata('minLat'), RasterStore.getSelectedCityMetadata('minLng') ], [ RasterStore.getSelectedCityMetadata('maxLat'), RasterStore.getSelectedCityMetadata('maxLng') ] ]);
 	}
 
 	getItemSelectorConfig() {
@@ -422,29 +372,27 @@ export default class App extends React.Component {
 			title: 'Select a city:',
 			items: RasterStore.getCitiesList(),
 			selectedItem: { id: this.state.selectedCity },
-			//data: citiesList[1],
 			onItemSelected: this.onCitySelected
 		};
 	}
 
-	removeLayerGroup(ref) {
-		if (this.refs[ref]) {
-			this.refs[ref].leafletElement.clearLayers();
-		}
-	}
-
 	getNavData () {
-
 		// remove the current map from the list
 		return panoramaNavData.filter((item, i) => {
 			return (item.url.indexOf('holc') === -1);
 		});
-
 	}
+
+	isSelectedRing (ringNum) { return ringNum == this.state.ringAreaSelected.ringId; }
+
+	donutShouldBeMasked (ringNum) { return this.state.ringAreaSelected.ringId > 0 && ringNum > this.state.ringAreaSelected.ringId; } 
+
+	donutholeShouldBeMasked (ringNum) { return this.state.ringAreaSelected.ringId > 1 && ringNum == this.state.ringAreaSelected.ringId - 1; }
 
 	render () {
 
-		const TIMELINE_INITIAL_WIDTH = 500;
+		//console.log(this.state);
+		//console.log(CityStore.getLoopLatLng());
 		let modalStyle = {
 				overlay : {
 					backgroundColor: null
@@ -494,9 +442,9 @@ export default class App extends React.Component {
 									);
 								}) }
 
-								{ this.renderGeoJsonLayers() }
 								{ this.renderDonuts() }
 								{ this.renderDonutholes() }
+								{ this.renderRingShards() }
 								{ this.renderNeighborhoodPolygons() } 
 							</Map>
 						</div>
@@ -541,42 +489,57 @@ export default class App extends React.Component {
 				strokeWidth = 2;
 				layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className + " deemphasize" } key={ 'neighborhoodPolygon-invert' + id} ref={ ref } neighborhoodId={ id } clickable={ false } invert={ true } weight={ strokeWidth } />);
 			} 
-			layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className } key={ 'neighborhoodPolygon' + id} ref={ ref } onClick={ this.onNeighborhoodClick } neighborhoodId={ id } weight={ strokeWidth }/>);
+			layers.push(<GeoJson 
+				data={ this.state.areaDescriptions[id].area_geojson } 
+				className={ className } key={ 'neighborhoodPolygon' + id} 
+				ref={ ref } 
+				onClick={ this.onNeighborhoodClick } 
+				neighborhoodId={ id } 
+				fillOpacity={opacity}
+				weight={ strokeWidth }
+			/>);
 		});
 
 		return layers; 
 	}
 
-	renderGeoJsonLayers () {
-		let layers = [],
-			className,
-			ref;
+	renderRingShards () {
+		// this has minimal styling as that's applied after rendering by updateCityPolygons()
+		let layers = [];
 
 		this.state.ringAreasGeometry.map((item, i) => {
-			let opacity = 0;
-			className = 'ringArea city' + this.state.selectedCity + ' ring' + item.ring_id + ' grade' + item.holc_grade;
-			if (item.ring_id == this.state.ringAreaSelected.ringId && item.holc_grade == this.state.ringAreaSelected.grade) {
-				className += ' selected';
-				opacity = 1;
-			}
-			ref = 'ring-' + item.ring_id + '-grade-' + item.holc_grade;
-
-			layers.push(<GeoJson data={ JSON.parse(item.the_geojson) } clickable={ false } className={ className } ref={ ref } opacity={ opacity } fillOpacity={ opacity } key={ 'ringStroke' + i }/>);
+			layers.push(
+				<GeoJson 
+					data={ JSON.parse(item.the_geojson) }
+					clickable={ false }
+					ref={ 'ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id }
+					key={ 'ringStroke' + i }
+					opacity={0}
+					fillOpacity={0}
+				/>
+			);
 		});
 
 		return layers;
 	}
 
 	renderDonuts () {
-		let layers = [],
-			className;
+		let layers = [];
 
 		if (this.state.outerRingRadius > 0) {
-			for (let ringNum = 4; ringNum >= 1; ringNum--) {
-				let outerRadius = this.state.outerRingRadius * 100;
-				let innerRadius = (ringNum * 2 - 1) / 7 * this.state.outerRingRadius;
-				let opacity = (ringNum == this.state.ringAreaSelected.ringId) ? 0.5 : 0;
-				layers.push(<Donut center={ this.state.loopLatLng } outerRadius={ outerRadius } innerRadius={ innerRadius } clickable={ false } fillOpacity={ opacity } className={ 'donut city' + this.state.selectedCity } key={ 'donut' + String(ringNum) } ref={ "donut" + String(ringNum) }/>);
+			for (let ringNum = 5; ringNum >= 2; ringNum--) {
+				layers.push(
+					<Donut 
+						center={ this.state.loopLatLng } 
+						innerRadius={ (ringNum * 2 - 3) / 7 * this.state.outerRingRadius }
+						outerRadius={ (ringNum == 5) ? this.state.outerRingRadius * 100 : (ringNum * 2 - 1) / 7 * this.state.outerRingRadius}
+						clickable={ false } 
+						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
+						fillColor= { (this.isSelectedRing(ringNum)) ? 'pink' : '#000' } 
+						className={ 'donut' } 
+						key={ 'donut' + String(ringNum) } 
+					/>
+				);
 			}
 		}
 
@@ -584,23 +547,28 @@ export default class App extends React.Component {
 	}
 
 	renderDonutholes() {
-		let layers = [],
-			className;
+		let layers = [];
 
 		if (this.state.outerRingRadius > 0) {
-			for (let ringNum = 4; ringNum >= 2; ringNum--) {
-				let radius = (ringNum * 2 - 3) / 7 * this.state.outerRingRadius;
-				let opacity = (ringNum == this.state.ringAreaSelected.ringId) ? 0.5 : 0;
-				layers.push(<Circle center={ this.state.loopLatLng } radius={ radius } fillOpacity={ opacity } className={ 'donuthole city' + this.state.selectedCity } clickable={ false } key={ 'donuthole' + String(ringNum) } />);
+			for (let ringNum = 3; ringNum >= 1; ringNum--) {
+				layers.push(
+					<Circle 
+						center={ this.state.loopLatLng } 
+						radius={ (ringNum * 2 - 1) / 7 * this.state.outerRingRadius } 
+						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : (this.donutholeShouldBeMasked(ringNum)) ? 0.75 : 0 } 
+						fillColor= { (this.isSelectedRing(ringNum)) ? 'pink' : '#000' } 
+						clickable={ false } 
+						className={ 'donuthole' } 
+						key={ 'donuthole' + ringNum } 
+					/>
+				);
 			}
 		}
 
 		return layers;
-
 	}
 
 	parseAboutModalCopy () {
-
 		let modalCopy = '';
 
 		try {
@@ -615,7 +583,6 @@ export default class App extends React.Component {
 		return {
 			__html: modalCopy
 		};
-
 	}
 
 }

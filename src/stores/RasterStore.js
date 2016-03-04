@@ -73,9 +73,6 @@ const RasterStore = {
 			
 			this.data.selectedCity = state.selectedCity;
 
-			console.log(this.data.maps);
-			console.log(this.data.citiesWithPolygons);
-
 			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
 			this.emit(AppActionTypes.initialDataLoaded);
 		},

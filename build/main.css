@@ -856,7 +856,7 @@ h6 {
 
 header {
   position: relative;
-  height: 60px;
+  height: 100px;
   padding-top: 0px;
   text-align: center; }
   header h1 {
@@ -964,9 +964,9 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
   color: #454545; }
 
 .donut, .donuthole {
-  stroke-opacity: 0;
-  stroke: #000;
-  fill: #000; }
+  stroke-width: 1;
+  stroke: pink;
+  stroke-dasharray: 5,5; }
 
 .ringArea {
   stroke: black;
@@ -984,12 +984,11 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
 .gradeD {
   fill: #eb3f3f; }
 
-.selected1 {
+.selected {
   visibility: visible !important;
   fill-opacity: 1; }
 
 .ringMask {
-  stroke: none;
   fill: #333; }
 
 body {
@@ -999,7 +998,6 @@ body {
   visibility: hidden; }
 
 .neighborhoodPolygon {
-  fill-opacity: 0;
   stroke-opacity: 1; }
   .neighborhoodPolygon.deemphasize {
     fill: #000;
