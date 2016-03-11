@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { render } from 'react-dom';
+//import "babel-polyfill";
 import Modal from 'react-modal';
 import { Map, TileLayer, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
-import _ from 'lodash';
 
-import { HashManager, ItemSelector, Legend, IntroManager, Navigation } from '@panorama/toolkit';
+import { HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
 // stores
 import RasterStore from './stores/RasterStore';
@@ -14,8 +14,7 @@ import CityStore from './stores/CityStore';
 // components (views)
 import CityStats from './components/CityStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
-import HolcTileLayers from './components/HolcTileLayers.jsx';
-import CartoDBTileLayer from './components/CartoDBTileLayer.jsx';
+import HolcItemSelector from './components/ItemSelector.jsx';
 import Donut from './components/Donut/Donut.jsx';
 
 // utils
@@ -24,8 +23,6 @@ import { AppActions, AppActionTypes } from './utils/AppActionCreator';
 // config
 import appConfig from '../data/appConfig.json';
 import tileLayers from '../basemaps/tileLayers.json';
-import cartodbConfig from '../basemaps/cartodb/config.json';
-import cartodbLayers from '../basemaps/cartodb/basemaps.json';
 import panoramaNavData from '../data/panorama_nav.json';
 
 // main app container
@@ -50,6 +47,7 @@ export default class App extends React.Component {
 		this.ringAreaUnselected = this.ringAreaUnselected.bind(this);
 		this.onCitySelected = this.onCitySelected.bind(this);
 		this.onNeighborhoodClick = this.onNeighborhoodClick.bind(this);
+		this.onSelectedNeighborhoodClick = this.onSelectedNeighborhoodClick.bind(this);
 		this.triggerIntro = this.triggerIntro.bind(this);
 		this.onIntroExit = this.onIntroExit.bind(this);
 		this.onMapMoved = this.onMapMoved.bind(this);
@@ -80,6 +78,9 @@ export default class App extends React.Component {
 
 	componentDidUpdate () {
 		this.updateCityPolygons();
+		this.makeRingVisable();
+
+		this.refs.the_map.leafletElement.options.maxZoom = (this.state.selectedCity && RasterStore.hasLoaded()) ? RasterStore.getSelectedCityMetadata('maxZoom') : null;
 	}
 
 	onWindowResize (event) {
@@ -164,6 +165,10 @@ export default class App extends React.Component {
 		}
 	}
 
+	onSelectedNeighborhoodClick () {
+		this.neighborhoodSelected(null);
+	}
+
 	onMapMoved (event) {
 		if (event && event.target) {
 			AppActions.mapMoved({
@@ -185,6 +190,7 @@ export default class App extends React.Component {
 		// Update data in GeoJson layers, as described here:
 		// https://github.com/Leaflet/Leaflet/issues/1416
 		let layerComponent,
+			isSelected,
 			styling;
 
 		let colors = {A: '#00ff00', 'B': 'blue', 'C': 'yellow', 'D': 'red'};
@@ -193,17 +199,31 @@ export default class App extends React.Component {
 			Object.keys(this.state.areaDescriptions).map((id, i) => {
 				layerComponent = this.refs['city-grade-' + this.state.selectedCity + '-' + id];
 				if (layerComponent) {
+					isSelected = (id == this.state.selectedNeighborhood);
+					styling = {
+						fillOpacity: (isSelected) ? 0.5 : 0,
+						weight: (isSelected) ? 2 : 0
+					}
 					layerComponent.getLeafletElement().clearLayers();
+					layerComponent.getLeafletElement().options.clickable = !isSelected;
+					layerComponent.getLeafletElement().options.invert = isSelected; // IMPORTANT: this has to happen before data is added.
 					layerComponent.getLeafletElement().addData(this.state.areaDescriptions[id].area_geojson);
+					layerComponent.getLeafletElement().setStyle(styling);
 				}
 			});
+		}
+
+		if (this.state.selectedNeighborhood && this.refs['unselectNeighborhood']) {
+			layerComponent = this.refs['unselectNeighborhood'];
+			layerComponent.getLeafletElement().clearLayers();
+			layerComponent.getLeafletElement().addData(this.state.areaDescriptions[this.state.selectedNeighborhood].area_geojson);
 		}
 
 		if (this.state.ringAreasGeometry) {
 			this.state.ringAreasGeometry.map((item, i) => {
 				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id];
 				if (layerComponent) {
-					let isSelected = item.ring_id == this.state.ringAreaSelected.ringId && item.holc_grade == this.state.ringAreaSelected.grade;
+					isSelected = (item.ring_id == this.state.ringAreaSelected.ringId && item.holc_grade == this.state.ringAreaSelected.grade);
 					styling = {
 						opacity: (isSelected) ? 1 : 0,
 						fillOpacity: (isSelected) ? 0.5 : 0,
@@ -217,6 +237,11 @@ export default class App extends React.Component {
 				}
 			});
 		}
+	}
+
+	// fit to window if necessary
+	makeRingVisable () {
+
 	}
 
 	// a little different from storeChanged as the hash values are used if there are any
@@ -312,10 +337,14 @@ export default class App extends React.Component {
 		}
 
 		// toggle off if the selected intro box is clicked
-		/* if (this.state.intro.open && event && event.currentTarget && this.state.intro.step == parseInt(event.currentTarget.dataset.step)) {
+		if (this.state.intro.open && event && event.currentTarget && this.state.intro.step == parseInt(event.currentTarget.dataset.step)) {
 			this.setState({intro: {open: false}})
 			return;
-		} */
+		}
+
+		console.log(this.state.intro);
+		console.log(event);
+		console.log(event.currentTarget);
 
 		this.setState({
 			intro: {
@@ -364,7 +393,11 @@ export default class App extends React.Component {
 	getZoom() {
 		// if it's specified in the url
 		let hashState = HashManager.getState();
-		return (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : this.refs.the_map.leafletElement.getBoundsZoom([ [ RasterStore.getSelectedCityMetadata('minLat'), RasterStore.getSelectedCityMetadata('minLng') ], [ RasterStore.getSelectedCityMetadata('maxLat'), RasterStore.getSelectedCityMetadata('maxLng') ] ]);
+		if (hashState.loc && hashState.loc.zoom) {
+			return hashState.loc.zoom;
+		} else {
+			return this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds());
+		}
 	}
 
 	getItemSelectorConfig() {
@@ -422,7 +455,12 @@ export default class App extends React.Component {
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
-							<Map ref="the_map" center={ this.state.map.center } zoom={ this.state.map.zoom }  onLeafletMoveend={ this.onMapMoved } >
+							<Map 
+								ref="the_map" 
+								center={ this.state.map.center } 
+								zoom={ this.state.map.zoom }  
+								onLeafletMoveend={ this.onMapMoved } 
+							>
 								{ tileLayers.layers.map((item, i) => {
 									return (
 										<TileLayer
@@ -452,13 +490,13 @@ export default class App extends React.Component {
 					<div className='columns four full-height'>
 						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
 							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#"></div></h2>
-							{ (this.state.selectedNeighborhood !== null) ?
+							{ (this.state.selectedNeighborhood) ?
 							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } /> :
 							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />
 							}
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
-							<ItemSelector { ...this.getItemSelectorConfig() } />
+							<HolcItemSelector { ...this.getItemSelectorConfig() } />
 							<button className='intro-button' data-step='2' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</div>
 					</div>
@@ -475,30 +513,31 @@ export default class App extends React.Component {
 	}
 
 	renderNeighborhoodPolygons () {
-		let layers = [],
-			className,
-			ref,
-			key;
+		let layers = [];
 
 		Object.keys(this.state.areaDescriptions).map((id, i) => {
-			let opacity=0,
-				strokeWidth=0;
-			className = 'neighborhoodPolygon city-grade-' + this.state.selectedCity + '-' + this.state.areaDescriptions[id].holc_grade + ' grade' + this.state.areaDescriptions[id].holc_grade + ' city' + this.state.selectedCity + ' grade' + this.state.areaDescriptions[id].holc_grade;
-			ref = 'city-grade-' + this.state.selectedCity + '-' + id;
-			if (id == this.state.selectedNeighborhood) {
-				strokeWidth = 2;
-				layers.push(<GeoJson data={ this.state.areaDescriptions[id].area_geojson } className={ className + " deemphasize" } key={ 'neighborhoodPolygon-invert' + id} ref={ ref } neighborhoodId={ id } clickable={ false } invert={ true } weight={ strokeWidth } />);
-			} 
 			layers.push(<GeoJson 
 				data={ this.state.areaDescriptions[id].area_geojson } 
-				className={ className } key={ 'neighborhoodPolygon' + id} 
-				ref={ ref } 
+				className={ 'neighborhoodPolygon grade' + this.state.areaDescriptions[id].holc_grade } 
+				key={ 'neighborhoodPolygon' + id } 
+				ref={ 'city-grade-' + this.state.selectedCity + '-' + id } 
 				onClick={ this.onNeighborhoodClick } 
 				neighborhoodId={ id } 
-				fillOpacity={opacity}
-				weight={ strokeWidth }
+				fillOpacity={0}
+				weight={ 0 }
 			/>);
 		});
+
+		if (layers.length > 0 && this.state.selectedNeighborhood) {
+			layers.push(<GeoJson
+				data={ this.state.areaDescriptions[this.state.selectedNeighborhood].area_geojson }
+				key={ 'unselectNeighborhood' }
+				ref={ 'unselectNeighborhood' }
+				onClick={ this.onSelectedNeighborhoodClick }
+				stroke={ false }
+				fillOpacity={ 0 }
+			/>);
+		}
 
 		return layers; 
 	}

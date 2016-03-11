@@ -1,14 +1,13 @@
 import React, { PropTypes } from 'react';
 import { render } from 'react-dom';
 import * as d3 from 'd3';
-import { EventEmitter } from 'events';
 import { AppActions } from '../utils/AppActionCreator';
 
 export default class CityStats extends React.Component {
 
 	// property validation
 	static propTypes = {
-		ringStats: PropTypes.object,
+		ringStats: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
 		areaSelected: PropTypes.func,
 		areaUnselected: PropTypes.func,
 		triggerIntro: PropTypes.func,
@@ -42,14 +41,18 @@ export default class CityStats extends React.Component {
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
 		this.triggerIntro = this.triggerIntro.bind(this);
-		this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		if (this.props.ringStats) {
+			this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		}
 	}
 
 	componentDidUpdate () {
 		this.d3NestedPieChart.destroy(this.refs.content);
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
-		this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		if (this.props.ringStats) {
+			this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		}
 	}
 
 	areaHover (selectedRingId, selectedGrade) {
@@ -67,7 +70,10 @@ export default class CityStats extends React.Component {
 		return (
 			<div className='panorama nestedpiechart'>
 				<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
-				<div className='content' ref='content'></div>
+				{ (this.props.ringStats) ?
+					<div className='content' ref='content'></div> :
+					<p>Area descriptions are not yet available but will be eventually.</p>
+				}
 				<img src='static/burgess.png' className={ burgessClassName } ref="burgessDiagram" id='burgessDiagram' />
 			</div>
 		);

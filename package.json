@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "gulp",
+    "dist": "gulp dist",
     "test": "gulp test",
     "lint": "eslint ./src",
     "build:basemaps": "node_modules/.bin/cartodb-yaml ./basemaps/cartodb/basemaps.yml > ./basemaps/cartodb/basemaps.json"
@@ -24,7 +25,7 @@
   "author": "stamen",
   "license": "ISC",
   "dependencies": {
-    "@panorama/toolkit": "^0.0.17",
+    "@panorama/toolkit": "*",
     "cartodb-client": "stamen/cartodb-client",
     "d3": "^3.5.6",
     "flux": "^2.1.1",
@@ -38,7 +39,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^4.1.3",
-    "babelify": "^6.3.0",
+    "babelify": "^7.2.0",
     "browserify": "^11.1.0",
     "cartodb-yaml": "^0.1.0",
     "eslint": "^1.7.0",

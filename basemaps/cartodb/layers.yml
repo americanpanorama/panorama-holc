@@ -1,11 +1,3 @@
 unified_basemap_layers:
   sql: |
     SELECT * FROM unified_basemap_layers ORDER BY ord
-
-canal_towns:
-  sql: |
-    SELECT cartodb_id, lat::float, long::float, ST_Transform(the_geom,2163) as the_geom_webmercator, start, state, town, rank FROM canal_towns
-
-canals:
-  sql: |
-    SELECT cartodb_id, ST_Transform(the_geom_webmercator,2163) as the_geom_webmercator FROM canals

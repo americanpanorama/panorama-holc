@@ -16,8 +16,16 @@ var $ = gulpLoadPlugins();
 // External dependencies you do not want to rebundle while developing,
 // but include in your application deployment
 var dependencies = [
+	/* '@panorama/toolkit',
+	'cartodb-client',
+	'd3',
+	'flux',
+	'leaflet',
+	'lodash',
+	'queue-async', */
 	'react',
-	'react-dom'
+	'react-dom',
+	//'react-leaflet',
 ];
 
 var WEB_SERVER_PORT = 8888;
@@ -28,6 +36,7 @@ function browserifyTask (options) {
 	var appBundler = browserify({
 		entries: [options.src],			// Application entry point; browserify finds and bundles all dependencies from there
 		transform: [babelify],			// Convert React .jsx -> vanilla .js and enable ES6
+		presets: ["es2015", "react"],
 		debug: options.development,		// Gives us sourcemapping
 		cache: {}, packageCache: {}, fullPaths: options.development // watchify requirements
 	});
@@ -49,11 +58,10 @@ function browserifyTask (options) {
 	// The bundling process
 	function createBundle() {
 
-		lintTask(options);
-
 		var start = Date.now();
 		console.log('Building APP bundle');
 		if (options.development) {
+			lintTask(options);
 			appBundler.bundle()
 				.on('error', $.util.log)
 				.pipe(source('main.js'))
@@ -68,7 +76,7 @@ function browserifyTask (options) {
 				.on('error', $.util.log)
 				.pipe(source('main.js'))
 				.pipe(buffer())
-				// .pipe($.uglify())	// this is failing with a JS_Parse_Error, can't figure out why
+				.pipe($.uglify())	// this is failing with a JS_Parse_Error, can't figure out why
 				.pipe(gulp.dest(options.dest))
 				.pipe($.notify({
 					'onLast': true,
@@ -111,6 +119,15 @@ function browserifyTask (options) {
 				'notifier': function () {}
 			}));
 
+	} else {
+
+		// Distro bundles up a dummy vendors.js with nothing in it,
+		// so that loading vendors.js from index.html does not fail.
+		browserify({ require: '' })
+			.bundle()
+			.pipe(source('vendors.js'))
+			.pipe(gulp.dest(options.dest));
+			
 	}
 
 }
@@ -149,6 +166,7 @@ function copyTask(options) {
 
 function lintTask(options) {
 	console.log('ESLinting...');
+	console.log(options);
 	return gulp.src(options.lintsrc)
 		.pipe($.eslint())
 		.pipe($.eslint.format())
@@ -241,6 +259,7 @@ gulp.task('default', function () {
 // see browserifyTask for more info.
 gulp.task('dist', function () {
 
+	// rimraf removes everything in the dist directory
 	rimraf("./dist/**", function() {
 
 		copyTask({
@@ -250,7 +269,7 @@ gulp.task('dist', function () {
 
 		copyTask({
 			"src"               : "./node_modules/@panorama/toolkit/dist/*.css*",
-			"dest"              : "./build",
+			"dest"              : "./dist",
 			"pathDepth"         : 4
 		});
 
@@ -258,7 +277,7 @@ gulp.task('dist', function () {
 
 		browserifyTask({
 			"development" : false,
-			"src"				: './src/main.js',
+			"src"				: './src/main.jsx',
 			"dest"				: './dist'
 		});
 

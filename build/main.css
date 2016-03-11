@@ -998,10 +998,8 @@ body {
   visibility: hidden; }
 
 .neighborhoodPolygon {
-  stroke-opacity: 1; }
-  .neighborhoodPolygon.deemphasize {
-    fill: #000;
-    fill-opacity: 0.5; }
+  stroke-opacity: 1;
+  fill: #000; }
   .neighborhoodPolygon.gradeA {
     stroke: #418e41; }
   .neighborhoodPolygon.gradeB {

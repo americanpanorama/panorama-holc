@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
-import _ from 'lodash';
 
 import stateAbbrs from '../../data/state_abbr.json';
 
@@ -37,6 +36,7 @@ const RasterStore = {
 		 cityIdsWithADs: [],
 
 		 layersMetadata : [],
+		 hasLoaded: false,
 
 		 // this shouldn't be here--it's state data not "real" data
 		 selectedCity: null
@@ -73,6 +73,8 @@ const RasterStore = {
 			
 			this.data.selectedCity = state.selectedCity;
 
+			this.data.hasLoaded = true;
+
 			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
 			this.emit(AppActionTypes.initialDataLoaded);
 		},
@@ -108,6 +110,17 @@ const RasterStore = {
 	// returns everything or a specified attribute
 	getSelectedCityMetadata: function(key=null) { 
 		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
+	},
+
+	getMapBounds: function () {
+		return [ 
+			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
+			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
+		]
+	},
+
+	hasLoaded: function() {
+		return this.data.hasLoaded;
 	},
 
 	// return a flat list of the HOLC maps for rendering
@@ -173,6 +186,7 @@ const RasterStore = {
 				centerLng: mapData.centerlng,
 				loopLat: mapData.looplat,
 				loopLng: mapData.looplng,
+				hasPolygons: false,
 				url: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/, "")  + "/" + mapData.year + "/{z}/{x}/{y}.png"
 			}
 
@@ -200,6 +214,7 @@ const RasterStore = {
 				centerLng: citiesData.centerlng,
 				loopLat: citiesData.looplat,
 				loopLng: citiesData.looplng,
+				hasPolygons: true,
 				hasADs: (this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1)
 			}
 		});

@@ -44,11 +44,7 @@ body {
 
 .neighborhoodPolygon {
 	stroke-opacity: 1;
-
-	&.deemphasize {
-		fill: #000;
-		fill-opacity: 0.5;
-	}
+	fill: #000;
 
 	&.gradeA {
 		stroke: #418e41;

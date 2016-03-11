@@ -4,7 +4,6 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
 import _ from 'lodash';
 import Leaflet from 'leaflet';
-import CircleToPolygon from '../utils/CircleToPolygon.js'
 
 const CityStore = {
 
@@ -40,7 +39,8 @@ const CityStore = {
 		 * }
 		 */
 		ringStats: {},
-		areaDescriptions: {}
+		areaDescriptions: {},
+		polygonBoundingBox: null
 	},
 
 	// TODO: Make a generic DataLoader class to define an interface,
@@ -69,11 +69,15 @@ const CityStore = {
 				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson FROM digitalscholarshiplab.holc_ad_data join holc_polygons on digitalscholarshiplab.holc_ad_data.polygon_id = holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_ads.id = holc_polygons.ad_id where digitalscholarshiplab.holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
 				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
 				format: "JSON"
+			},
+			{
+				query: "Select St_AsGeoJSON(ST_SetSRID(st_extent (the_geom),2249)) as the_extnt from digitalscholarshiplab.holc_polygons_bounds where ad_id = " + cityId,
+				format: "JSON"
 			}
 		]).then((response) => {
-			let cityData = response[0][0];
 			this.data.id = cityId;
-			this.data.name = cityData.name;
+			let cityData = response[0][0];
+			this.data.name = cityData.city;
 			this.data.state = cityData.state;
 			this.data.year = cityData.year;
 			this.data.form_id = cityData.form_id;
@@ -83,10 +87,10 @@ const CityStore = {
 			};
 			this.data.ringAreasGeometry = response[1];
 			this.data.ringStats = this.parseRingStats(this.data.ringAreasGeometry);
-			this.data.outerRingRadius = response[2][0].distintv;
-			console.log(response[2][0]);
-			this.data.loopLatLng = [response[2][0].looplat, response[2][0].looplng];
+			this.data.outerRingRadius = (response[2][0]) ? response[2][0].distintv : false;
+			this.data.loopLatLng = (response[2][0]) ? [response[2][0].looplat, response[2][0].looplng] : false;
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[3]);
+			this.data.polygonBoundingBox = response[4];
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
 			if (initial) {
@@ -207,6 +211,10 @@ const CityStore = {
 	},
 
 	parseRingStats: function(ringAreaGeometry) {
+		if (ringAreaGeometry.length == 0) {
+			return false;
+		}
+
 		let ringCumulative = {
 				1: {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'total': 0},
 				2: {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'total': 0},
