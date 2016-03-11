@@ -1,16 +1,18 @@
 import React, { PropTypes } from 'react';
 import { render } from 'react-dom';
 import * as d3 from 'd3';
-import { EventEmitter } from 'events';
 import { AppActions } from '../utils/AppActionCreator';
 
 export default class CityStats extends React.Component {
 
 	// property validation
 	static propTypes = {
-		ringStats: PropTypes.object,
+		ringStats: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
 		areaSelected: PropTypes.func,
-		areaUnselected: PropTypes.func
+		areaUnselected: PropTypes.func,
+		triggerIntro: PropTypes.func,
+		toggleBurgessDiagram: PropTypes.func,
+		burgessDiagramVisible: PropTypes.bool
 	};
 
 	// (instead of ES5-style getDefaultProps)
@@ -30,7 +32,7 @@ export default class CityStats extends React.Component {
 
 	shouldComponentUpdate(nextProps, nextState) {
 		// don't know why this is necessary, but the component is updating on mouseover--this prevents that.
-		return (nextProps.ringStats !== this.props.ringStats);
+		return (nextProps.burgessDiagramVisible !== this.props.burgessDiagramVisible || nextProps.ringStats !== this.props.ringStats);
 	};
 	
 	componentWillMount () {};
@@ -38,25 +40,41 @@ export default class CityStats extends React.Component {
 	componentDidMount() {
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
-		this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		this.triggerIntro = this.triggerIntro.bind(this);
+		if (this.props.ringStats) {
+			this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		}
 	}
 
 	componentDidUpdate () {
 		this.d3NestedPieChart.destroy(this.refs.content);
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
-		this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		if (this.props.ringStats) {
+			this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+		}
 	}
 
 	areaHover (selectedRingId, selectedGrade) {
 		AppActions.ringAreaSelected(selectedRingId, selectedGrade);
 	}
 
+	triggerIntro (event) {
+		this.props.toggleBurgessDiagram();
+		this.props.triggerIntro(event);
+	}
+
 	render () {
+		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden';
 
 		return (
 			<div className='panorama nestedpiechart'>
-				<div className='content' ref='content'></div>
+				<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
+				{ (this.props.ringStats) ?
+					<div className='content' ref='content'></div> :
+					<p>Area descriptions are not yet available but will be eventually.</p>
+				}
+				<img src='static/burgess.png' className={ burgessClassName } ref="burgessDiagram" id='burgessDiagram' />
 			</div>
 		);
 	}

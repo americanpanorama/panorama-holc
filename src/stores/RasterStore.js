@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
-import _ from 'lodash';
 
 import stateAbbrs from '../../data/state_abbr.json';
 
@@ -37,6 +36,7 @@ const RasterStore = {
 		 cityIdsWithADs: [],
 
 		 layersMetadata : [],
+		 hasLoaded: false,
 
 		 // this shouldn't be here--it's state data not "real" data
 		 selectedCity: null
@@ -72,6 +72,8 @@ const RasterStore = {
 			this.data.citiesWithPolygons = this.parseCitiesWithPolygonsData(response[2]);
 			
 			this.data.selectedCity = state.selectedCity;
+
+			this.data.hasLoaded = true;
 
 			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
 			this.emit(AppActionTypes.initialDataLoaded);
@@ -110,8 +112,22 @@ const RasterStore = {
 		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
 	},
 
+	getMapBounds: function () {
+		return [ 
+			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
+			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
+		]
+	},
+
+	hasLoaded: function() {
+		return this.data.hasLoaded;
+	},
+
 	// return a flat list of the HOLC maps for rendering
-	getCitiesList: function() { return Object.keys(this.data.citiesWithPolygons).map((cityId) => this.data.citiesWithPolygons[cityId]); },
+	getCitiesList: function() { 
+		let cities = this.combineCitiesLists();
+		return Object.keys(cities).map((cityId) => cities[cityId]); 
+	},
 	
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
@@ -156,8 +172,9 @@ const RasterStore = {
 			maps[mapData.id] = {
 				cityId : mapData.id,
 				id: mapData.id,
-				name: mapData.file_name,
+				city: mapData.file_name,
 				state: mapData.state,
+				name: mapData.file_name + ", " + mapData.state,
 				minZoom: mapData.minzoom,
 				maxZoom: mapData.maxzoom,
 				bounds: mapData.bounds,
@@ -169,6 +186,7 @@ const RasterStore = {
 				centerLng: mapData.centerlng,
 				loopLat: mapData.looplat,
 				loopLng: mapData.looplng,
+				hasPolygons: false,
 				url: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/, "")  + "/" + mapData.year + "/{z}/{x}/{y}.png"
 			}
 
@@ -187,7 +205,7 @@ const RasterStore = {
 				id: citiesData.id,
 				city: citiesData.city,
 				state: citiesData.state,
-				name: citiesData.city + " " + stateAbbrs[citiesData.state] + ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? "*" : ''),
+				name: citiesData.city + ", " + stateAbbrs[citiesData.state] + ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? " **" : ' *'),
 				minLat: citiesData.minlat,
 				maxLat: citiesData.maxlat,
 				minLng: citiesData.minlng,
@@ -196,11 +214,21 @@ const RasterStore = {
 				centerLng: citiesData.centerlng,
 				loopLat: citiesData.looplat,
 				loopLng: citiesData.looplng,
+				hasPolygons: true,
 				hasADs: (this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1)
 			}
 		});
 
 		return cities;
+	},
+
+	combineCitiesLists: function () {
+		let combinedList = {};
+		Object.keys(this.data.maps).map((id, i) => {
+			combinedList[id] = (this.data.citiesWithPolygons[id]) ? this.data.citiesWithPolygons[id] : this.data.maps[id];
+		});
+
+		return combinedList;
 	}
 
 };

@@ -882,7 +882,7 @@ h6 {
 
 header {
   position: relative;
-  height: 60px;
+  height: 100px;
   padding-top: 0px;
   text-align: center; }
   header h1 {
@@ -992,9 +992,9 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
   color: #454545; }
 
 .donut, .donuthole {
-  stroke-opacity: 0;
-  stroke: #000;
-  fill: #000; }
+  stroke-width: 1;
+  stroke: pink;
+  stroke-dasharray: 5,5; }
 
 .ringArea {
   stroke: black;
@@ -1012,23 +1012,22 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
 .gradeD {
   fill: #eb3f3f; }
 
-.selected1 {
+.selected {
   visibility: visible !important;
   fill-opacity: 1; }
 
 .ringMask {
-  stroke: none;
   fill: #333; }
 
 body {
   font-size: 16px; }
 
+.hidden {
+  visibility: hidden; }
+
 .neighborhoodPolygon {
-  fill-opacity: 0;
-  stroke-opacity: 1; }
-  .neighborhoodPolygon.deemphasize {
-    fill: #000;
-    fill-opacity: 0.5; }
+  stroke-opacity: 1;
+  fill: #000; }
   .neighborhoodPolygon.gradeA {
     stroke: #418e41; }
   .neighborhoodPolygon.gradeB {
@@ -1048,7 +1047,13 @@ body {
   text-align: center; }
   .panorama.nestedpiechart svg {
     display: inline-block;
-    shape-rendering: 'crispEdges'; }
+    shape-rendering: 'crispEdges';
+    margin-top: 20px; }
+  .panorama.nestedpiechart #burgessDiagram {
+    position: relative;
+    top: -252px;
+    width: 250px;
+    pointer-events: none; }
 
 ul.area_description {
   font-family: 'Lato';
@@ -1201,3 +1206,11 @@ h2 {
     color: #000; }
   .panorama.item-selector h3 {
     text-transform: uppercase; }
+
+.introjs-tooltiptext {
+  font-size: 16px; }
+
+.introjs-tooltip {
+  max-width: 600px;
+  width: 500px;
+  line-height: 1.4; }
