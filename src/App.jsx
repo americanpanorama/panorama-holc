@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-//import "babel-polyfill";
+import "babel-polyfill";
 import Modal from 'react-modal';
 import { Map, TileLayer, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
@@ -424,7 +424,7 @@ export default class App extends React.Component {
 
 	render () {
 
-		//console.log(this.state);
+		console.log(this.state);
 		//console.log(CityStore.getLoopLatLng());
 		let modalStyle = {
 				overlay : {

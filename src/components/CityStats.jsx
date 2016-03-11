@@ -178,7 +178,8 @@ export default class CityStats extends React.Component {
 				formattedStats.push({ percents: [ { percent: ringstats[ringId].A, ringId: ringId, opacity: ringstats[ringId].density, grade: "A" }, { percent: ringstats[ringId].B, ringId: ringId, opacity: ringstats[ringId].density, grade: "B" }, { percent: ringstats[ringId].C, ringId: ringId, opacity: ringstats[ringId].density, grade: "C" }, { percent: ringstats[ringId].D, ringId: ringId, opacity: ringstats[ringId].density, grade: "D" } ] });
 			}
 	
-			var color = function(i) { return ['green', 'blue', 'yellow', 'red'][i]; };
+			var color = function(i) { return ['#418e41', '#4a4ae4', '#f4f570', '#eb3f3f'][i]; };
+			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#A3A34B', '#eb3f3f'][i]; };
 			var pie = d3.layout.pie()
 				.value((d) => d.percent)
 				.sort(null);
@@ -188,6 +189,9 @@ export default class CityStats extends React.Component {
 			var arcover = d3.svg.arc()
 				.innerRadius((d) => (d.data.ringId - 1.5) * scope.DONUTWIDTH)
 				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH + 4);
+			var arcBorder = d3.svg.arc()
+				.innerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH)
+				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH);
 	
 			// <g> for each ring
 			let ringNodes = d3.select(node)
@@ -212,22 +216,36 @@ export default class CityStats extends React.Component {
 			  .attr("stroke-opacity", 1)
 			  .attr('fill-opacity', (d) => d.data.opacity)
 			  .on("mouseover", function(d) {
-				d3.select(this)
-					.transition()
-					.duration(500)
-					.attr('d', arcover)
+				  d3.select(this)
+					  .transition()
+					  .duration(500)
+					  //.attr('d', arcover)
 				  	.attr("stroke-width", 0)
-				  	.attr('fill-opacity', (d) => d.data.opacity * 6);
-				scope.onHover(d.data.ringId, d.data.grade);
+				  	.attr('fill-opacity', 1); //(d) => d.data.opacity * 6);
+				  scope.onHover(d.data.ringId, d.data.grade);
 			  })
 			  .on("mouseout", function(d) {
-				scope.onHoverOut();
-				d3.select(this)
-					.transition()
-					.attr('d', arc)
-					.attr("stroke-width", 0)
-					.attr('fill-opacity', (d) => d.data.opacity);
+				  scope.onHoverOut();
+				  d3.select(this)
+					  .transition()
+					  .attr('d', arc)
+					  .attr("stroke-width", 0)
+					  .attr('fill-opacity', (d) => d.data.opacity);
 			  });	
+
+			 // add thin stroke line for each slice of pie
+			 ringNodes
+			 	.selectAll('path.border')
+			 	.data((d) => pie(d.percents) )
+			 	.enter().append('path')
+			 	.classed('border', true)
+			 	.attr('d', arcBorder)
+			  .attr('fill', (d,i) => color(i))
+			  .attr("stroke", (d,i) => colorBorder(i))
+			  .attr("stroke-width", 0.25)
+			  .attr("stroke-opacity", 0.7);
+
+
 		},
 
 		onHover: function() {
