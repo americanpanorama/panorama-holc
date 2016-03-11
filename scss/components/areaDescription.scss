@@ -6,16 +6,13 @@ ul.area_description {
     margin: 1em 0 0 0;
     padding: 0;
 
-    ul {
-        margin: 7px 0 3px 20px;
-    }
+ 
 
     li {
         list-style: none;
     }
 
     .catNum, .catLetter {
-        width: 12px;
         text-align: right;
         display: inline-block;
         color: grey;
@@ -26,7 +23,7 @@ ul.area_description {
     }
 
     .catName {
-        font-style: bold;
+        font-weight: bolder;
         color: #555;
     }
 
@@ -35,14 +32,12 @@ ul.area_description {
     }
     .catData {
         display: block;
-        margin: 7px 0 7px 20px;
-        font-weight: bold;
+        margin: 7px 0 7px 34px;
         line-height: 26px;
     }
 
     .subcatData {
         margin-left: 5px;
-        font-weight: bold;
         line-height: 1.3;
     }
 

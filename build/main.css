@@ -812,7 +812,7 @@ body {
       font-size: 2px; } }
 
 h1 {
-  font-size: 2.1vw; }
+  font-size: 1.8em; }
 
 h2 {
   font-size: 1.4em; }
@@ -821,7 +821,7 @@ h3 {
   font-size: 1em; }
 
 h4 {
-  font-size: 0.67em; }
+  font-size: 0.87em; }
 
 h5 {
   font-size: 0.5em; }
@@ -839,9 +839,35 @@ h6 {
   position: relative;
   padding: 20px;
   box-sizing: border-box;
-  overflow-x: initial;
+  white-space: pre-wrap;
+  overflow-x: hidden;
   overflow-y: auto;
-  border: solid 2px #92a3a1; }
+  background-color: #f3f3f3; }
+  .template-tile::before {
+    position: absolute;
+    display: block;
+    content: '';
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: solid 0px #56554e;
+    pointer-events: none; }
+  .template-tile::after {
+    position: absolute;
+    display: block;
+    content: '';
+    top: 0.4em;
+    right: 0.4em;
+    bottom: 0.4em;
+    left: 0.4em;
+    border: solid 0px #56554e;
+    pointer-events: none; }
+
+.punchcard-container {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; }
 
 .top-row {
   margin-bottom: 20px; }
@@ -872,11 +898,13 @@ header {
   header h4 {
     cursor: pointer;
     display: inline-block; }
+  header h4:hover {
+    color: #111; }
 
 .leaflet-container {
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
-  padding: 2px 0 0 2px; }
+  width: 100%;
+  height: 100%;
+  background: #f3f3f3; }
 
 .intro-button {
   display: block;
@@ -922,13 +950,13 @@ header {
 
 .ReactModalPortal .ReactModal__Content {
   position: absolute;
-  width: 30em;
+  width: 36em;
   top: 2em;
   bottom: 2em;
   padding: 2.5em;
   left: 50%;
   margin-left: -15em;
-  background-color: #b8cdcb;
+  background-color: #f3f3f3;
   line-height: 1.9em; }
   .ReactModalPortal .ReactModal__Content li {
     list-style-type: none; }
@@ -1029,12 +1057,9 @@ ul.area_description {
   list-style: none;
   margin: 1em 0 0 0;
   padding: 0; }
-  ul.area_description ul {
-    margin: 7px 0 3px 20px; }
   ul.area_description li {
     list-style: none; }
   ul.area_description .catNum, ul.area_description .catLetter {
-    width: 12px;
     text-align: right;
     display: inline-block;
     color: grey;
@@ -1042,18 +1067,16 @@ ul.area_description {
     ul.area_description .catNum:after, ul.area_description .catLetter:after {
       content: '.'; }
   ul.area_description .catName {
-    font-style: bold;
+    font-weight: bolder;
     color: #555; }
   ul.area_description .subcatName {
     color: grey; }
   ul.area_description .catData {
     display: block;
-    margin: 7px 0 7px 20px;
-    font-weight: bold;
+    margin: 7px 0 7px 34px;
     line-height: 26px; }
   ul.area_description .subcatData {
     margin-left: 5px;
-    font-weight: bold;
     line-height: 1.3; }
   ul.area_description .empty {
     color: #888;

@@ -452,7 +452,7 @@ export default class App extends React.Component {
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
-							<h4 onClick={ this.toggleAbout }>ABOUT THIS MAP</h4>
+							<h4 onClick={ this.toggleAbout }>Introduction<div className='downloadicon' href="#"></div></h4>
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
@@ -491,11 +491,13 @@ export default class App extends React.Component {
 					</div>
 					<div className='columns four full-height'>
 						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
+						<div className='punchcard-container'>
 							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#"></div></h2>
 							{ (this.state.selectedNeighborhood !== null) ?
 							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } /> :
 							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } />
 							}
+							</div>
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
 							<ItemSelector { ...this.getItemSelectorConfig() } />
