@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-import "babel-polyfill";
+//import "babel-polyfill";
 import Modal from 'react-modal';
 import { Map, TileLayer, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
@@ -14,6 +14,7 @@ import CityStore from './stores/CityStore';
 // components (views)
 import CityStats from './components/CityStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
+import Downloader from './components/Downloader.jsx';
 import HolcItemSelector from './components/ItemSelector.jsx';
 import Donut from './components/Donut/Donut.jsx';
 
@@ -52,6 +53,7 @@ export default class App extends React.Component {
 		this.onIntroExit = this.onIntroExit.bind(this);
 		this.onMapMoved = this.onMapMoved.bind(this);
 		this.onPanoramaMenuClick = this.onPanoramaMenuClick.bind(this);
+		this.onDownloadClicked = this.onDownloadClicked.bind(this); 
 	}
 
 	componentWillMount () {
@@ -108,6 +110,7 @@ export default class App extends React.Component {
 			intro: {
 				open: false
 			},
+			downloadOpen: false,
 			dimensions: {
 				left: {
 					width: 0,
@@ -184,6 +187,10 @@ export default class App extends React.Component {
 		};
 
 		HashManager.updateHash(newState);
+	}
+
+	onDownloadClicked () {
+		this.setState({downloadOpen: !this.state.downloadOpen});
 	}
 
 	updateCityPolygons () {
@@ -424,8 +431,6 @@ export default class App extends React.Component {
 
 	render () {
 
-		console.log(this.state);
-		//console.log(CityStore.getLoopLatLng());
 		let modalStyle = {
 				overlay : {
 					backgroundColor: null
@@ -443,6 +448,15 @@ export default class App extends React.Component {
 				}
 			},
 			mapConfig = this.state.map || this.state.mapConfig;
+
+		let sidebar;
+		if (this.state.downloadOpen) {
+			sidebar = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />
+		} else if (this.state.selectedNeighborhood) {
+			sidebar = <AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } />;
+		} else {
+			sidebar = <CityStats population1930={ CityStore.getPopulation1930() } population1940={ CityStore.getPopulation1940() } area={ CityStore.getArea() } ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />;
+		}
 
 		return (
 			<div className='container full-height'>
@@ -490,11 +504,8 @@ export default class App extends React.Component {
 					<div className='columns four full-height'>
 						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
 						<div className='punchcard-container'>
-							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#"></div></h2>
-							{ (this.state.selectedNeighborhood) ?
-							<AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } /> :
-							<CityStats ringStats={ this.state.ringStats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />
-							}
+							<h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div></h2>
+							{ sidebar }
 							</div>
 						</div>
 						<div className='row bottom-row template-tile city-selector'>

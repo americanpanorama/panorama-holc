@@ -65,16 +65,24 @@ export default class CityStats extends React.Component {
 	}
 
 	render () {
-		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden';
+		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
+			  population1930 = (this.props.population1930) ? this.props.population1930.toLocaleString() : '',
+			  population1940 = (this.props.population1930) ? this.props.population1940.toLocaleString() : '',
+			  area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + " sq mi" : '';
 
 		return (
-			<div className='panorama nestedpiechart'>
-				<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
-				{ (this.props.ringStats) ?
-					<div className='content' ref='content'></div> :
-					<p>Area descriptions are not yet available but will be eventually.</p>
-				}
-				<img src='static/burgess.png' className={ burgessClassName } ref="burgessDiagram" id='burgessDiagram' />
+			<div>
+				<div>Population in 1930: { population1930 }</div>
+				<div>Population in 1940: { population1940 }</div>
+				<div>Area of city graded: { area }</div>
+				<div className='panorama nestedpiechart'>
+					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
+					{ (this.props.ringStats) ?
+						<div className='content' ref='content'></div> :
+						<p>Area descriptions are not yet available but will be eventually.</p>
+					}
+					<img src='static/burgess.png' className={ burgessClassName } ref="burgessDiagram" id='burgessDiagram' />
+				</div>
 			</div>
 		);
 	}
@@ -84,13 +92,14 @@ export default class CityStats extends React.Component {
 
 		// layout constants
 		WIDTH: 250,
-		HEIGHT: 250,
+		HEIGHT: 250, // of the donut
+		STATSHEIGHT: 100,
 		DONUTWIDTH: 35,
 
 		ringNodes: d3.select(this.refs.content)
 			.append('svg')
 			.attr('width', this.WIDTH)
-			.attr('height', this.HEIGHT),
+			.attr('height', this.HEIGHT + this.STATSHEIGHT),
 	
 		update: function (node, ringstats) {	
 			if (Object.keys(ringstats).length === 0) { 
@@ -170,6 +179,8 @@ export default class CityStats extends React.Component {
 			}
 			
 			let scope = this;	
+
+			console.log(ringstats);
 	
 			// format ringstats data
 			let formattedStats = [],
@@ -192,12 +203,13 @@ export default class CityStats extends React.Component {
 			var arcBorder = d3.svg.arc()
 				.innerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH)
 				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH);
+			var percent = d3.format(",%");
 	
 			// <g> for each ring
 			let ringNodes = d3.select(node)
 				.append('svg')
 				.attr('width', scope.WIDTH)
-				.attr('height', scope.HEIGHT)
+				.attr('height', scope.HEIGHT + scope.STATSHEIGHT)
 				.attr('id', 'piechart')
 				.selectAll('g')
 				.data(formattedStats)
@@ -222,6 +234,8 @@ export default class CityStats extends React.Component {
 					  //.attr('d', arcover)
 				  	.attr("stroke-width", 0)
 				  	.attr('fill-opacity', 1); //(d) => d.data.opacity * 6);
+				  d3.select('#ring' + d.data.ringId + "grade" + d.data.grade )
+				    .attr("fill", "black");
 				  scope.onHover(d.data.ringId, d.data.grade);
 			  })
 			  .on("mouseout", function(d) {
@@ -231,19 +245,38 @@ export default class CityStats extends React.Component {
 					  .attr('d', arc)
 					  .attr("stroke-width", 0)
 					  .attr('fill-opacity', (d) => d.data.opacity);
+				  d3.select('#ring' + d.data.ringId + "grade" + d.data.grade )
+					  .attr("fill", "transparent");
 			  });	
 
-			 // add thin stroke line for each slice of pie
-			 ringNodes
-			 	.selectAll('path.border')
-			 	.data((d) => pie(d.percents) )
-			 	.enter().append('path')
-			 	.classed('border', true)
-			 	.attr('d', arcBorder)
+			// add thin stroke line for each slice of pie
+			ringNodes
+			  .selectAll('path.border')
+			  .data((d) => pie(d.percents) )
+			  .enter().append('path')
+			  .classed('border', true)
+			  .attr('d', arcBorder)
 			  .attr('fill', (d,i) => color(i))
 			  .attr("stroke", (d,i) => colorBorder(i))
 			  .attr("stroke-width", 0.25)
 			  .attr("stroke-opacity", 0.7);
+
+			ringNodes.append("g")
+			  .attr('class', 'labels');
+			
+
+			// add text for each slice of pie
+			ringNodes
+			  .selectAll('text')
+			  .data(formattedStats)
+			  .enter().append('text')
+			  .attr("dx", -100)
+			  .attr("dy", scope.HEIGHT / 2 + 25)
+			  .attr("fill", "transparent")
+			  .attr("id", function(d, i,j) { return 'ring' + d.percents[j].ringId + 'grade' + d.percents[j].grade })
+			  .text((d, i, j) => {
+				  percent(d.percents[j].percent) + '(' + percent(d.percents[j].opacity) + ') of the graded section of the ring.'
+			  });
 
 
 		},
