@@ -451,7 +451,7 @@ export default class App extends React.Component {
 
 		let sidebar;
 		if (this.state.downloadOpen) {
-			sidebar = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />
+			sidebar = <Downloader mapurl={ RasterStore.getMapUrl() } mapThumbnail={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />
 		} else if (this.state.selectedNeighborhood) {
 			sidebar = <AreaDescription ref={'areadescription' + this.state.selectedNeighborhood } areaData={ this.state.areaDescriptions[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } />;
 		} else {

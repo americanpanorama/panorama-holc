@@ -123,6 +123,10 @@ const RasterStore = {
 		return this.getSelectedCityMetadata('mapurl');
 	},
 
+	getMapThumbnail: function () {
+		return this.getSelectedCityMetadata('mapThumbnail');
+	},
+
 	hasLoaded: function() {
 		return this.data.hasLoaded;
 	},
@@ -192,7 +196,8 @@ const RasterStore = {
 				loopLng: mapData.looplng,
 				hasPolygons: false,
 				url: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/{z}/{x}/{y}.png",
-				mapurl: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/holc-scan.jpg"
+				mapurl: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/holc-scan.jpg",
+				mapThumbnail: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/thumbnail.jpg"
 			}
 
 		});
