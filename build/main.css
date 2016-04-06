@@ -1058,8 +1058,7 @@ body {
     margin-top: 20px; }
   .panorama.nestedpiechart #burgessDiagram {
     position: relative;
-    top: -252px;
-    width: 250px;
+    top: -352px;
     pointer-events: none; }
 
 ul.area_description {

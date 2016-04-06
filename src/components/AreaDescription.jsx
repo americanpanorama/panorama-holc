@@ -107,7 +107,7 @@ export default class AreaDescription extends React.Component {
 
 	renderNSForm8_19370203() {
 		let AD = this.props.areaData.areaDesc;
-		console.log(AD);
+
 		return (
 
 			<ul className='area_description NSForm8'>
@@ -297,8 +297,19 @@ export default class AreaDescription extends React.Component {
 				</li>
 				{ this.renderSimpleCategory(13, 'Trend of Desireability Next 10-15 Years') }
 				{ this.renderSimpleCategory(14, 'Clarifying Remarks') }
-				{ this.renderSimpleCategory(15, 'Information for this form was obtained from') }
-				
+				<li>
+					<span className='catNum'>15</span>
+					<span className='catName'>Information for this form was obtained from</span>
+					<span className='subcatData'>{ (AD[15]  && typeof(AD[15]) == 'string' ) ? AD[15] : (AD[15] && AD[15][1]) ? AD[15][1] : <span className='empty'>empty</span> }</span>
+				</li>
+				{ (typeof(AD[15]) === 'object') ?
+					<li>
+						<span className='catName indent'>Date</span>
+						<span className='subcatData'>{ (AD[15] && AD[15][2] ) ? AD[15][2] : <span className='empty'>empty</span> }</span>
+						<span className='catName indent'>193</span><span className='subcatData'>{ (AD[15] && AD[15][3] ) ? AD[15][3] : <span className='empty'>empty</span> }</span>
+					</li> :
+					''
+				}
 			</ul>
 		);
 	}

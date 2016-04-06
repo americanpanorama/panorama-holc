@@ -66,7 +66,7 @@ const CityStore = {
 				format: "JSON"
 			},
 			{
-				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson FROM digitalscholarshiplab.holc_ad_data join holc_polygons on digitalscholarshiplab.holc_ad_data.polygon_id = holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_ads.id = holc_polygons.ad_id where digitalscholarshiplab.holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
+				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(digitalscholarshiplab.holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM digitalscholarshiplab.holc_ad_data join holc_polygons on digitalscholarshiplab.holc_ad_data.polygon_id = holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_ads.id = holc_polygons.ad_id where digitalscholarshiplab.holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
 				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
 				format: "JSON"
 			},
@@ -81,6 +81,8 @@ const CityStore = {
 			this.data.state = cityData.state;
 			this.data.year = cityData.year;
 			this.data.form_id = cityData.form_id;
+			this.data.population_1930 = cityData.population_1930;
+			this.data.population_1940 = cityData.population_1940;
 			this.data.ringAreaSelected = {
 				ringId: 0,
 				grade: ''
@@ -122,6 +124,14 @@ const CityStore = {
 		return this.data.ringAreasGeometry;
 	},
 
+	getPopulation1930: function() {
+		return this.data.population_1930;
+	},
+
+	getPopulation1940: function() {
+		return this.data.population_1940;
+	},
+
 	getSelectedRingAreas: function() {
 		return this.data.ringAreaSelected;
 	},
@@ -136,6 +146,10 @@ const CityStore = {
 
 	getAreaDescriptions: function() {
 		return this.data.areaDescriptions;
+	},
+
+	getArea: function () {
+		return Object.keys(this.data.areaDescriptions).map((id, i) => this.data.areaDescriptions[id].sqmi ).reduce((a,b) => a+b, 0);
 	},
 
 	queryCategory: function(catNum, catLetter) {
@@ -250,6 +264,7 @@ const CityStore = {
 			adData[d.holc_id].area_geojson = JSON.parse(d.the_geojson);
 			//adData[d.holc_id].name = d.name;
 			adData[d.holc_id].holc_grade = d.holc_grade;
+			adData[d.holc_id].sqmi = d.sqmi;
 			
 			// define area description if undefined
 			if(typeof adData[d.holc_id].areaDesc == "undefined") {
