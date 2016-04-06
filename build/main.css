@@ -999,8 +999,9 @@ header {
     list-style: none;
     background-color: #fafafa;
     height: 100px; }
-  .download_menu ul li a, .download_menu ul h3 {
-    text-decoration: none;
+  .download_menu ul li a {
+    text-decoration: none; }
+  .download_menu ul h3 {
     padding: 20px 4px; }
   .download_menu ul img {
     float: right;
