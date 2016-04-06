@@ -67,32 +67,6 @@ h6 { font-size: 0.35em; }
 	overflow-x: hidden;
 	overflow-y: auto;
 	background-color: #f3f3f3;
-
-
-	// double border
-	&::before {
-		position: absolute;
-		display: block;
-		content: '';
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		border: solid 0px #56554e;
-		pointer-events: none;
-	}
-
-	&::after {
-		position: absolute;
-		display: block;
-		content: '';
-		top: 0.4em;
-		right: 0.4em;
-		bottom: 0.4em;
-		left: 0.4em;
-		border: solid 0px #56554e;
-		pointer-events: none;
-	}
 }
 
 .punchcard-container {
@@ -126,6 +100,7 @@ header {
 
 	h1 {
 		margin: 0;
+		padding-bottom: 12px;
 	}
 
 	.header-main {
@@ -146,11 +121,33 @@ header {
 	h4 {
 		cursor: pointer;
 		display: inline-block;
+		background-color: #b8cdcb;
+		padding: 0 10px;
 	}
 
 	h4:hover {
 		color: #111;
 	}
+
+hr.style-eight {
+	margin-top: -30px;
+    padding: 0;
+    border: none;
+    border-top: 1px solid #d72e2a;
+    color: #333;
+    text-align: center;
+    max-width: 610px;
+}
+
+hr.style-eight:after {
+    display: inline-block;
+    position: relative;
+    top: -0.7em;
+    font-size: .8em;
+    padding: 0 3em;
+    background: #b8cdcb;
+}
+
 }
 
 .leaflet-container {
@@ -191,17 +188,18 @@ header {
 }
 .icon.info {
 	display: block;
-	width: 0.8em;
-	height: 0.8em;
-	border: 1px solid #777;
+	width: 1em;
+	height: 1em;
+	border: 1px solid #888;
 	border-radius: 50%;
 	&::before {
 		content: 'i';
 		position: absolute;
 		top: 0.25em;
-		left: 0.625em;
-		font-size: 0.6em;
+		left: 0.56em;
+		font-size: 0.8em;
 		font-family: serif;
+		font-weight: bold;
 	}
 }
 
@@ -255,10 +253,19 @@ header {
 	}
 }
 
-#hamburger {
+#nav_header h1 {
+	font-size: 24px;
+	margin-left: 120px;
+	font-family: 'Oswald';
+	color: #28668a;
+	opacity: 0.5;
+	clear: left;
+}
+
+#hamburger, #navburger {
 	position: fixed;
-	left: 30px;
-	top: 28px;
+	left: 34px;
+	top: 17px;
 	z-index: 100;
 	cursor: pointer;
 }

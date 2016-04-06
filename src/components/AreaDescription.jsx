@@ -50,12 +50,16 @@ export default class AreaDescription extends React.Component {
 		}
 
 		switch(this.props.formId) {
+			case 19370203:
+			case 19370826:
 			case '19370203':
 			case '19370826':
 				return this.renderNSForm8_19370203();
+			case 19371001:
 			case '19371001':
 				return this.renderNSForm8_19371001();
 		}
+
 
 	}
 
@@ -103,6 +107,7 @@ export default class AreaDescription extends React.Component {
 
 	renderNSForm8_19370203() {
 		let AD = this.props.areaData.areaDesc;
+		console.log(AD);
 		return (
 
 			<ul className='area_description NSForm8'>
