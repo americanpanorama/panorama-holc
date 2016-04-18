@@ -3,3 +3,4 @@ minzoom: 2
 maxzoom: 9
 
 layers:
+  - labels:

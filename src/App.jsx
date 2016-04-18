@@ -596,7 +596,7 @@ export default class App extends React.Component {
 
 				<IntroManager { ...this.state.intro } />
 				</div>
-			</div>
+			</div> 
 		);
 
 	}
