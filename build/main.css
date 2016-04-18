@@ -843,26 +843,6 @@ h6 {
   overflow-x: hidden;
   overflow-y: auto;
   background-color: #f3f3f3; }
-  .template-tile::before {
-    position: absolute;
-    display: block;
-    content: '';
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    border: solid 0px #56554e;
-    pointer-events: none; }
-  .template-tile::after {
-    position: absolute;
-    display: block;
-    content: '';
-    top: 0.4em;
-    right: 0.4em;
-    bottom: 0.4em;
-    left: 0.4em;
-    border: solid 0px #56554e;
-    pointer-events: none; }
 
 .punchcard-container {
   height: 100%;
@@ -886,7 +866,8 @@ header {
   padding-top: 0px;
   text-align: center; }
   header h1 {
-    margin: 0; }
+    margin: 0;
+    padding-bottom: 12px; }
   header .header-main {
     text-transform: uppercase;
     font-size: 0.9em;
@@ -897,9 +878,26 @@ header {
     letter-spacing: 0.002em; }
   header h4 {
     cursor: pointer;
-    display: inline-block; }
+    display: inline-block;
+    background-color: #b8cdcb;
+    padding: 0 10px; }
   header h4:hover {
     color: #111; }
+  header hr.style-eight {
+    margin-top: -30px;
+    padding: 0;
+    border: none;
+    border-top: 1px solid #d72e2a;
+    color: #333;
+    text-align: center;
+    max-width: 610px; }
+  header hr.style-eight:after {
+    display: inline-block;
+    position: relative;
+    top: -0.7em;
+    font-size: .8em;
+    padding: 0 3em;
+    background: #b8cdcb; }
 
 .leaflet-container {
   width: 100%;
@@ -932,17 +930,18 @@ header {
 
 .icon.info {
   display: block;
-  width: 0.8em;
-  height: 0.8em;
-  border: 1px solid #777;
+  width: 1em;
+  height: 1em;
+  border: 1px solid #888;
   border-radius: 50%; }
   .icon.info::before {
     content: 'i';
     position: absolute;
     top: 0.25em;
-    left: 0.625em;
-    font-size: 0.6em;
-    font-family: serif; }
+    left: 0.56em;
+    font-size: 0.8em;
+    font-family: serif;
+    font-weight: bold; }
 
 .ReactModalPortal .ReactModal__Overlay {
   z-index: 2000;
@@ -974,12 +973,40 @@ header {
     .ReactModalPortal .ReactModal__Content button.close span {
       font-size: 2.25em; }
 
-#hamburger {
+#nav_header h1 {
+  font-size: 24px;
+  margin-left: 120px;
+  font-family: 'Oswald';
+  color: #28668a;
+  opacity: 0.5;
+  clear: left; }
+
+#hamburger, #navburger {
   position: fixed;
-  left: 30px;
-  top: 28px;
+  left: 34px;
+  top: 17px;
   z-index: 100;
   cursor: pointer; }
+
+.download_menu ul {
+  font-family: 'Lato';
+  font-size: 16px;
+  color: #0c789a;
+  list-style: none;
+  margin: 1em 0 0 0;
+  padding: 0; }
+  .download_menu ul li {
+    list-style: none;
+    background-color: #fafafa;
+    height: 100px; }
+  .download_menu ul li a {
+    text-decoration: none; }
+  .download_menu ul h3 {
+    padding: 20px 4px; }
+  .download_menu ul img {
+    float: right;
+    margin: -66px 15px 0;
+    width: 100px; }
 
 header .header-main, header .header-sub {
   font-family: 'Lora', serif;
@@ -993,7 +1020,7 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
 
 .donut, .donuthole {
   stroke-width: 1;
-  stroke: pink;
+  stroke: white;
   stroke-dasharray: 5,5; }
 
 .ringArea {
@@ -1078,10 +1105,12 @@ ul.area_description {
   ul.area_description .catData {
     display: block;
     margin: 7px 0 7px 34px;
-    line-height: 26px; }
+    line-height: 26px;
+    font-weight: bolder; }
   ul.area_description .subcatData {
     margin-left: 5px;
-    line-height: 1.3; }
+    line-height: 1.3;
+    font-weight: bolder; }
   ul.area_description .empty {
     color: #888;
     font-style: italic; }
@@ -1105,7 +1134,8 @@ ul.area_description {
     font-size: 14px; }
   ul.area_description td {
     color: #0c789a;
-    padding-right: 4px; }
+    padding-right: 4px;
+    font-weight: bolder; }
   ul.area_description .percentage, ul.area_description .span {
     font-size: 14px;
     padding-left: 20px;

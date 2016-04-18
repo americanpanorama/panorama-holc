@@ -528,7 +528,9 @@ export default class App extends React.Component {
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
-							<h4 onClick={ this.toggleAbout }>Introduction<div className='downloadicon' href="#"></div></h4>						
+							<h4 onClick={ this.toggleAbout }>Introduction</h4><h4 onClick={ this.toggleAbout }>Credits</h4>
+							<hr className='style-eight'>
+							</hr>					
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
@@ -537,7 +539,7 @@ export default class App extends React.Component {
 								center={ this.state.map.center } 
 								zoom={ this.state.map.zoom }  
 								onLeafletMoveend={ this.onMapMoved } 
-							>
+							> 
 								{ tileLayers.layers.map((item, i) => {
 									return (
 										<TileLayer
@@ -661,7 +663,7 @@ export default class App extends React.Component {
 						outerRadius={ (ringNum == 5) ? this.state.selectedCity.rings.outerRadius * 100 : (ringNum * 2 - 1) / 7 * this.state.selectedCity.rings.outerRadius}
 						clickable={ false } 
 						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
-						fillColor= { (this.isSelectedRing(ringNum)) ? 'pink' : '#000' } 
+						fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
 						className={ 'donut' } 
 						key={ 'donut' + String(ringNum) } 
 					/>
@@ -682,7 +684,7 @@ export default class App extends React.Component {
 						center={ this.state.selectedCity.rings.center } 
 						radius={ (ringNum * 2 - 1) / 7 * this.state.selectedCity.rings.outerRadius } 
 						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : (this.donutholeShouldBeMasked(ringNum)) ? 0.75 : 0 } 
-						fillColor= { (this.isSelectedRing(ringNum)) ? 'pink' : '#000' } 
+						fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
 						clickable={ false } 
 						className={ 'donuthole' } 
 						key={ 'donuthole' + ringNum } 

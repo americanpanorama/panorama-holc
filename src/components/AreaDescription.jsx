@@ -60,6 +60,7 @@ export default class AreaDescription extends React.Component {
 				return this.renderNSForm8_19371001();
 		}
 
+
 	}
 
 	renderOLD () {
@@ -106,7 +107,7 @@ export default class AreaDescription extends React.Component {
 
 	renderNSForm8_19370203() {
 		let AD = this.props.areaData.areaDesc;
-		console.log(typeof(AD[15]));
+
 		return (
 
 			<ul className='area_description NSForm8'>
