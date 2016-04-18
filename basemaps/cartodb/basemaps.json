@@ -1,1 +1,19 @@
-{}
+{  
+   "name":"PanoramaBasemap",
+   "version":"0.0.1",
+   "layergroup":{  
+      "version":"1.3.0",
+      "layers":[  
+         {  
+            "type":"mapnik",
+            "options":{  
+               "sql":"SELECT cartodb_id, city, ST_Transform(ST_SetSRID(st_makepoint(looplng,looplat),4326), 3857) as the_geom_webmercator FROM holc_ads",
+               "cartocss":"#holc_ads::labels{\n    text-name: [city];\n text-face-name: 'DejaVu Sans Book'; \n text-size: 10; \n text-label-position-tolerance: 10; \n text-fill: #000; \n text-halo-fill: #FFF; \n text-halo-radius: 1; \n text-dy: 0; \n text-allow-overlap: false; \n text-placement: interior; \n text-placement-type: simple;}\n",
+               "cartocss_version":"2.1.1"
+            }
+         }
+      ],
+      "minzoom":2,
+      "maxzoom":9
+   }
+}

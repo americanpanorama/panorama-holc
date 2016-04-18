@@ -66,12 +66,12 @@ const CityStore = {
 				format: "JSON"
 			},
 			{
-				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(digitalscholarshiplab.holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM digitalscholarshiplab.holc_ad_data join holc_polygons on digitalscholarshiplab.holc_ad_data.polygon_id = holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_ads.id = holc_polygons.ad_id where digitalscholarshiplab.holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
-				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM digitalscholarshiplab.questions as q JOIN digitalscholarshiplab.category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
+				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
+				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
 				format: "JSON"
 			},
 			{
-				query: "Select St_AsGeoJSON(ST_SetSRID(st_extent (the_geom),2249)) as the_extnt from digitalscholarshiplab.holc_polygons_bounds where ad_id = " + cityId,
+				query: "Select St_AsGeoJSON(ST_SetSRID(st_extent (the_geom),2249)) as the_extnt from holc_polygons_bounds where ad_id = " + cityId,
 				format: "JSON"
 			}
 		]).then((response) => {
@@ -108,8 +108,12 @@ const CityStore = {
 		})
 	},
 
-	citySelected: function(cityId) {
+	citySelected: function(cityId, callback) {
 		this.loadData(cityId);
+		console.log(callback);
+		if (callback) {
+			callback();
+		}
 	},
 
 	getFormId: function() {
@@ -314,11 +318,13 @@ AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			//console.log(`[2] The '${ AppActionTypes.loadInitialData }' event is handled by CityStore....`);
-			CityStore.loadData(action.state.selectedCity, true);
+			if (action.state.selectedCity.id) {
+				CityStore.loadData(action.state.selectedCity.id, true);
+			}
 			break;
 
 		case AppActionTypes.citySelected:
-			CityStore.citySelected(action.value);
+			CityStore.citySelected(action.value, action.callback);
 			break;
 
 		case AppActionTypes.ringAreaSelected:

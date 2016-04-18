@@ -36,10 +36,18 @@ export const AppActions = {
 		});
 	},
 
-	citySelected: (city) => {
+	citySelected: (city, callback) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.citySelected,
-			value: city
+			value: city,
+			callback: callback
+		});
+	},
+
+	stateSelected: (state) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.stateSelected,
+			value: state
 		});
 	},
 

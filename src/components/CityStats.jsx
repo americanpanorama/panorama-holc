@@ -42,7 +42,7 @@ export default class CityStats extends React.Component {
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
 		this.triggerIntro = this.triggerIntro.bind(this);
 		if (this.props.ringStats) {
-			this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+			this.d3NestedPieChart.update(this.refs.content, this.props.ringStats);
 		}
 	}
 
@@ -51,7 +51,7 @@ export default class CityStats extends React.Component {
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
 		if (this.props.ringStats) {
-			this.d3NestedPieChart.updateold(this.refs.content, this.props.ringStats);
+			this.d3NestedPieChart.update(this.refs.content, this.props.ringStats);
 		}
 	}
 
@@ -101,77 +101,13 @@ export default class CityStats extends React.Component {
 			.attr('width', this.WIDTH)
 			.attr('height', this.HEIGHT + this.STATSHEIGHT),
 	
-		update: function (node, ringstats) {	
-			if (Object.keys(ringstats).length === 0) { 
-				this.destroy();
-				return; 
-			}
-			
-			let scope = this;	
-	
-			// format ringstats data
-			let formattedStats = [],
-				  opacities = [];
-			for (let ringId = 1; ringId <= 4; ringId++) {
-				formattedStats.push({ percents: [ { percent: ringstats[ringId].A, ringId: ringId, opacity: ringstats[ringId].density, grade: "A" }, { percent: ringstats[ringId].B, ringId: ringId, opacity: ringstats[ringId].density, grade: "B" }, { percent: ringstats[ringId].C, ringId: ringId, opacity: ringstats[ringId].density, grade: "C" }, { percent: ringstats[ringId].D, ringId: ringId, opacity: ringstats[ringId].density, grade: "D" } ] });
-			}
-	
-			var color = function(i) { return ['green', 'blue', 'yellow', 'red'][i]; };
-			var pie = d3.layout.pie()
-				.value((d) => d.percent)
-				.sort(null);
-			var arc = d3.svg.arc()
-				.innerRadius((d) => (d.data.ringId - 1.5) * scope.DONUTWIDTH)
-				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH);
-			var arcover = d3.svg.arc()
-				.innerRadius((d) => (d.data.ringId - 1.5) * scope.DONUTWIDTH)
-				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH + 4);
-	
-			// <g> for each ring
-			scope.ringNodes
-				.selectAll('g')
-				.data(formattedStats)
-				.enter().append('g')
-				.attr('transform', 'translate(' + (scope.WIDTH / 2) + ',' + (scope.HEIGHT / 2) + ')');
-	
-			// path for each pie piece
-			scope.ringNodes
-			  .selectAll('path')
-			  .data((d) => pie(d.percents) )
-			  .enter().append('path')
-			  .attr('d', arc)
-			  .attr('fill', (d,i) => color(i))
-			  .attr("stroke", (d,i) => color(i))
-			  .attr("stroke-width", 0)
-			  .attr("stroke-opacity", 1)
-			  .attr('fill-opacity', (d) => d.data.opacity)
-			  .on("mouseover", function(d) {
-				d3.select(this)
-					.transition()
-					.duration(500)
-					.attr('d', arcover)
-				  	.attr("stroke-width", 0)
-				  	.attr('fill-opacity', (d) => d.data.opacity * 6);
-				scope.onHover(d.data.ringId, d.data.grade);
-			  })
-			  .on("mouseout", function(d) {
-				console.log("left");
-				scope.onHoverOut();
-				d3.select(this)
-					.transition()
-					.attr('d', arc)
-					.attr("stroke-width", 0)
-					.attr('fill-opacity', (d) => d.data.opacity);
-			  });	
-		},
-	
 		/**
 		 * Logic for updating d3 component with new data.
 		 *
 	 	 * @param  {Node}    HTMLElement to which d3 will attach
 	 	 * @param  {Object}  RingStats (TODO: document expected format)
 	 	 */
-		updateold: function(node, ringstats) {
+		update: function(node, ringstats) {
 
 			if (Object.keys(ringstats).length === 0) { 
 				this.destroy();
@@ -179,8 +115,6 @@ export default class CityStats extends React.Component {
 			}
 			
 			let scope = this;	
-
-			console.log(ringstats);
 	
 			// format ringstats data
 			let formattedStats = [],

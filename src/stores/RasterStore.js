@@ -59,7 +59,7 @@ const RasterStore = {
 				format: "JSON"
 			},
 			{
-				query: "SELECT distinct(digitalscholarshiplab.holc_ads.id) FROM digitalscholarshiplab.holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = digitalscholarshiplab.holc_polygons.id join digitalscholarshiplab.holc_ads on digitalscholarshiplab.holc_polygons.ad_id = digitalscholarshiplab.holc_ads.id",
+				query: "SELECT distinct(holc_ads.id), state, city FROM holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_polygons.ad_id = holc_ads.id order by state, city",
 				format: "JSON"
 			},
 			{
@@ -71,7 +71,8 @@ const RasterStore = {
 			this.data.cityIdsWithADs = response[1].map((row) => row.id);
 			this.data.citiesWithPolygons = this.parseCitiesWithPolygonsData(response[2]);
 			
-			this.data.selectedCity = state.selectedCity;
+			this.data.selectedCity = state.selectedCity.id;
+			this.data.selectedState = state.selectedState;
 
 			this.data.hasLoaded = true;
 
@@ -101,6 +102,13 @@ const RasterStore = {
 
 	},
 
+	setSelectedState: function (state) {
+		if (typeof(state) !== 'undefined' && state !== this.data.selectedState) {
+			this.data.selectedCity = undefined;
+			this.emit(AppActionTypes.storeChanged);
+		}
+	},
+
 	getAllRasters: function () { return this.data.maps; },
 
 	getSelectedCity: function () { return this.data.selectedCity; },
@@ -109,7 +117,14 @@ const RasterStore = {
 
 	// returns everything or a specified attribute
 	getSelectedCityMetadata: function(key=null) { 
+		if (!this.getSelectedCity()) {
+			return false;
+		}
 		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
+	},
+
+	getCityMetadata: function(city_id, key=null) {
+		return (this.data.maps[city_id]) ? (key && this.data.maps[city_id][key]) ? this.data.maps[city_id][key] : this.data.maps[city_id] : null;
 	},
 
 	getMapBounds: function () {
@@ -117,6 +132,34 @@ const RasterStore = {
 			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
 			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
 		]
+	},
+
+	getCenter: function() {
+		let bounds = this.getMapBounds();
+		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+	},
+
+	getMapBoundsForState: function (state) {
+		let minLat = 90, minLng = 0, maxLat = 0, maxLng = -180;
+		let citiesForState = this.getCitiesForState(state);
+
+		citiesForState.map((cityData) => {
+			minLat = (cityData.minLat && cityData.minLat < minLat) ? cityData.minLat : minLat;
+			maxLat = (cityData.maxLat && cityData.maxLat > maxLat) ? cityData.maxLat : maxLat;
+			minLng = (cityData.minLng && cityData.minLng < minLng) ? cityData.minLng : minLng;
+			maxLng = (cityData.maxLng && cityData.maxLng > maxLng) ? cityData.maxLng : maxLng;
+		});
+
+		return [[ minLat, minLng ],[ maxLat, maxLng ]];
+	},
+
+	getCenterForState: function(state) {
+		let bounds = this.getMapBoundsForState(state);
+		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+	},
+
+	getCitiesForState: function (state) {
+		return this.getCitiesList().filter(function(cityData) { return (cityData.state == state) });
 	},
 
 	getMapUrl: function () {
@@ -130,7 +173,57 @@ const RasterStore = {
 	// return a flat list of the HOLC maps for rendering
 	getCitiesList: function() { 
 		let cities = this.combineCitiesLists();
-		return Object.keys(cities).map((cityId) => cities[cityId]); 
+		return Object.keys(cities).map(cityId => cities[cityId]); 
+	},
+
+	getStatesObject: function() {
+		let statesObject = {};
+		Object.keys(this.data.maps).map(cityId => {
+			statesObject[this.data.maps[cityId].state] = {
+				id: this.data.maps[cityId].state,
+				name: stateAbbrs[this.data.maps[cityId].state],
+				citiesIds: this.getCitiesForState(this.data.maps[cityId].state).map((cityData) => cityData.id)
+			}
+		});
+		return statesObject;
+	},
+
+	getStatesList: function() {
+		let states = this.getStatesObject();
+		return Object.keys(states).map(stateAbbr => states[stateAbbr]);
+	},
+
+	getStatesWithFirstCities: function() {
+		let states = [],
+			  cities = this.combineCitiesLists(),
+			  stateInList = function(state) {
+				  let inList = false;
+				  states.map((cityData) => {
+					  if (cityData.state == state) {
+						  inList = true;
+					  }
+				  });
+				  return inList;
+			  };
+
+		Object.keys(cities).map((cityId) => {
+			if (!stateInList(this.data.maps[cityId].state)) {
+				states.push(Object.assign({}, this.data.maps[cityId]));
+			}
+		}); 
+
+		states.map((cityData) => { cityData.name = stateAbbrs[cityData.state] });
+
+		return states;
+	},
+
+	getFirstCityOfState: function(state) {
+		let statesWithFirstCities = this.getStatesWithFirstCities();
+		for (let i in statesWithFirstCities) {
+			if (statesWithFirstCities[i].state == state) {
+				return statesWithFirstCities[i];
+			}
+		}
 	},
 	
 	// return a flat list of the HOLC maps for rendering
@@ -173,12 +266,12 @@ const RasterStore = {
 		let maps = {};
 
 		data.forEach(mapData => {
-			maps[mapData.id] = {
-				cityId : mapData.id,
-				id: mapData.id,
+			maps[mapData.map_id] = {
+				cityId : mapData.map_id,
+				id: mapData.map_id,
 				city: mapData.file_name,
 				state: mapData.state,
-				name: mapData.file_name + ", " + mapData.state,
+				name: mapData.file_name, // + ", " + mapData.state,
 				minZoom: mapData.minzoom,
 				maxZoom: mapData.maxzoom,
 				bounds: mapData.bounds,
@@ -210,7 +303,7 @@ const RasterStore = {
 				id: citiesData.id,
 				city: citiesData.city,
 				state: citiesData.state,
-				name: citiesData.city + ", " + stateAbbrs[citiesData.state] + ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? " **" : ' *'),
+				name: citiesData.city +  ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? " **" : ' *'), // ", " + stateAbbrs[citiesData.state] +
 				minLat: citiesData.minlat,
 				maxLat: citiesData.maxlat,
 				minLng: citiesData.minlng,

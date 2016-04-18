@@ -5,8 +5,7 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 export default class Downloader extends React.Component {
 	// property validation
 	static propTypes = {
-		mapurl: PropTypes.string,
-		name: PropTypes.string
+		stateName: PropTypes.string
 	};
 
 	constructor () {
@@ -25,9 +24,7 @@ export default class Downloader extends React.Component {
 
 	render () {
 		return (
-			<div>
-				<a href={this.props.mapurl} download={ this.props.name + "HOLCMap.jpg"}>Download HOLC map</a>
-			</div>
+			<div>State: {this.props.stateName}</div>
 		);
 	}
 }

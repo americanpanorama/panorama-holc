@@ -878,7 +878,7 @@ h6 {
   cursor: pointer; }
 
 .bottom-row {
-  height: 230px; }
+  height: 300px; }
 
 header {
   position: relative;
@@ -1194,17 +1194,33 @@ h2 {
   margin-bottom: 20px;
   height: calc(100% - 50px - 20px); }
   .panorama.item-selector ul {
-    height: 100%; }
-  .panorama.item-selector li {
-    text-transform: none; }
+    height: 100%;
+    padding: 200px 0; }
   .panorama.item-selector li.selected {
-    color: #0c789a;
     background-color: #d3e0df;
     border-width: 0px !important; }
   .panorama.item-selector li.selected:hover {
     color: #000; }
-  .panorama.item-selector h3 {
-    text-transform: uppercase; }
+  .cities .panorama.item-selector {
+    text-align: right; }
+  .panorama.item-selector .offset0 {
+    color: #0c789a;
+    font-weight: 700; }
+  .panorama.item-selector .offset1 {
+    color: #1fbdee;
+    font-weight: 500; }
+  .panorama.item-selector .offset2 {
+    color: #5fcff3;
+    font-weight: 400; }
+  .panorama.item-selector .offset3 {
+    color: #80d8f5;
+    font-weight: 350; }
+  .panorama.item-selector .offset4 {
+    color: #8fdef7;
+    font-weight: 325; }
+  .panorama.item-selector .offset5 {
+    color: #9ce1f7;
+    font-weight: 312; }
 
 .introjs-tooltiptext {
   font-size: 16px; }

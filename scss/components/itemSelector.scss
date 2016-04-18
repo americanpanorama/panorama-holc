@@ -1,21 +1,22 @@
 .panorama.item-selector {
+
+	$selected-color: #0c789a;
+	$deemphasized-color: #000;
+
 	width: 100%;
 	min-width: 10em;
 	margin-right: 20px;
 	margin-top: 10px;
 	margin-bottom: 20px;
 	height: calc(100% - 50px - 20px);
+	
 
 	ul {
 		height: 100%;
-	}
-
-	li {
-		text-transform: none;
+		padding: 200px 0;
 	}
 
 	li.selected {
-		color: #0c789a;
 		background-color: #d3e0df;
 		border-width: 0px !important;
 	}
@@ -24,8 +25,41 @@
 		color: #000;
 	}
 
-	h3 {
-		text-transform: uppercase;
+	.cities & {
+			text-align: right;
+		}
+
+	.offset0 {
+		color: $selected-color;
+		font-weight: 700;
 	}
+
+	.offset1 {
+		color: lighten(mix($selected-color, $deemphasized-color, 70%), 30%);
+		font-weight: 500;
+	}
+
+	.offset2 {
+		color: lighten(mix($selected-color, $deemphasized-color, 50%), 50%);
+		font-weight: 400;
+	}
+
+	.offset3 {
+		color: lighten(mix($selected-color, $deemphasized-color, 40%), 60%);
+		font-weight: 350;
+	}
+
+	.offset4 {
+		color: lighten(mix($selected-color, $deemphasized-color, 35%), 65%);
+		font-weight: 325;
+	}
+
+	.offset5 {
+		color: lighten(mix($selected-color, $deemphasized-color, 32.5%), 68.5%);
+		font-weight: 312;
+	}
+
+
+
 
 }
