@@ -12,7 +12,8 @@ export default class CityStats extends React.Component {
 		areaUnselected: PropTypes.func,
 		triggerIntro: PropTypes.func,
 		toggleBurgessDiagram: PropTypes.func,
-		burgessDiagramVisible: PropTypes.bool
+		burgessDiagramVisible: PropTypes.bool,
+		cityData: PropTypes.object
 	};
 
 	// (instead of ES5-style getDefaultProps)
@@ -65,15 +66,18 @@ export default class CityStats extends React.Component {
 	}
 
 	render () {
+				
 		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
-			  population1930 = (this.props.population1930) ? this.props.population1930.toLocaleString() : '',
-			  population1940 = (this.props.population1930) ? this.props.population1940.toLocaleString() : '',
+			  population1930 = (this.props.cityData.population_1930) ? this.props.cityData.population_1930.toLocaleString() : '',
+			  population1940 = (this.props.cityData.population_1940) ? this.props.cityData.population_1940.toLocaleString() : '',
 			  area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + " sq mi" : '';
 
 		return (
 			<div>
 				<div>Population in 1930: { population1930 }</div>
+				<div>{ (Math.round(this.props.cityData.white_pop_1930 / this.props.cityData.population_1930 * 100 )) + '% white, ' + (Math.round(this.props.cityData.black_pop_1930 / this.props.cityData.population_1930 * 100 )) + '% African American ' }</div>
 				<div>Population in 1940: { population1940 }</div>
+				<div>{ (Math.round(this.props.cityData.white_pop_1940 / this.props.cityData.population_1940 * 100 )) + '% white, ' + (Math.round(this.props.cityData.black_pop_1940 / this.props.cityData.population_1940 * 100 )) + '% African American ' }</div>
 				<div>Area of city graded: { area }</div>
 				<div className='panorama nestedpiechart'>
 					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>

@@ -16,6 +16,7 @@ import CityStore from './stores/CityStore';
 import CityStats from './components/CityStats.jsx';
 import StateStats from './components/StateStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
+import ADCat from './components/ADCat.jsx';
 import Downloader from './components/Downloader.jsx';
 import HolcItemSelector from './components/ItemSelector.jsx';
 import Donut from './components/Donut/Donut.jsx';
@@ -41,7 +42,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','toggleAbout','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState'];
+		let handlers = ['onWindowResize','hashChanged','toggleAbout','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -84,7 +85,10 @@ export default class App extends React.Component {
 			selectedCity: {
 				id: (hashState.city) ? hashState.city : (hashState.state) ? null : 168, // Richmond
 				areaDescriptions: {},
+				ADsByCat: {},
 				selectedNeighborhood: (hashState.area) ? hashState.area : null,
+				selectedCategory: (hashState.category) ? hashState.category : null,
+				selectedSubCat: (hashState.subcat) ? hashState.subcat : null,
 				rings: {
 					geometries: [],
 					stats: {},
@@ -129,7 +133,10 @@ export default class App extends React.Component {
 			selectedCity: {
 				id: RasterStore.getSelectedCityMetadata('id'),
 				selectedNeighborhood: (hashState && hashState.area) ? hashState.area : null,
+				selectedCategory: (hashState && hashState.category) ? hashState.category : null,
+				selectedSubCat: (hashState && hashState.subcat) ? hashState.subcat : null,
 				areaDescriptions: CityStore.getAreaDescriptions(),
+				ADsByCat: CityStore.getADsByCat(),
 				rings: {
 					selectedArea: CityStore.getSelectedRingAreas(),
 					geometries: CityStore.getRingAreasGeometry(),
@@ -152,7 +159,10 @@ export default class App extends React.Component {
 			selectedCity: {
 				id: RasterStore.getSelectedCityMetadata('id'),
 				selectedNeighborhood: null,
+				selectedCategory: null,
+				selectedSubCat: null,
 				areaDescriptions: CityStore.getAreaDescriptions(),
+				ADsByCat: CityStore.getADsByCat(),
 				rings: {
 					selectedArea:  CityStore.getSelectedRingAreas(),
 					center: CityStore.getLoopLatLng(),
@@ -180,8 +190,16 @@ export default class App extends React.Component {
 	}
 
 	neighborhoodSelected (id) {
-		this.setState({selectedCity: update(this.state.selectedCity, {selectedNeighborhood: {$set: id}})});
-		this.changeHash();
+		this.setState({selectedCity: update(this.state.selectedCity, {selectedNeighborhood: {$set: id}, selectedCategory: {$set: null}})}, this.changeHash);
+	}
+
+	categorySelected (id) {
+		this.setState({
+			selectedCity: update(this.state.selectedCity, {
+				selectedCategory: {$set: id},
+				selectedNeighborhood: {$set: null}
+			})
+		}, this.changeHash);
 	}
 
 	updateSelectedState () {
@@ -233,7 +251,7 @@ export default class App extends React.Component {
 	}
 
 	onNeighborhoodClick (event) {
-		let neighborhoodId = event.target.options.neighborhoodId;
+		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id;
 		if (neighborhoodId !== this.state.selectedCity.selectedNeighborhood) {
 			this.neighborhoodSelected(neighborhoodId);
 		} else {
@@ -243,6 +261,10 @@ export default class App extends React.Component {
 
 	onSelectedNeighborhoodClick () {
 		this.neighborhoodSelected(null);
+	}
+
+	onCategoryClick (event) {
+		this.categorySelected(event.target.id);
 	}
 
 	onMapMoved (event) {
@@ -331,7 +353,8 @@ export default class App extends React.Component {
 		let newState = { 
 			state: this.state.selectedState,
 			city: this.state.selectedCity.id,
-			area: this.state.selectedCity.selectedNeighborhood 
+			area: this.state.selectedCity.selectedNeighborhood,
+			category: this.state.selectedCity.selectedCategory
 		};
 		newState[HashManager.MAP_STATE_KEY] = {
 			zoom: this.state.map.zoom,
@@ -460,7 +483,6 @@ export default class App extends React.Component {
 		for (let i in stateList) {
 			stateClasses[stateList[i]] = 'offset' + ((Math.abs(selectedIndex - i) < 5) ? Math.abs(selectedIndex - i) : 5);
 		}
-		console.log(RasterStore.getStatesWithFirstCities());
 
 		return {
 			title: 'Select a city:',
@@ -493,6 +515,17 @@ export default class App extends React.Component {
 		});
 	}
 
+	getADsByCat () {
+		let pieces = this.state.selectedCity.selectedCategory.split('-');
+		if (pieces.length == 1 && this.state.selectedCity.ADsByCat[pieces[0]]) {
+			return this.state.selectedCity.ADsByCat[pieces[0]];
+		} else if (pieces.length == 2 && this.state.selectedCity.ADsByCat[pieces[0]] && this.state.selectedCity.ADsByCat[pieces[0]][pieces[1]]) {
+			return this.state.selectedCity.ADsByCat[pieces[0]][pieces[1]];
+		} else {
+			return false;
+		}
+	}
+
 	isSelectedRing (ringNum) { return ringNum == this.state.selectedCity.rings.selectedArea.ringId; }
 
 	donutShouldBeMasked (ringNum) { return this.state.selectedCity.rings.selectedArea.ringId > 0 && ringNum > this.state.selectedCity.rings.selectedArea.ringId; } 
@@ -501,7 +534,7 @@ export default class App extends React.Component {
 
 	render () {
 
-		console.log(this.state);
+		//console.log(this.state);
 				
 		let modalStyle = {
 				overlay : {
@@ -704,16 +737,22 @@ export default class App extends React.Component {
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
 		} else if (this.state.selectedCity.selectedNeighborhood) {
 			title = <h2>
-								<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-								<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
-							</h2>;
-			content = <AreaDescription ref={'areadescription' + this.state.selectedCity.selectedNeighborhood } areaData={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood] } formId={ CityStore.getFormId() } />;
+						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
+						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+					</h2>;
+			content = <AreaDescription ref={'areadescription' + this.state.selectedCity.selectedNeighborhood } areaData={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } />;
+		} else if (this.state.selectedCity.selectedCategory && this.getADsByCat()) {
+			title = <h2>
+						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
+						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+					</h2>;
+			content = <ADCat ref={'ADCat' + this.state.selectedCity.selectedCategory } categoryData={ this.getADsByCat() } onNeighborhoodClick={ this.onNeighborhoodClick } />;
 		} else if (this.state.selectedCity.id) {
 			title = <h2>
 								<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 								<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 							</h2>;
-			content = <CityStats population1930={ CityStore.getPopulation1930() } population1940={ CityStore.getPopulation1940() } area={ CityStore.getArea() } ringStats={ this.state.selectedCity.rings.stats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />;
+			content = <CityStats cityData={ CityStore.getCityData() } area={ CityStore.getArea() } ringStats={ this.state.selectedCity.rings.stats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />;
 		} else if (this.state.selectedState) {
 			title = <h2>{ stateAbbrs[this.state.selectedState] }</h2>;
 			content = <StateStats stateName={this.state.selectedState} />;
@@ -726,11 +765,6 @@ export default class App extends React.Component {
 				{ content }
 			</div>
 		)
-	}
-
-
-	renderSidebarContent() {
-
 	}
 
 	parseAboutModalCopy () {

@@ -1107,6 +1107,8 @@ ul.area_description {
     margin: 7px 0 7px 34px;
     line-height: 26px;
     font-weight: bolder; }
+  ul.area_description .catSelectable {
+    border-bottom: 1px dotted; }
   ul.area_description .subcatData {
     margin-left: 5px;
     line-height: 1.3;

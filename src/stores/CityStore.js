@@ -21,6 +21,7 @@ const CityStore = {
 		loopLatLng: [],
 		// the distance in meters between the loop center and the outermost point
 		outerRingRadius: null,
+		cityData: {},
 
 		/** Percentages of each ring for each grade, with 
 		 * density recording the amount of neighborhood area 
@@ -40,6 +41,7 @@ const CityStore = {
 		 */
 		ringStats: {},
 		areaDescriptions: {},
+		ADsByCat: {},
 		polygonBoundingBox: null
 	},
 
@@ -81,8 +83,7 @@ const CityStore = {
 			this.data.state = cityData.state;
 			this.data.year = cityData.year;
 			this.data.form_id = cityData.form_id;
-			this.data.population_1930 = cityData.population_1930;
-			this.data.population_1940 = cityData.population_1940;
+			this.data.cityData = cityData;
 			this.data.ringAreaSelected = {
 				ringId: 0,
 				grade: ''
@@ -92,6 +93,7 @@ const CityStore = {
 			this.data.outerRingRadius = (response[2][0]) ? response[2][0].distintv : false;
 			this.data.loopLatLng = (response[2][0]) ? [response[2][0].looplat, response[2][0].looplng] : false;
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[3]);
+			this.data.ADsByCat = this.parseADsByCat();
 			this.data.polygonBoundingBox = response[4];
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
@@ -110,7 +112,6 @@ const CityStore = {
 
 	citySelected: function(cityId, callback) {
 		this.loadData(cityId);
-		console.log(callback);
 		if (callback) {
 			callback();
 		}
@@ -128,12 +129,8 @@ const CityStore = {
 		return this.data.ringAreasGeometry;
 	},
 
-	getPopulation1930: function() {
-		return this.data.population_1930;
-	},
-
-	getPopulation1940: function() {
-		return this.data.population_1940;
+	getCityData: function() {
+		return this.data.cityData;
 	},
 
 	getSelectedRingAreas: function() {
@@ -150,6 +147,10 @@ const CityStore = {
 
 	getAreaDescriptions: function() {
 		return this.data.areaDescriptions;
+	},
+
+	getADsByCat: function() {
+		return this.data.ADsByCat;
 	},
 
 	getArea: function () {
@@ -304,6 +305,27 @@ const CityStore = {
 		}  // end if
 
 		return adData;
+	},
+
+	parseADsByCat: function() {
+		let ADsByCat = {},
+			  ADs = this.data.areaDescriptions;
+		Object.keys(ADs).forEach(function(neighborhoodId) {
+			Object.keys(ADs[neighborhoodId].areaDesc).forEach(function(cat) {
+				// initialize if necessary
+				ADsByCat[cat] = ADsByCat[cat] || {};
+				if (typeof(ADs[neighborhoodId].areaDesc[cat]) == 'string') {
+					ADsByCat[cat][neighborhoodId] = ADs[neighborhoodId].areaDesc[cat];
+				} else if (typeof(ADs[neighborhoodId].areaDesc[cat]) == 'object') {
+					Object.keys(ADs[neighborhoodId].areaDesc[cat]).forEach(function (subcat) {
+						ADsByCat[cat][subcat] = ADsByCat[cat][subcat] || {};
+						ADsByCat[cat][subcat][neighborhoodId] = ADs[neighborhoodId].areaDesc[cat][subcat];
+					});
+				}
+			});
+		});
+
+		return ADsByCat;
 	}
 
 };

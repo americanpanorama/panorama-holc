@@ -557,10 +557,11 @@ export default class AreaDescription extends React.Component {
 
 	renderSimpleCategory(catNum, catName) {
 		let AD = this.props.areaData.areaDesc;
+				
 		return (
 			<li>
-				<span className='catNum'>{ catNum }</span>
-				<span className='catName'>{ catName }</span>
+				<span className='catNum catSelectable' onClick={ this.props.onCategoryClick } id={ catNum }>{ catNum }</span>
+				<span className='catName catSelectable' onClick={ this.props.onCategoryClick } id={ catNum }>{ catName }</span>
 				<span className='catData'>{ (AD[catNum] ) ? AD[catNum] : <span className='empty'>empty</span>}</span>
 			</li>
 		);
@@ -570,8 +571,8 @@ export default class AreaDescription extends React.Component {
 		let AD = this.props.areaData.areaDesc;
 		return (
 			<li>
-				<span className='catLetter'>{ catLetter }</span>
-				<span className='subcatName'>{ subcatName }</span>
+				<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id={ catNum + '-' + catLetter }>{ catLetter }</span>
+				<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id={ catNum + '-' + catLetter }>{ subcatName }</span>
 				<span className='subcatData'>{ (AD[catNum] && AD[catNum][catLetter] ) ? AD[catNum][catLetter] : <span className='empty'>empty</span>}</span>
 			</li>
 		);
