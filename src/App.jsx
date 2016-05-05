@@ -32,6 +32,7 @@ import cartodbLayers from '../basemaps/cartodb/basemaps.json';
 import panoramaNavData from '../data/panorama_nav.json';
 
 import stateAbbrs from '../data/state_abbr.json';
+import formsMetadata from '../data/formsMetadata.json';
 
 // main app container
 export default class App extends React.Component {
@@ -515,17 +516,6 @@ export default class App extends React.Component {
 		});
 	}
 
-	getADsByCat () {
-		let pieces = this.state.selectedCity.selectedCategory.split('-');
-		if (pieces.length == 1 && this.state.selectedCity.ADsByCat[pieces[0]]) {
-			return this.state.selectedCity.ADsByCat[pieces[0]];
-		} else if (pieces.length == 2 && this.state.selectedCity.ADsByCat[pieces[0]] && this.state.selectedCity.ADsByCat[pieces[0]][pieces[1]]) {
-			return this.state.selectedCity.ADsByCat[pieces[0]][pieces[1]];
-		} else {
-			return false;
-		}
-	}
-
 	isSelectedRing (ringNum) { return ringNum == this.state.selectedCity.rings.selectedArea.ringId; }
 
 	donutShouldBeMasked (ringNum) { return this.state.selectedCity.rings.selectedArea.ringId > 0 && ringNum > this.state.selectedCity.rings.selectedArea.ringId; } 
@@ -741,12 +731,13 @@ export default class App extends React.Component {
 						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 					</h2>;
 			content = <AreaDescription ref={'areadescription' + this.state.selectedCity.selectedNeighborhood } areaData={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } />;
-		} else if (this.state.selectedCity.selectedCategory && this.getADsByCat()) {
+		} else if (this.state.selectedCity.selectedCategory && CityStore.getADsByCat(...this.state.selectedCity.selectedCategory.split('-'))) {
+			let [catNum, catLetter] = this.state.selectedCity.selectedCategory.split('-');
 			title = <h2>
 						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 					</h2>;
-			content = <ADCat ref={'ADCat' + this.state.selectedCity.selectedCategory } categoryData={ this.getADsByCat() } onNeighborhoodClick={ this.onNeighborhoodClick } />;
+			content = <ADCat catNum={ catNum } catLetter = { catLetter } onNeighborhoodClick={ this.onNeighborhoodClick } onCategoryClick={ this.onCategoryClick } />;
 		} else if (this.state.selectedCity.id) {
 			title = <h2>
 								<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>

@@ -4,6 +4,8 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
 import _ from 'lodash';
 import Leaflet from 'leaflet';
+import formsMetadata from '../../data/formsMetadata.json';
+
 
 const CityStore = {
 
@@ -149,8 +151,63 @@ const CityStore = {
 		return this.data.areaDescriptions;
 	},
 
-	getADsByCat: function() {
-		return this.data.ADsByCat;
+	getADsByCat: function(cat, subcat) {
+		if (!cat) {
+			return this.data.ADsByCat;
+		}
+
+		if (!subcat && this.data.ADsByCat[cat]) {
+			return this.data.ADsByCat[cat];
+		} else if (subcat && this.data.ADsByCat[cat] && this.data.ADsByCat[cat][subcat]) {
+			return this.data.ADsByCat[cat][subcat];
+		}
+		
+		return false;
+	},
+
+	getCategoryString: function(catNum, catLetter) {
+		return catNum + ((catLetter) ? '-' + catLetter : '');
+	},
+
+	getCatTitle: function(cat, subcat) {
+		let formId = this.getFormId();
+		if (!subcat) {
+			return cat + ' ' + formsMetadata[formId][cat];
+		} else if (subcat) {
+			return cat + subcat + ' ' + formsMetadata[formId][cat].header + ((formsMetadata[formId][cat].subcats[subcat] !== '') ? ': ' + formsMetadata[formId][cat].subcats[subcat] : '');
+		} else {
+			return false;
+		}
+	},
+
+	getPreviousCatIds: function(catNum, catLetter) {
+		let formId = this.getFormId();
+		for (let checkCatNum = (!catLetter) ? parseInt(catNum) - 1 : parseInt(catNum); checkCatNum >= 1; checkCatNum--) {
+			for (let checkCatLetter = (!catLetter || catLetter == 'a') ? 'z' : String.fromCharCode(catLetter.charCodeAt()-1); checkCatLetter >= 'a'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()-1), catLetter == undefined) {
+				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
+					return [checkCatNum, undefined];
+				} else if (formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
+					return [checkCatNum, checkCatLetter];
+				}
+			}
+		}
+
+		return false;
+	},
+
+	getNextCatIds: function(catNum, catLetter) {
+		let formId = this.getFormId();
+		for (let checkCatNum = (!catLetter) ? parseInt(catNum) + 1 : parseInt(catNum); checkCatNum < 30; checkCatNum++) {
+			for (let checkCatLetter = (!catLetter || catLetter == 'z') ? 'a' : String.fromCharCode(catLetter.charCodeAt()+1); checkCatLetter <= 'z'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()+1), catLetter == undefined) {
+				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
+					return [checkCatNum, undefined];
+				} else if (formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
+					return [checkCatNum, checkCatLetter];
+				}
+			}
+		}
+
+		return false;
 	},
 
 	getArea: function () {
@@ -174,57 +231,7 @@ const CityStore = {
 			}
 		});
 
-		/* alphanum.js (C) Brian Huisman
-		* Based on the Alphanum Algorithm by David Koelle
-		* The Alphanum Algorithm is discussed at http://www.DaveKoelle.com
-		*
-		* Distributed under same license as original
-		* 
-		* This library is free software; you can redistribute it and/or
-		* modify it under the terms of the GNU Lesser General Public
-		* License as published by the Free Software Foundation; either
-		* version 2.1 of the License, or any later version.
-		* 
-		* This library is distributed in the hope that it will be useful,
-		* but WITHOUT ANY WARRANTY; without even the implied warranty of
-		* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-		* Lesser General Public License for more details.
-		* 
-		* You should have received a copy of the GNU Lesser General Public
-		* License along with this library; if not, write to the Free Software
-		* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-		*/
-
-		let alphanumCase = function(a, b) {
-			function chunkify(t) {
-				var tz = new Array();
-				var x = 0, y = -1, n = 0, i, j;
-
-				while (i = (j = t.charAt(x++)).charCodeAt(0)) {
-					var m = (i == 46 || (i >=48 && i <= 57));
-					if (m !== n) {
-						tz[++y] = "";
-						n = m;
-					}
-					tz[y] += j;
-				}
-				return tz;
-			}
-	
-			var aa = chunkify(a.neighborhoodId.toLowerCase());
-			var bb = chunkify(b.neighborhoodId.toLowerCase());		
-			for (let x = 0; aa[x] && bb[x]; x++) {
-				if (aa[x] !== bb[x]) {
-					var c = Number(aa[x]), d = Number(bb[x]);
-					if (c == aa[x] && d == bb[x]) {
-						return c - d;
-					} else return (aa[x] > bb[x]) ? 1 : -1;
-				}
-			}
-			return aa.length - bb.length;
-		}
-
-		arr.sort(alphanumCase);
+		arr.sort(this.alphanumCase);
 
 		return arr;
 	},
@@ -326,8 +333,55 @@ const CityStore = {
 		});
 
 		return ADsByCat;
-	}
+	},
 
+	/* alphanum.js (C) Brian Huisman
+	* Based on the Alphanum Algorithm by David Koelle
+	* The Alphanum Algorithm is discussed at http://www.DaveKoelle.com
+	*
+	* Distributed under same license as original
+	* 
+	* This library is free software; you can redistribute it and/or
+	* modify it under the terms of the GNU Lesser General Public
+	* License as published by the Free Software Foundation; either
+	* version 2.1 of the License, or any later version.
+	* 
+	* This library is distributed in the hope that it will be useful,
+	* but WITHOUT ANY WARRANTY; without even the implied warranty of
+	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	* Lesser General Public License for more details.
+	* 
+	* You should have received a copy of the GNU Lesser General Public
+	* License along with this library; if not, write to the Free Software
+	* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+	*/
+	alphanumCase: function(a, b) {
+		function chunkify(t) {
+			var tz = new Array();
+			var x = 0, y = -1, n = 0, i, j;
+			while (i = (j = t.charAt(x++)).charCodeAt(0)) {
+				var m = (i == 46 || (i >=48 && i <= 57));
+				if (m !== n) {
+					tz[++y] = "";
+					n = m;
+				}
+				tz[y] += j;
+			}
+			return tz;
+		}
+
+		var aa = chunkify(a.neighborhoodId.toLowerCase());
+		var bb = chunkify(b.neighborhoodId.toLowerCase());		
+		for (let x = 0; aa[x] && bb[x]; x++) {
+			if (aa[x] !== bb[x]) {
+				var c = Number(aa[x]), d = Number(bb[x]);
+				if (c == aa[x] && d == bb[x]) {
+					return c - d;
+				} else return (aa[x] > bb[x]) ? 1 : -1;
+			}
+		}
+		return aa.length - bb.length;
+	}
 };
 
 // Mixin EventEmitter functionality
