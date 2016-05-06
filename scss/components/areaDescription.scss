@@ -39,6 +39,7 @@ ul.area_description {
 
     .catSelectable {
         border-bottom: 1px dotted;
+        cursor: pointer;
     }
 
     .subcatData {
@@ -102,6 +103,7 @@ ul.area_description {
     .empty {
         color: #888;
         font-style: italic;
+        margin-left: 4px;
     }
 
 }
@@ -179,6 +181,22 @@ h2 {
     margin-bottom: 1.5em;
 } */
 
+
+.grade-headerA h2 {
+    background-color: #a0c6a0;
+}
+
+.grade-headerB h2 {
+    background-color: #baccde;
+}
+
+.grade-headerC h2 {
+    background-color: #ececc6;
+}
+
+.grade-headerD h2 {
+    background-color: #dcc1c1;
+}
 
 
 

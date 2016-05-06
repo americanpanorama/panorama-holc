@@ -87,8 +87,8 @@ export default class ADCat extends React.Component {
 			categoryData = CityStore.getADsByCat(this.props.catNum, this.props.catLetter);
 		return (
 			<div>
-				<div>{ grade }</div>
-				<ul ref={ 'cat' + grade }>
+				<div className={'grade-header' + grade}><h2>{ grade }</h2></div>
+				<ul className='area_description' ref={ 'cat' + grade }>
 					{ Object.keys(categoryData).sort(this.alphanumCase).map(neighborhoodId => {
 						if (grade == neighborhoodId.charAt(0)) {
 							return (
@@ -106,7 +106,7 @@ export default class ADCat extends React.Component {
 
 	renderDatum(datum) {
 		return (
-			<span>{ (datum) ? <span>{ datum }</span> : <span className='empty'>empty</span> }</span>
+			<span>{ (datum) ? <span className='subcatData'>{ datum }</span> : <span className='empty'>empty</span> }</span>
 		);
 	}
 

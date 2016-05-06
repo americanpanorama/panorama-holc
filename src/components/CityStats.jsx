@@ -73,12 +73,19 @@ export default class CityStats extends React.Component {
 			  area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + " sq mi" : '';
 
 		return (
-			<div>
-				<div>Population in 1930: { population1930 }</div>
-				<div>{ (Math.round(this.props.cityData.white_pop_1930 / this.props.cityData.population_1930 * 100 )) + '% white, ' + (Math.round(this.props.cityData.black_pop_1930 / this.props.cityData.population_1930 * 100 )) + '% African American ' }</div>
-				<div>Population in 1940: { population1940 }</div>
-				<div>{ (Math.round(this.props.cityData.white_pop_1940 / this.props.cityData.population_1940 * 100 )) + '% white, ' + (Math.round(this.props.cityData.black_pop_1940 / this.props.cityData.population_1940 * 100 )) + '% African American ' }</div>
-				<div>Area of city graded: { area }</div>
+			<div className='stats'>
+				<div className='stat-columns'>
+				<ul className='left-stat'>
+					<li>Population in 1930:</li> <li><span className='state-stat'>{ population1930 }</span></li>
+					<li><span className='population-stat'>{ (Math.round(this.props.cityData.white_pop_1930 / this.props.cityData.population_1930 * 100 )) + '%' }</span> white</li><li><span className='population-stat'>{ (Math.round(this.props.cityData.black_pop_1930 / this.props.cityData.population_1930 * 100 )) + '%' }</span> African American</li>
+				</ul>
+				<ul className='right-stat'>	
+					<li>Population in 1940:</li> <li><span className='state-stat'>{ population1940 }</span></li>
+					<li><span className='population-stat'>{ (Math.round(this.props.cityData.white_pop_1940 / this.props.cityData.population_1940 * 100 )) + '%' }</span> white</li><li><span className='population-stat'>{ (Math.round(this.props.cityData.black_pop_1940 / this.props.cityData.population_1940 * 100 )) + '%' }</span> African American</li>
+					
+				</ul>
+				<li>Area of city graded: <span className='state-stat'>{ area }</span></li>
+				</div>
 				<div className='panorama nestedpiechart'>
 					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
 					{ (this.props.ringStats) ?
