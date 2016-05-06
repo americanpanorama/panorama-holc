@@ -46,14 +46,14 @@ export default class ADCat extends React.Component {
 	renderGrade(grade) {
 		return (
 			<div>
-				<div>{ grade }</div>
-				<ul ref={ 'cat' + grade }>
+				<div className={'grade-header' + grade}><h2>{ grade }</h2></div>
+				<ul className='area_description' ref={ 'cat' + grade }>
 					{ Object.keys(this.props.categoryData).map(neighborhoodId => {
 						if (grade == neighborhoodId.charAt(0)) {
 							return (
 								<li key={ 'cat' + grade + neighborhoodId }>
-									<span onClick={ this.props.onNeighborhoodClick } id={ neighborhoodId }>{ neighborhoodId }</span>:
-									{ (this.props.categoryData[neighborhoodId]) ? <span>{ this.props.categoryData[neighborhoodId] }</span> : <span className='empty'>empty</span> }
+									<span className='subcatName' onClick={ this.props.onNeighborhoodClick } id={ neighborhoodId }>{ neighborhoodId }</span>:
+									{ (this.props.categoryData[neighborhoodId]) ? <span className='subcatData'>{ this.props.categoryData[neighborhoodId] }</span> : <span className='empty'>empty</span> }
 								</li>
 							);
 						}

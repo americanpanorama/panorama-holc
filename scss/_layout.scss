@@ -300,3 +300,33 @@ hr.style-eight:after {
     }
 
 }
+
+.stat-columns {
+	height: 200px;
+}
+
+.stats li {
+	list-style: none;
+}
+
+.state-stat {
+	color: #0c789a;
+	font-weight: bolder;
+	margin-top: 4px;
+}
+
+.population-stat {
+	color: #0c789a;
+	font-weight: bolder;
+	margin: 0px 2px 0px 0px;
+}
+
+ul.left-stat {
+	width: 50%;
+	float: left
+}
+
+ul.right-stat {
+	width: 50%;
+	float: right;
+}
