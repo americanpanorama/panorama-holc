@@ -20,6 +20,10 @@ export default class ADCat extends React.Component {
 
 		super();
 
+		// bind handlers
+		let handlers = ['render19370826_5c', 'render19370826_5c', 'render19370203_5d', 'render19370826_5d', 'render19370826_5g', 'render19370203_5g','render19370203_8a','render19370826_8a','render19370203_8b','render19370826_8b','render19370203_8c','render19370826_8c'];
+		handlers.map(handler => { this[handler] = this[handler].bind(this); });
+
 	}
 
 	componentWillMount () {}
@@ -79,7 +83,8 @@ export default class ADCat extends React.Component {
 	}
 
 	renderGrade(grade) {
-		let categoryData = CityStore.getADsByCat(this.props.catNum, this.props.catLetter)
+		let possibleFunction = this['render' + CityStore.getFormId() + '_' + this.props.catNum + ((this.props.catLetter) ? this.props.catLetter : '')],
+			categoryData = CityStore.getADsByCat(this.props.catNum, this.props.catLetter);
 		return (
 			<div>
 				<div>{ grade }</div>
@@ -88,8 +93,8 @@ export default class ADCat extends React.Component {
 						if (grade == neighborhoodId.charAt(0)) {
 							return (
 								<li key={ 'cat' + grade + neighborhoodId }>
-									<span onClick={ this.props.onNeighborhoodClick } id={ neighborhoodId }>{ neighborhoodId }</span>:
-									{ (categoryData[neighborhoodId]) ? <span>{ categoryData[neighborhoodId] }</span> : <span className='empty'>empty</span> }
+									<span onClick={ this.props.onNeighborhoodClick } id={ neighborhoodId }>{ neighborhoodId }</span>: 
+									{ (typeof(possibleFunction) === 'function') ? possibleFunction(categoryData[neighborhoodId]) : this.renderDatum(categoryData[neighborhoodId]) }
 								</li>
 							);
 						}
@@ -98,6 +103,46 @@ export default class ADCat extends React.Component {
 			</div>
 		);
 	}
+
+	renderDatum(datum) {
+		return (
+			<span>{ (datum) ? <span>{ datum }</span> : <span className='empty'>empty</span> }</span>
+		);
+	}
+
+	render19370203_5c(data) {
+		return (
+			<span>
+				{ this.renderDatum(data[1])}; { this.renderDatum(data[2])}
+			</span>
+		);
+	}
+
+	render19370826_5c = this.render19370203_5c;
+	render19370203_5d = this.render19370203_5c;
+	render19370826_5d = this.render19370203_5c;
+
+	render19370203_5g(data) {
+		return (
+			<span>
+				Population is increasing { this.renderDatum(data[1])}; decreasing { this.renderDatum(data[2])}; static.
+			</span>
+		);
+	}
+
+	render19370826_5g = this.render19370203_5g;
+
+	render19370203_8a(data) {
+		return (
+			<span>{ this.renderDatum(data) }%</span>
+		);
+	}
+
+	render19370826_8a = this.render19370203_8a;
+	render19370203_8b = this.render19370203_8a;
+	render19370826_8b = this.render19370203_8a;
+	render19370203_8c = this.render19370203_8a;
+	render19370826_8c = this.render19370203_8a;
 
 	render () {
 

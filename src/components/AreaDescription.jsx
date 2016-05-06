@@ -135,20 +135,20 @@ export default class AreaDescription extends React.Component {
 						{ this.renderSimpleSubcategory(5, 'a', 'Type') }
 						{ this.renderSimpleSubcategory(5, 'b', 'Estimated annual family income') }
 						<li>
-							<span className='catLetter'>c</span>
-							<span className='subcatName'>Foreign-born</span>
+							<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id='5-c'>c</span>
+							<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id='5-c'>Foreign-born</span>
 							<span className='subcatData'>{ (AD[5] && AD[5]['c']['1'] ) ? AD[5]['c']['1'] : <span className='empty'>empty</span> }; { (AD[5] && AD[5]['c']['2'] ) ? AD[5]['c']['2'] : <span className='empty'>empty</span> }</span>
 						</li>
 						<li>
-							<span className='catLetter'>d</span>
-							<span className='subcatName'>Negro</span>
+							<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id='5-d'>d</span>
+							<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id='5-d'>Negro</span>
 							<span className='subcatData'>{ (AD[5] && AD[5]['d']['1'] ) ? AD[5]['d']['1'] : <span className='empty'>empty</span> }; { (AD[5] && AD[5]['d']['2'] ) ? AD[5]['d']['2'] : <span className='empty'>empty</span> }</span>
 						</li>
 						{ this.renderSimpleSubcategory(5, 'e', 'Infiltration of') }
 						{ this.renderSimpleSubcategory(5, 'f', 'Relief families') }
 						<li>
-							<span className='catLetter'>g</span>
-							<span className='subcatName'>Population is increasing</span>
+							<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id='5-g'>g</span>
+							<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id='5-g'>Population is increasing</span>
 							<span className='subcatData'>{ (AD[5] && AD[5]['g']['1'] ) ? AD[5]['g']['1'] : <span className='empty'>empty</span> }</span>
 							<span className='subcatName'>; decreasing</span>
 							<span className='subcatData'>{ (AD[5] && AD[5]['g']['2'] ) ? AD[5]['g']['2'] : <span className='empty'>empty</span> }</span>; 
