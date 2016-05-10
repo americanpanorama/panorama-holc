@@ -165,6 +165,16 @@ const CityStore = {
 		return false;
 	},
 
+	getPreviousAreaId: function(areaId) {
+		let formIds = Object.keys(this.data.areaDescriptions).sort(this.alphanumCase);
+		return formIds[formIds.indexOf(areaId) - 1];
+	},
+
+	getNextAreaId: function(areaId) {
+		let formIds = Object.keys(this.data.areaDescriptions).sort(this.alphanumCase);
+		return formIds[formIds.indexOf(areaId) + 1];
+	},
+
 	getCategoryString: function(catNum, catLetter) {
 		return catNum + ((catLetter) ? '-' + catLetter : '');
 	},
@@ -370,8 +380,8 @@ const CityStore = {
 			return tz;
 		}
 
-		var aa = chunkify(a.neighborhoodId.toLowerCase());
-		var bb = chunkify(b.neighborhoodId.toLowerCase());		
+		var aa = (a.neighborhoodId) ? chunkify(a.neighborhoodId.toLowerCase()) : chunkify(a.toLowerCase());
+		var bb = (b.neighborhoodId) ? chunkify(b.neighborhoodId.toLowerCase()) : chunkify(b.toLowerCase());	
 		for (let x = 0; aa[x] && bb[x]; x++) {
 			if (aa[x] !== bb[x]) {
 				var c = Number(aa[x]), d = Number(bb[x]);

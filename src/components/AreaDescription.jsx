@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
+import CityStore from '../stores/CityStore';
 
 
 export default class AreaDescription extends React.Component {
@@ -49,61 +50,32 @@ export default class AreaDescription extends React.Component {
 			return false;
 		}
 
-		switch(this.props.formId) {
-			case 19370203:
-			case 19370826:
-			case '19370203':
-			case '19370826':
-				return this.renderNSForm8_19370203();
-			case 19371001:
-			case '19371001':
-				return this.renderNSForm8_19371001();
-		}
+		console.log(this.props.formId);
 
-
-	}
-
-	renderOLD () {
-
-		if (typeof(this.props.areaData.areaDesc) == 'undefined') {
-			return false;
-		}
+		console.log(([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :
+				  (parseInt(this.props.formId) == 19371001) ? this.renderNSForm8_19371001() :
+				  null);
 
 		return (
-			<div className='area_description'>
-				<div id="neighborhood">
-					<h2 className="data_title">Neighborhood</h2>
-					<div id="neighborhood_name"></div>
-					<div id="neighborhood_location"></div>
-					<div id="neighborhood_id"></div>
-					<div id="holc_grade">{ this.props.areaData.holc_grade }</div>
-				</div>
-				<div className='area_desc'>
-					<h2 className='data_title'>Area Description</h2>
-					<ul className="area_data">
-						{ Object.keys(this.props.areaData.areaDesc).map((catNum) => {
-							let catData = this.props.areaData.areaDesc[catNum];
-							let subcats = null;
-							if (!catData.hasOwnProperty("question")) {
-								subcats = Object.keys(this.props.areaData.areaDesc[catNum]).sort().map((subcatLetter) => {
-									return (
-										<li key={ catNum + subcatLetter }>{ subcatLetter }. { catData[subcatLetter].question }:  <span className='answer'>{ catData[subcatLetter].answer }</span></li>
-									)
-								});
-							}
-							return (
-								<li key={ catNum }>
-									<span className="category">{ catNum }. { catData.question }</span>  <span className='answer'>{ catData.answer }</span>
-									<ul>{ subcats }</ul>
-								</li>
-							)
-						}) }
-					</ul>
-				</div>
+
+			<div>
+
+				<ul>
+					<li>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }>{ CityStore.getPreviousAreaId(this.props.areaId) }</span> : '' }</li>
+					<li>{ (CityStore.getNextAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getNextAreaId(this.props.areaId) }>{ CityStore.getNextAreaId(this.props.areaId) }</span> : '' }</li>
+				</ul>
+		
+				{ ([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :
+				  (parseInt(this.props.formId) == 19371001) ? this.renderNSForm8_19371001() :
+				  null
+				}
+
 			</div>
 		);
 
+
 	}
+
 
 	renderNSForm8_19370203() {
 		let AD = this.props.areaData.areaDesc;

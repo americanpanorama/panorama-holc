@@ -83,7 +83,7 @@ export default class ADCat extends React.Component {
 	}
 
 	renderGrade(grade) {
-		let possibleFunction = this['render' + CityStore.getFormId() + '_' + this.props.catNum + ((this.props.catLetter) ? this.props.catLetter : '')],
+		let idiosyncraticDisplay = this['render' + CityStore.getFormId() + '_' + this.props.catNum + ((this.props.catLetter) ? this.props.catLetter : '')],
 			categoryData = CityStore.getADsByCat(this.props.catNum, this.props.catLetter);
 		return (
 			<div>
@@ -92,9 +92,9 @@ export default class ADCat extends React.Component {
 					{ Object.keys(categoryData).sort(this.alphanumCase).map(neighborhoodId => {
 						if (grade == neighborhoodId.charAt(0)) {
 							return (
-								<li key={ 'cat' + grade + neighborhoodId }>
-									<span onClick={ this.props.onNeighborhoodClick } id={ neighborhoodId }>{ neighborhoodId }</span>: 
-									{ (typeof(possibleFunction) === 'function') ? possibleFunction(categoryData[neighborhoodId]) : this.renderDatum(categoryData[neighborhoodId]) }
+								<li key={ 'cat' + grade + neighborhoodId } onClick={ this.props.onNeighborhoodClick } onMouseEnter={ this.props.onNeighborhoodHover } onMouseLeave={ this.props.onNeighborhoodOut } id={ neighborhoodId }>
+									<span id={ neighborhoodId }>{ neighborhoodId }</span>: 
+									{ (typeof(idiosyncraticDisplay) === 'function') ? idiosyncraticDisplay(categoryData[neighborhoodId]) : this.renderDatum(categoryData[neighborhoodId]) }
 								</li>
 							);
 						}
@@ -104,7 +104,7 @@ export default class ADCat extends React.Component {
 		);
 	}
 
-	renderDatum(datum) {
+	renderDatum(datum, neighborhoodId) {
 		return (
 			<span>{ (datum) ? <span className='subcatData'>{ datum }</span> : <span className='empty'>empty</span> }</span>
 		);

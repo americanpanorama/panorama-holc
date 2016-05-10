@@ -43,7 +43,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','toggleAbout','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick'];
+		let handlers = ['onWindowResize','hashChanged','toggleAbout','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -88,6 +88,7 @@ export default class App extends React.Component {
 				areaDescriptions: {},
 				ADsByCat: {},
 				selectedNeighborhood: (hashState.area) ? hashState.area : null,
+				highlightedNeighborhood: null,
 				selectedCategory: (hashState.category) ? hashState.category : null,
 				selectedSubCat: (hashState.subcat) ? hashState.subcat : null,
 				rings: {
@@ -134,6 +135,7 @@ export default class App extends React.Component {
 			selectedCity: {
 				id: RasterStore.getSelectedCityMetadata('id'),
 				selectedNeighborhood: (hashState && hashState.area) ? hashState.area : null,
+				highlightedNeighborhood: null,
 				selectedCategory: (hashState && hashState.category) ? hashState.category : null,
 				selectedSubCat: (hashState && hashState.subcat) ? hashState.subcat : null,
 				areaDescriptions: CityStore.getAreaDescriptions(),
@@ -160,6 +162,7 @@ export default class App extends React.Component {
 			selectedCity: {
 				id: RasterStore.getSelectedCityMetadata('id'),
 				selectedNeighborhood: null,
+				highlightedNeighborhood: null,
 				selectedCategory: null,
 				selectedSubCat: null,
 				areaDescriptions: CityStore.getAreaDescriptions(),
@@ -191,7 +194,16 @@ export default class App extends React.Component {
 	}
 
 	neighborhoodSelected (id) {
-		this.setState({selectedCity: update(this.state.selectedCity, {selectedNeighborhood: {$set: id}, selectedCategory: {$set: null}})}, this.changeHash);
+		this.setState({selectedCity: update(this.state.selectedCity, {selectedNeighborhood: {$set: id}, selectedCategory: {$set: null}, highlightedNeighborhood: {$set: null}})}, this.changeHash);
+	}
+
+	neighborhoodHighlighted (event) {
+		let id = event.target.id;
+		this.setState({selectedCity: update(this.state.selectedCity, {highlightedNeighborhood: {$set: id}})});
+	}
+
+	neighborhoodsUnhighlighted (event) {
+		this.setState({selectedCity: update(this.state.selectedCity, {highlightedNeighborhood: {$set: null}})});
 	}
 
 	categorySelected (id) {
@@ -294,6 +306,7 @@ export default class App extends React.Component {
 		// https://github.com/Leaflet/Leaflet/issues/1416
 		let layerComponent,
 			isSelected,
+			isHighlighted,
 			styling;
 
 		let colors = {A: '#00ff00', 'B': 'blue', 'C': 'yellow', 'D': 'red'};
@@ -303,13 +316,14 @@ export default class App extends React.Component {
 				layerComponent = this.refs['city-grade-' + this.state.selectedCity.id + '-' + id];
 				if (layerComponent) {
 					isSelected = (id == this.state.selectedCity.selectedNeighborhood);
+					isHighlighted = (id == this.state.selectedCity.highlightedNeighborhood);
 					styling = {
-						fillOpacity: (isSelected) ? 0.5 : 0,
-						weight: (isSelected) ? 2 : 0
+						fillOpacity: (isSelected || isHighlighted) ? 0.5 : 0,
+						weight: (isSelected || isHighlighted) ? 2 : 0
 					}
 					layerComponent.getLeafletElement().clearLayers();
 					layerComponent.getLeafletElement().options.clickable = !isSelected;
-					layerComponent.getLeafletElement().options.invert = isSelected; // IMPORTANT: this has to happen before data is added.
+					layerComponent.getLeafletElement().options.invert = isSelected || isHighlighted; // IMPORTANT: this has to happen before data is added.
 					layerComponent.getLeafletElement().addData(this.state.selectedCity.areaDescriptions[id].area_geojson);
 					layerComponent.getLeafletElement().setStyle(styling);
 				}
@@ -720,38 +734,42 @@ export default class App extends React.Component {
 	}
 
 	renderSidebar() {
-		let title, content;
+		let title, content, theClass;
 
 		if (this.state.downloadOpen) {
 			title = <h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div></h2>;
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
 		} else if (this.state.selectedCity.selectedNeighborhood) {
+			theClass = 'area';
 			title = <h2>
 						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 					</h2>;
-			content = <AreaDescription ref={'areadescription' + this.state.selectedCity.selectedNeighborhood } areaData={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } />;
+			content = <AreaDescription areaId={ this.state.selectedCity.selectedNeighborhood } areaData={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } onNeighborhoodClick={ this.onNeighborhoodClick } ref={'areadescription' + this.state.selectedCity.selectedNeighborhood } />;
 		} else if (this.state.selectedCity.selectedCategory && CityStore.getADsByCat(...this.state.selectedCity.selectedCategory.split('-'))) {
 			let [catNum, catLetter] = this.state.selectedCity.selectedCategory.split('-');
+			theClass = 'category';
 			title = <h2>
 						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 					</h2>;
-			content = <ADCat catNum={ catNum } catLetter = { catLetter } onNeighborhoodClick={ this.onNeighborhoodClick } onCategoryClick={ this.onCategoryClick } />;
+			content = <ADCat catNum={ catNum } catLetter = { catLetter } onNeighborhoodClick={ this.onNeighborhoodClick } onCategoryClick={ this.onCategoryClick } onNeighborhoodHover={ this.neighborhoodHighlighted } onNeighborhoodOut={ this.neighborhoodsUnhighlighted } />;
 		} else if (this.state.selectedCity.id) {
+			theClass = 'city';
 			title = <h2>
 								<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 								<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 							</h2>;
 			content = <CityStats cityData={ CityStore.getCityData() } area={ CityStore.getArea() } ringStats={ this.state.selectedCity.rings.stats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />;
 		} else if (this.state.selectedState) {
+			theClass = 'state';
 			title = <h2>{ stateAbbrs[this.state.selectedState] }</h2>;
 			content = <StateStats stateName={this.state.selectedState} />;
 		}
 
 
 		return (
-			<div className='punchcard-container'>
+			<div className={ 'punchcard-container ' + theClass } key={ theClass }>
 				{ title }
 				{ content }
 			</div>

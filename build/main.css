@@ -1113,7 +1113,9 @@ ul.area_description {
   margin: 1em 0 0 0;
   padding: 0; }
   ul.area_description li {
-    list-style: none; }
+    list-style: none;
+    margin: 0;
+    padding: 3px 0; }
   ul.area_description .catNum, ul.area_description .catLetter {
     text-align: right;
     display: inline-block;
