@@ -43,7 +43,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','toggleAbout','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted'];
+		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -106,6 +106,7 @@ export default class App extends React.Component {
 			intro: {
 				open: false
 			},
+			modalOpen: false,
 			downloadOpen: false,
 
 			map: {
@@ -207,16 +208,10 @@ export default class App extends React.Component {
 	}
 
 	categorySelected (id) {
-		this.setState({
-			selectedCity: update(this.state.selectedCity, {
-				selectedCategory: {$set: id},
-				selectedNeighborhood: {$set: null}
-			})
-		}, this.changeHash);
+		this.setState({ selectedCity: update(this.state.selectedCity, { selectedCategory: {$set: id}, selectedNeighborhood: {$set: null}})}, this.changeHash);
 	}
 
 	updateSelectedState () {
-		console.log('executed');
 		this.setState({
 			selectedState: RasterStore.getSelectedCityMetadata('state'),
 		});
@@ -404,10 +399,13 @@ export default class App extends React.Component {
 		this.setState({ dimensions: dimensions });
 	}
 
-	toggleAbout () {
-		this.setState({
-			aboutModalOpen: !this.state.aboutModalOpen
-		});
+	openModal (event) {
+		let section = event.target.id;
+		this.setState({ modalOpen: section });
+	}
+
+	closeModal() {
+		this.setState({ modalOpen: false});
 	}
 
 	toggleBurgessDiagram () {
@@ -417,8 +415,8 @@ export default class App extends React.Component {
 	}
 
 	triggerIntro (event) {
-		if (this.state.aboutModalOpen) {
-			this.toggleAbout();
+		if (this.state.modalOpen) {
+			this.closeModal();
 		}
 
 		// toggle off if the selected intro box is clicked
@@ -565,7 +563,9 @@ export default class App extends React.Component {
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
 							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
-							<h4 onClick={ this.toggleAbout }>Introduction</h4><h4 onClick={ this.toggleAbout }>Credits</h4>
+							<h4 onClick={ this.openModal } id='about'>Introduction</h4>
+							<h4 onClick={ this.openModal } id='bibliograph'>Bibliographic Note & Bibliography</h4>
+							<h4 onClick={ this.openModal } id='credits'>Credits</h4>
 							<hr className='style-eight'>
 							</hr>					
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
@@ -626,10 +626,10 @@ export default class App extends React.Component {
 							<button className='intro-button' data-step='2' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</div>
 					</div>
-					<Modal isOpen={ this.state.aboutModalOpen } onRequestClose={ this.toggleAbout } style={ modalStyle }>
-					<button className='close' onClick={ this.toggleAbout }><span>×</span></button>
-					<div dangerouslySetInnerHTML={ this.parseAboutModalCopy() }></div>
-				</Modal>
+					<Modal isOpen={ this.state.modalOpen } onRequestClose={ this.closeModal} style={ modalStyle }>
+						<button className='close' onClick={ this.closeModal }><span>×</span></button>
+						<div dangerouslySetInnerHTML={ this.parseModalCopy(this.state.modalOpen) }></div>
+					</Modal>
 
 				<IntroManager { ...this.state.intro } />
 				</div>
@@ -776,11 +776,11 @@ export default class App extends React.Component {
 		)
 	}
 
-	parseAboutModalCopy () {
+	parseModalCopy (subject) {
 		let modalCopy = '';
 
 		try {
-			modalCopy = appConfig.aboutModalContent.join('\n');
+			modalCopy = appConfig.modalContent[subject].join('\n');
 		} catch (error) {
 			console.warn('Error parsing modal copy: ', error);
 			modalCopy = 'Error parsing modal copy.';
