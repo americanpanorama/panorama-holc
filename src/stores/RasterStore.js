@@ -35,11 +35,8 @@ const RasterStore = {
 		 citiesWithPolygons: {}, 
 		 cityIdsWithADs: [],
 
-		 layersMetadata : [],
-		 hasLoaded: false,
-
-		 // this shouldn't be here--it's state data not "real" data
-		 selectedCity: null
+		 selectedCity: null,
+		 selectedState: null
 
 	},
 
@@ -71,23 +68,16 @@ const RasterStore = {
 			this.data.cityIdsWithADs = response[1].map((row) => row.id);
 			this.data.citiesWithPolygons = this.parseCitiesWithPolygonsData(response[2]);
 			
-			this.data.selectedCity = state.selectedCity.id;
+			this.data.selectedCity = state.selectedCity;
 			this.data.selectedState = state.selectedState;
 
-			this.data.hasLoaded = true;
-
-			//console.log(`[3b] RasterStore updates its cache with the loaded and parsed data, and emits a '${ AppActionTypes.storeChanged }' event from RasterStore.loadInitialData().`);
 			this.emit(AppActionTypes.initialDataLoaded);
 		},
 		(error) => {
-
 			// TODO: handle this.
-			console.log("Commodity received error:", log);
+			console.log("RasterStore received error:", log);
 			throw error;
-
 		});
-
-
 	},
 
 	/**
@@ -135,6 +125,10 @@ const RasterStore = {
 	},
 
 	getCenter: function() {
+		return [ this.getSelectedCityMetadata('centerLat'), this.getSelectedCityMetadata('centerLng')];
+	},
+
+	getCenterOld: function() {
 		let bounds = this.getMapBounds();
 		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
 	},
@@ -168,10 +162,6 @@ const RasterStore = {
 
 	getMapThumbnail: function () {
 		return this.getSelectedCityMetadata('mapThumbnail');
-	},
-
-	hasLoaded: function() {
-		return this.data.hasLoaded;
 	},
 
 	// return a flat list of the HOLC maps for rendering
@@ -232,39 +222,6 @@ const RasterStore = {
 	
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
-
-	// returns raster metadata as a simple list for rendering
-	/* getCitiesList: function() {
-		return Object.keys(this.data.maps).map( cityId => ({
-			state: this.data.maps[cityId].state,
-			name: this.data.maps[cityId].name,
-			year: this.data.maps[cityId].year,
-			display: this.data.maps[cityId].name + ", " + this.data.maps[cityId].state,
-			cityId: this.data.maps[cityId].cityId
-		})
-	)}, */
-
-	/* getAllMapsForTileLayer: function () {
-		let mapsList = [];
-		for (let state in this.data.maps) {
-			for (let city in this.data.maps[state]) {
-				for (let year in this.data.maps[state][city]) {
-					mapsList.push({
-						minZoom: this.data.maps[state][city][year].minZoom,
-						maxZoom: this.data.maps[state][city][year].maxZoom,
-						bounds: this.data.maps[state][city][year].bounds,
-						url: this.data.maps[state][city][year].url,
-						minLat: this.data.maps[state][city][year].minLat,
-						maxLat: this.data.maps[state][city][year].maxLat,
-						minLng: this.data.maps[state][city][year].minLng,
-						maxLng: this.data.maps[state][city][year].maxLng,		
-					});
-				}
-			}
-		};
-
-		return mapsList;
-	}, */
 
 	parseMapData: function (data) {
 		let maps = {};
@@ -352,7 +309,6 @@ AppDispatcher.register((action) => {
 			RasterStore.setSelectedCity(action.value);
 			break;
 	}
-
 
 	return true;
 

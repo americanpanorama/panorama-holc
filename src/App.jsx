@@ -1,25 +1,25 @@
 import * as React from 'react';
-import update from 'react-addons-update';
 import { render } from 'react-dom';
+import update from 'react-addons-update';
 //import "babel-polyfill";
 import Modal from 'react-modal';
 import { Map, TileLayer, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
-
 import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
 // stores
-import RasterStore from './stores/RasterStore';
 import CityStore from './stores/CityStore';
+import RasterStore from './stores/RasterStore';
 
 // components (views)
 import CityStats from './components/CityStats.jsx';
 import StateStats from './components/StateStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
 import ADCat from './components/ADCat.jsx';
-import Downloader from './components/Downloader.jsx';
 import HolcItemSelector from './components/ItemSelector.jsx';
+import Downloader from './components/Downloader.jsx';
 import Donut from './components/Donut/Donut.jsx';
+import AreaPolygon from './components/AreaPolygon.jsx';
 
 // utils
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
@@ -29,10 +29,10 @@ import appConfig from '../data/appConfig.json';
 import tileLayers from '../basemaps/tileLayers.json';
 import cartodbConfig from '../basemaps/cartodb/config.json';
 import cartodbLayers from '../basemaps/cartodb/basemaps.json';
-import panoramaNavData from '../data/panorama_nav.json';
 
+// data
+import panoramaNavData from '../data/panorama_nav.json';
 import stateAbbrs from '../data/state_abbr.json';
-import formsMetadata from '../data/formsMetadata.json';
 
 // main app container
 export default class App extends React.Component {
@@ -43,7 +43,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted'];
+		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -62,7 +62,7 @@ export default class App extends React.Component {
 		// Prepare object to deliver default application state to HashManager,
 		// with initial values paired with keys to use in the hash.
 		let initialState = {};
-		initialState.city = this.state.selectedCity.id;
+		initialState.city = this.state.selectedCity;
 		initialState[HashManager.MAP_STATE_KEY] = HashManager.getState(HashManager.MAP_STATE_KEY);
 		HashManager.updateHash(initialState);
 	}
@@ -70,50 +70,38 @@ export default class App extends React.Component {
 	componentWillUnmount () { }
 
 	componentDidUpdate () {
-		this.updateCityPolygons();
-		this.makeRingVisable();
+		/* if (CityStore.getAreaDescriptions()) {
+			this.updateAreaPolygons();
+		}
+		this.makeRingVisable(); */
 
-		//this.refs.the_map.leafletElement.options.maxZoom = (this.state.selectedCity.id && RasterStore.hasLoaded()) ? RasterStore.getSelectedCityMetadata('maxZoom') : null;
+		//this.refs.the_map.leafletElement.options.maxZoom = (this.state.selectedCity && RasterStore.hasLoaded()) ? RasterStore.getSelectedCityMetadata('maxZoom') : null;
 	}
 
 	getDefaultState () {
 		let hashState = HashManager.getState();
 
-		// this can be read from the url or defaults to Richmond
 		return {
-			rasters: {},
-			selectedState: (hashState.state) ? hashState.state : null,
-			selectedCity: {
-				id: (hashState.city) ? hashState.city : (hashState.state) ? null : 168, // Richmond
-				areaDescriptions: {},
-				ADsByCat: {},
-				selectedNeighborhood: (hashState.area) ? hashState.area : null,
-				highlightedNeighborhood: null,
-				selectedCategory: (hashState.category) ? hashState.category : null,
-				selectedSubCat: (hashState.subcat) ? hashState.subcat : null,
-				rings: {
-					geometries: [],
-					stats: {},
-					outerRadius: null,
-					selectedArea: {
-						ringId: null,
-						grade: ''
-					},
-				}
+			selectedNeighborhood: (hashState.area) ? hashState.area : null,
+			selectedCity: (hashState.city) ? hashState.city : (hashState.state) ? null : 168, // Richmond
+			selectedState: (hashState.city || !hashState.state) ? null : hashState.state,
+			selectedCategory: (hashState.category) ? hashState.category : null,
+			selectedRingGrade: { 
+				ringId: null, 
+				grade: null
 			},
-
+			selectedGrade: null,
+			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
 			intro: {
 				open: false
 			},
 			modalOpen: false,
 			downloadOpen: false,
-
 			map: {
 				zoom: 12,
 				center: [30, 90]
 			},
-
 			dimensions: {
 				left: {
 					width: 0,
@@ -124,32 +112,13 @@ export default class App extends React.Component {
 					height: 0
 				}
 			}
-
 		};
 	}
 
-	// a little different from storeChanged as the hash values are used if there are any
 	initialDataLoaded () {
-		let hashState = HashManager.getState();
 		this.setState({
 			selectedState: RasterStore.getSelectedCityMetadata('state'),
-			selectedCity: {
-				id: RasterStore.getSelectedCityMetadata('id'),
-				selectedNeighborhood: (hashState && hashState.area) ? hashState.area : null,
-				highlightedNeighborhood: null,
-				selectedCategory: (hashState && hashState.category) ? hashState.category : null,
-				selectedSubCat: (hashState && hashState.subcat) ? hashState.subcat : null,
-				areaDescriptions: CityStore.getAreaDescriptions(),
-				ADsByCat: CityStore.getADsByCat(),
-				rings: {
-					selectedArea: CityStore.getSelectedRingAreas(),
-					geometries: CityStore.getRingAreasGeometry(),
-					stats: CityStore.getRingStats(),
-					center: CityStore.getLoopLatLng(),
-					outerRadius: CityStore.getOuterRingRadius()
-				},
-			},
-			rasters: RasterStore.getAllRasters(),
+			selectedCity: RasterStore.getSelectedCityMetadata('id'),
 			map: {
 				center: this.getLoc(),
 				zoom: this.getZoom()
@@ -160,55 +129,76 @@ export default class App extends React.Component {
 	storeChanged () {
 		this.setState({
 			selectedState: RasterStore.getSelectedCityMetadata('state'),
-			selectedCity: {
-				id: RasterStore.getSelectedCityMetadata('id'),
-				selectedNeighborhood: null,
-				highlightedNeighborhood: null,
-				selectedCategory: null,
-				selectedSubCat: null,
-				areaDescriptions: CityStore.getAreaDescriptions(),
-				ADsByCat: CityStore.getADsByCat(),
-				rings: {
-					selectedArea:  CityStore.getSelectedRingAreas(),
-					center: CityStore.getLoopLatLng(),
-					geometries: CityStore.getRingAreasGeometry(),
-					stats: CityStore.getRingStats(),
-					outerRadius: CityStore.getOuterRingRadius()
-				},
+			selectedCity: RasterStore.getSelectedCityMetadata('id'),
+			selectedNeighborhood: null,
+			selectedCategory: null,
+			selectedRingGrade: {
+				ringId: null,
+				grade: null
 			},
-			rasters: RasterStore.getAllRasters(),
+			highlightedNeighborhood: null,
 			map: {
-				center: [ RasterStore.getSelectedCityMetadata('centerLat'), RasterStore.getSelectedCityMetadata('centerLng')],
-				zoom: this.refs.the_map.leafletElement.getBoundsZoom([ [ RasterStore.getSelectedCityMetadata('minLat'), RasterStore.getSelectedCityMetadata('minLng') ], [ RasterStore.getSelectedCityMetadata('maxLat'), RasterStore.getSelectedCityMetadata('maxLng') ] ])
+				center: RasterStore.getCenter(),
+				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds())
 			}
-		});
-
-		this.changeHash();
+		}, this.changeHash);
 	}
 
 	ringAreaSelected (ringNum, grade) {
-		this.setState({selectedCity: update(this.state.selectedCity, {rings: {selectedArea: { ringId: {$set: ringNum}, grade: {$set: grade} }}})});
+		this.setState({
+			selectedRingGrade: { 
+				ringId: ringNum, 
+				grade: grade
+			} 
+		});
 	}
 
 	ringAreaUnselected () {
-		this.setState({selectedCity: update(this.state.selectedCity, {rings: {selectedArea: { ringId: {$set: null}, grade: {$set: null} }}})});
+		this.setState({
+			selectedRingGrade: { 
+				ringId: null, 
+				grade: null
+			} 
+		});
+	}
+
+	gradeSelected (grade) {
+		this.setState({
+			selectedGrade: grade
+		});
+	}
+
+	gradeUnselected (grade) {
+		this.setState({
+			selectedGrade: null
+		});
 	}
 
 	neighborhoodSelected (id) {
-		this.setState({selectedCity: update(this.state.selectedCity, {selectedNeighborhood: {$set: id}, selectedCategory: {$set: null}, highlightedNeighborhood: {$set: null}})}, this.changeHash);
+		this.setState({
+			selectedNeighborhood: id,
+			selectedCategory: null,
+			highlightedNeighborhood: null
+		}, this.changeHash);
 	}
 
 	neighborhoodHighlighted (event) {
-		let id = event.target.id;
-		this.setState({selectedCity: update(this.state.selectedCity, {highlightedNeighborhood: {$set: id}})});
+		this.setState({
+			highlightedNeighborhood: event.target.id
+		});
 	}
 
 	neighborhoodsUnhighlighted (event) {
-		this.setState({selectedCity: update(this.state.selectedCity, {highlightedNeighborhood: {$set: null}})});
+		this.setState({
+			highlightedNeighborhood: null
+		});
 	}
 
 	categorySelected (id) {
-		this.setState({ selectedCity: update(this.state.selectedCity, { selectedCategory: {$set: id}, selectedNeighborhood: {$set: null}})}, this.changeHash);
+		this.setState({
+			selectedNeighborhood: null,
+			selectedCategory: id
+		}, this.changeHash);
 	}
 
 	updateSelectedState () {
@@ -223,7 +213,7 @@ export default class App extends React.Component {
 
 	onCitySelected (value, index) {
 		this.setState({
-			selectedCity: update(this.state.selectedCity, {selectedNeighborhood: {$set: null}})
+			selectedNeighborhood: null
 		});
 
 		if (value && value.id) {
@@ -237,20 +227,8 @@ export default class App extends React.Component {
 				
 		this.setState({
 			selectedState: value.id,
-			selectedCity: {
-				id: null,
-				areaDescriptions: {},
-				selectedNeighborhood: null,
-				rings: {
-					geometries: [],
-					stats: {},
-					outerRadius: null,
-					selectedArea: {
-						ringId: null,
-						grade: ''
-					},
-				}
-			},
+			selectedCity: null,
+			selectedNeighborhood: null,
 			map: {
 				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
 				center: RasterStore.getCenterForState(value.id)
@@ -260,11 +238,7 @@ export default class App extends React.Component {
 
 	onNeighborhoodClick (event) {
 		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id;
-		if (neighborhoodId !== this.state.selectedCity.selectedNeighborhood) {
-			this.neighborhoodSelected(neighborhoodId);
-		} else {
-			this.neighborhoodSelected(null);
-		}
+		this.neighborhoodSelected((neighborhoodId !== this.state.selectedNeighborhood) ? neighborhoodId : null);
 	}
 
 	onSelectedNeighborhoodClick () {
@@ -273,6 +247,21 @@ export default class App extends React.Component {
 
 	onCategoryClick (event) {
 		this.categorySelected(event.target.id);
+	}
+
+	onIntroExit () {
+		this.setState({
+			intro: {
+				open: false
+			},
+			burgessDiagramVisible: false
+		});
+	}
+
+	onPanoramaMenuClick () {
+		this.setState({
+			show_panorama_menu: !this.state.show_panorama_menu
+		});
 	}
 
 	onMapMoved (event) {
@@ -293,7 +282,9 @@ export default class App extends React.Component {
 	}
 
 	onDownloadClicked () {
-		this.setState({downloadOpen: !this.state.downloadOpen});
+		this.setState({
+			downloadOpen: !this.state.downloadOpen
+		});
 	}
 
 	updateCityPolygons () {
@@ -302,40 +293,37 @@ export default class App extends React.Component {
 		let layerComponent,
 			isSelected,
 			isHighlighted,
-			styling;
+			styling,
+			colors = {A: '#418e41', 'B': '#4a4ae4', 'C': '#f4f570', 'D': '#eb3f3f'},
+			ADs = CityStore.getAreaDescriptions(),
+			ringGeometries = CityStore.getRingAreasGeometry();
 
-		let colors = {A: '#00ff00', 'B': 'blue', 'C': 'yellow', 'D': 'red'};
-
-		if (this.state.selectedCity.areaDescriptions) {
-			Object.keys(this.state.selectedCity.areaDescriptions).map((id, i) => {
-				layerComponent = this.refs['city-grade-' + this.state.selectedCity.id + '-' + id];
-				if (layerComponent) {
-					isSelected = (id == this.state.selectedCity.selectedNeighborhood);
-					isHighlighted = (id == this.state.selectedCity.highlightedNeighborhood);
-					styling = {
-						fillOpacity: (isSelected || isHighlighted) ? 0.5 : 0,
-						weight: (isSelected || isHighlighted) ? 2 : 0
-					}
-					layerComponent.getLeafletElement().clearLayers();
-					layerComponent.getLeafletElement().options.clickable = !isSelected;
-					layerComponent.getLeafletElement().options.invert = isSelected || isHighlighted; // IMPORTANT: this has to happen before data is added.
-					layerComponent.getLeafletElement().addData(this.state.selectedCity.areaDescriptions[id].area_geojson);
-					layerComponent.getLeafletElement().setStyle(styling);
-				}
+		/* if (this.state.selectedGrade) {
+			layerComponent = this.refs['selectedGradedNeighborhood'];
+			layerComponent.getLeafletElement().clearLayers();
+			layerComponent.getLeafletElement().options.clickable = false;
+			layerComponent.getLeafletElement().options.invert = true;
+			layerComponent.getLeafletElement().addData(CityStore.getGeoJsonForGrade(this.state.selectedGrade));
+			layerComponent.getLeafletElement().setStyle({
+				fillOpacity: 0.75,
+				fillColor: 'black',
+				color: colors[this.state.selectedGrade],
+				weight: 2
 			});
+
 		}
 
-		if (this.state.selectedCity.selectedNeighborhood && this.refs['unselectNeighborhood']) {
+		if (this.state.selectedNeighborhood && this.refs['unselectNeighborhood']) {
 			layerComponent = this.refs['unselectNeighborhood'];
 			layerComponent.getLeafletElement().clearLayers();
-			layerComponent.getLeafletElement().addData(this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood].area_geojson);
-		}
+			layerComponent.getLeafletElement().addData(ADs[this.state.selectedNeighborhood].area_geojson);
+		} */
 
-		if (this.state.selectedCity.rings.geometries) {
-			this.state.selectedCity.rings.geometries.map((item, i) => {
+		if (ringGeometries) {
+			ringGeometries.map((item, i) => {
 				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id];
 				if (layerComponent) {
-					isSelected = (item.ring_id == this.state.selectedCity.rings.selectedArea.ringId && item.holc_grade == this.state.selectedCity.rings.selectedArea.grade);
+					isSelected = (item.ring_id == this.state.selectedRingGrade.ringId && item.holc_grade == this.state.selectedRingGrade.grade);
 					styling = {
 						opacity: (isSelected) ? 1 : 0,
 						fillOpacity: (isSelected) ? 0.5 : 0,
@@ -359,12 +347,11 @@ export default class App extends React.Component {
 
 
 	changeHash () {
-		console.log(this.state);
 		let newState = { 
 			state: this.state.selectedState,
-			city: this.state.selectedCity.id,
-			area: this.state.selectedCity.selectedNeighborhood,
-			category: this.state.selectedCity.selectedCategory
+			city: this.state.selectedCity,
+			area: this.state.selectedNeighborhood,
+			category: this.state.selectedCategory
 		};
 		newState[HashManager.MAP_STATE_KEY] = {
 			zoom: this.state.map.zoom,
@@ -425,10 +412,6 @@ export default class App extends React.Component {
 			return;
 		}
 
-		console.log(this.state.intro);
-		console.log(event);
-		console.log(event.currentTarget);
-
 		this.setState({
 			intro: {
 				open: true,
@@ -446,27 +429,12 @@ export default class App extends React.Component {
 		});
 	}
 
-	onIntroExit () {
-		this.setState({
-			intro: {
-				open: false
-			},
-			burgessDiagramVisible: false
-		});
-	}
-
-	onPanoramaMenuClick () {
-		this.setState({
-			show_panorama_menu: !this.state.show_panorama_menu
-		});
-	}
-
 	getLoc () {
 		let hashState = HashManager.getState();
 
 		if (hashState.loc && hashState.loc.center) {
 			return [ hashState.loc.center[0], hashState.loc.center[1] ]
-		} else if (this.state.selectedCity.id) {
+		} else if (this.state.selectedCity) {
 			return RasterStore.getCenter();
 		} else if (this.state.selectedState) {
 			return RasterStore.getCenterForState(this.state.selectedState);
@@ -479,7 +447,7 @@ export default class App extends React.Component {
 		let hashState = HashManager.getState();
 		if (hashState.loc && hashState.loc.zoom) {
 			return hashState.loc.zoom;
-		} else if (this.state.selectedCity.id) {
+		} else if (this.state.selectedCity) {
 			return this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds());
 		} else if (this.state.selectedState) {
 			return this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(this.state.selectedState));
@@ -503,7 +471,7 @@ export default class App extends React.Component {
 				item.className = stateClasses[item.state]; 
 				return item; 
 			}),
-			selectedItem: { id: (this.state.selectedCity.id) ? this.state.selectedCity.id : RasterStore.getFirstCityOfState(this.state.selectedState).id},
+			selectedItem: {id: 168}, //{ id: (this.state.selectedCity) ? this.state.selectedCity : RasterStore.getFirstCityOfState(this.state.selectedState).id},
 			onItemSelected: this.onCitySelected,
 			stateItems: RasterStore.getStatesList().map((item, index) => {
 				let selectedIndex, offset;
@@ -528,11 +496,11 @@ export default class App extends React.Component {
 		});
 	}
 
-	isSelectedRing (ringNum) { return ringNum == this.state.selectedCity.rings.selectedArea.ringId; }
+	isSelectedRing (ringNum) { return ringNum == this.state.selectedRingGrade.ringId; }
 
-	donutShouldBeMasked (ringNum) { return this.state.selectedCity.rings.selectedArea.ringId > 0 && ringNum > this.state.selectedCity.rings.selectedArea.ringId; } 
+	donutShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ringId > 0 && ringNum > this.state.selectedRingGrade.ringId; } 
 
-	donutholeShouldBeMasked (ringNum) { return this.state.selectedCity.rings.selectedArea.ringId > 1 && ringNum == this.state.selectedCity.rings.selectedArea.ringId - 1; }
+	donutholeShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ringId > 1 && ringNum == this.state.selectedRingGrade.ringId - 1; }
 
 	render () {
 
@@ -567,7 +535,7 @@ export default class App extends React.Component {
 							<h4 onClick={ this.openModal } id='bibliograph'>Bibliographic Note & Bibliography</h4>
 							<h4 onClick={ this.openModal } id='credits'>Credits</h4>
 							<hr className='style-eight'>
-							</hr>					
+							</hr>
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
@@ -639,40 +607,49 @@ export default class App extends React.Component {
 	}
 
 	renderNeighborhoodPolygons () {
-		let layers = [];
+		let layers = [],
+			ADs = CityStore.getAreaDescriptions();
 
-		Object.keys(this.state.selectedCity.areaDescriptions).map((id, i) => {
-			layers.push(<GeoJson 
-				data={ this.state.selectedCity.areaDescriptions[id].area_geojson } 
-				className={ 'neighborhoodPolygon grade' + this.state.selectedCity.areaDescriptions[id].holc_grade } 
-				key={ 'neighborhoodPolygon' + id } 
-				ref={ 'city-grade-' + this.state.selectedCity.id + '-' + id } 
-				onClick={ this.onNeighborhoodClick } 
-				neighborhoodId={ id } 
-				fillOpacity={0}
-				weight={ 0 }
-			/>);
-		});
+		if (CityStore.hasADData()) {
+			Object.keys(ADs).forEach((id) => {
+				if (id == this.state.selectedNeighborhood) {
+					layers.push(<AreaPolygon
+						data={ ADs[id].area_geojson_inverted } 
+						clickable={ false }
+						className={ 'neighborhoodPolygonInverted grade' + ADs[id].holc_grade } 
+						key={ 'neighborhoodPolygonInverted' + id }
+					/>);
+				}
 
-		if (layers.length > 0 && this.state.selectedCity.selectedNeighborhood) {
-			layers.push(<GeoJson
-				data={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood].area_geojson }
-				key={ 'unselectNeighborhood' }
-				ref={ 'unselectNeighborhood' }
-				onClick={ this.onSelectedNeighborhoodClick }
-				stroke={ false }
-				fillOpacity={ 0 }
+				layers.push(<AreaPolygon
+					data={ ADs[id].area_geojson }
+					className={ 'neighborhoodPolygon grade' + ADs[id].holc_grade }
+					key={ 'neighborhoodPolygon' + id } 
+					onClick={ this.onNeighborhoodClick }
+					neighborhoodId={ id } 
+				/>);
+			});
+		}
+
+		// layer 
+		if (this.state.selectedGrade) {
+			// add a geojson with fake data--the real data added through componentdidupdate()
+			layers.push(<AreaPolygon 
+				data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
+				key={ 'selectedGradedNeighborhoods' } 
+				className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
 			/>);
 		}
 
-		return layers; 
+		return layers;
 	}
 
 	renderRingShards () {
 		// this has minimal styling as that's applied after rendering by updateCityPolygons()
-		let layers = [];
+		let layers = [],
+			ringGeometries = CityStore.getRingAreasGeometry();
 
-		this.state.selectedCity.rings.geometries.map((item, i) => {
+		ringGeometries.map((item, i) => {
 			layers.push(
 				<GeoJson 
 					data={ JSON.parse(item.the_geojson) }
@@ -689,15 +666,16 @@ export default class App extends React.Component {
 	}
 
 	renderDonuts () {
-		let layers = [];
+		let layers = [],
+			outerRadius = CityStore.getOuterRingRadius();
 
-		if (this.state.selectedCity.rings.outerRadius > 0) {
+		if (outerRadius > 0) {
 			for (let ringNum = 5; ringNum >= 2; ringNum--) {
 				layers.push(
 					<Donut 
-						center={ this.state.selectedCity.rings.center } 
-						innerRadius={ (ringNum * 2 - 3) / 7 * this.state.selectedCity.rings.outerRadius }
-						outerRadius={ (ringNum == 5) ? this.state.selectedCity.rings.outerRadius * 100 : (ringNum * 2 - 1) / 7 * this.state.selectedCity.rings.outerRadius}
+						center={ CityStore.getLoopLatLng() } 
+						innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
+						outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
 						clickable={ false } 
 						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
 						fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
@@ -712,14 +690,15 @@ export default class App extends React.Component {
 	}
 
 	renderDonutholes() {
-		let layers = [];
+		let layers = [],
+			outerRadius = CityStore.getOuterRingRadius();
 
-		if (this.state.selectedCity.rings.outerRadius > 0) {
+		if (outerRadius > 0) {
 			for (let ringNum = 3; ringNum >= 1; ringNum--) {
 				layers.push(
 					<Circle 
-						center={ this.state.selectedCity.rings.center } 
-						radius={ (ringNum * 2 - 1) / 7 * this.state.selectedCity.rings.outerRadius } 
+						center={ CityStore.getLoopLatLng() } 
+						radius={ (ringNum * 2 - 1) / 7 * outerRadius } 
 						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : (this.donutholeShouldBeMasked(ringNum)) ? 0.75 : 0 } 
 						fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
 						clickable={ false } 
@@ -735,32 +714,45 @@ export default class App extends React.Component {
 
 	renderSidebar() {
 		let title, content, theClass;
+		let ADs = CityStore.getAreaDescriptions();
 
 		if (this.state.downloadOpen) {
 			title = <h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div></h2>;
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-		} else if (this.state.selectedCity.selectedNeighborhood) {
+		} else if (this.state.selectedNeighborhood) {
 			theClass = 'area';
 			title = <h2>
 						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 					</h2>;
-			content = <AreaDescription areaId={ this.state.selectedCity.selectedNeighborhood } areaData={ this.state.selectedCity.areaDescriptions[this.state.selectedCity.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } onNeighborhoodClick={ this.onNeighborhoodClick } ref={'areadescription' + this.state.selectedCity.selectedNeighborhood } />;
-		} else if (this.state.selectedCity.selectedCategory && CityStore.getADsByCat(...this.state.selectedCity.selectedCategory.split('-'))) {
-			let [catNum, catLetter] = this.state.selectedCity.selectedCategory.split('-');
+			content = <AreaDescription areaId={ this.state.selectedNeighborhood } areaData={ ADs[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } onNeighborhoodClick={ this.onNeighborhoodClick } ref={'areadescription' + this.state.selectedNeighborhood } />;
+		} else if (this.state.selectedCategory && CityStore.getADsByCat(...this.state.selectedCategory.split('-'))) {
+			let [catNum, catLetter] = this.state.selectedCategory.split('-');
 			theClass = 'category';
 			title = <h2>
 						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 					</h2>;
 			content = <ADCat catNum={ catNum } catLetter = { catLetter } onNeighborhoodClick={ this.onNeighborhoodClick } onCategoryClick={ this.onCategoryClick } onNeighborhoodHover={ this.neighborhoodHighlighted } onNeighborhoodOut={ this.neighborhoodsUnhighlighted } />;
-		} else if (this.state.selectedCity.id) {
+		} else if (this.state.selectedCity) {
 			theClass = 'city';
 			title = <h2>
 								<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
 								<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
 							</h2>;
-			content = <CityStats cityData={ CityStore.getCityData() } area={ CityStore.getArea() } ringStats={ this.state.selectedCity.rings.stats } areaSelected={ this.ringAreaSelected } areaUnselected={ this.ringAreaUnselected } triggerIntro={ this.triggerIntro } burgessDiagramVisible={ this.state.burgessDiagramVisible } toggleBurgessDiagram={ this.toggleBurgessDiagram } />;
+			content = <CityStats 
+				cityData={ CityStore.getCityData() } 
+				area={ CityStore.getArea() } 
+				gradeStats={ CityStore.getGradeStats() } 
+				ringStats={ CityStore.getRingStats() } 
+				areaSelected={ this.ringAreaSelected } 
+				areaUnselected={ this.ringAreaUnselected } 
+				gradeSelected={ this.gradeSelected } 
+				gradeUnselected={ this.gradeUnselected } 
+				triggerIntro={ this.triggerIntro } 
+				burgessDiagramVisible={ this.state.burgessDiagramVisible } 
+				toggleBurgessDiagram={ this.toggleBurgessDiagram } 
+			/>;
 		} else if (this.state.selectedState) {
 			theClass = 'state';
 			title = <h2>{ stateAbbrs[this.state.selectedState] }</h2>;
@@ -779,11 +771,13 @@ export default class App extends React.Component {
 	parseModalCopy (subject) {
 		let modalCopy = '';
 
-		try {
-			modalCopy = appConfig.modalContent[subject].join('\n');
-		} catch (error) {
-			console.warn('Error parsing modal copy: ', error);
-			modalCopy = 'Error parsing modal copy.';
+		if (subject) {
+			try {
+				modalCopy = appConfig.modalContent[subject].join('\n');
+			} catch (error) {
+				console.warn('Error parsing modal copy: ', subject);
+				modalCopy = 'Error parsing modal copy.';
+			}
 		}
 
 		// React requires this format to render a string as HTML,
@@ -792,6 +786,4 @@ export default class App extends React.Component {
 			__html: modalCopy
 		};
 	}
-
 }
-

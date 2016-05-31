@@ -50,12 +50,6 @@ export default class AreaDescription extends React.Component {
 			return false;
 		}
 
-		console.log(this.props.formId);
-
-		console.log(([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :
-				  (parseInt(this.props.formId) == 19371001) ? this.renderNSForm8_19371001() :
-				  null);
-
 		return (
 
 			<div>

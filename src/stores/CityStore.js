@@ -18,6 +18,7 @@ const CityStore = {
 			ringId: 0,
 			grade: ''
 		},
+		gradeSelected: null,
 		areas: {},
 		ringAreasGeometry: [], // not the rings themselves but the intersection of rings and areas
 		loopLatLng: [],
@@ -41,7 +42,8 @@ const CityStore = {
 		 }
 		 * }
 		 */
-		ringStats: {},
+		ringStats: [],
+		gradeStats: [],
 		areaDescriptions: {},
 		ADsByCat: {},
 		polygonBoundingBox: null
@@ -70,7 +72,7 @@ const CityStore = {
 				format: "JSON"
 			},
 			{
-				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
+				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
 				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
 				format: "JSON"
 			},
@@ -96,6 +98,7 @@ const CityStore = {
 			this.data.loopLatLng = (response[2][0]) ? [response[2][0].looplat, response[2][0].looplng] : false;
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[3]);
 			this.data.ADsByCat = this.parseADsByCat();
+			this.data.gradeStats = this.parseGradeStats(this.data.ringAreasGeometry);
 			this.data.polygonBoundingBox = response[4];
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
@@ -131,12 +134,42 @@ const CityStore = {
 		return this.data.ringAreasGeometry;
 	},
 
+	getGradeStats: function() {
+		return this.data.gradeStats;
+	},
+
 	getCityData: function() {
 		return this.data.cityData;
 	},
 
 	getSelectedRingAreas: function() {
 		return this.data.ringAreaSelected;
+	},
+
+	getSelectedGrade: function() {
+		return this.data.gradeSelected;
+	},
+
+	getGeoJsonForGrade: function(grade) {
+		let polygons = [[[90, 180], [90, -180], [-90, -180], [-90, 180]]];
+		Object.keys(this.data.areaDescriptions).forEach((id, i) => {
+			if (this.data.areaDescriptions[id].holc_grade == grade) {
+				this.data.areaDescriptions[id].area_geojson.coordinates.forEach((coords) => {
+					polygons.push(coords[0]);
+				});
+			}
+		});
+
+		let geojson = {
+			'type': 'Feature',
+			'geometry': {
+				'type': 'MultiPolygon',
+				'coordinates': [polygons]
+			},
+			'properties': {}
+		};
+
+		return geojson;
 	},
 
 	getOuterRingRadius: function() {
@@ -149,6 +182,11 @@ const CityStore = {
 
 	getAreaDescriptions: function() {
 		return this.data.areaDescriptions;
+	},
+
+	hasADData: function() {
+		let ADValues = Object.keys(this.data.areaDescriptions).map((holc_id) => this.data.areaDescriptions[holc_id].areaDesc);
+		return ADValues.reduce((a, b) => a || typeof b === 'object', false);
 	},
 
 	getADsByCat: function(cat, subcat) {
@@ -258,19 +296,57 @@ const CityStore = {
 				4: {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'total': 0}
 			},
 			areaOfRings = {},
+			totalGradedArea = 0, 
 			ringStats = { 1 : {}, 2: {}, 3: {}, 4: {} };
 		ringAreaGeometry.map((ring) => {
 			ringCumulative[ring.ring_id][ring.holc_grade] += ring.area;
 			ringCumulative[ring.ring_id].total += ring.area;
 			areaOfRings[ring.ring_id] = ring.ring_area;
+			totalGradedArea += ring.area;
 		});
 		Object.keys(ringCumulative).map((ring_id) => {
 			Object.keys(ringCumulative[ring_id]).map((grade) => {
-				ringStats[ring_id][grade] = ringCumulative[ring_id][grade] / ringCumulative[ring_id].total;
+				ringStats[ring_id][grade] = (ringStats[ring_id][grade]) ? ringStats[ring_id][grade] : {};
+				ringStats[ring_id][grade].percent = ringCumulative[ring_id][grade] / ringCumulative[ring_id].total;
 				ringStats[ring_id].density = ringCumulative[ring_id].total / areaOfRings[ring_id];
+				ringStats[ring_id][grade].overallPercent = ringCumulative[ring_id][grade] / totalGradedArea;
 			});
 		});
-		return ringStats;
+
+		//format for D3
+		let formattedStats = [];
+		for (let ringId = 1; ringId <= 4; ringId++) {
+			formattedStats.push({ 
+				percents: [ 
+					{ percent: ringStats[ringId].A.percent, overallPercent: ringStats[ringId].A.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "A" }, 
+					{ percent: ringStats[ringId].B.percent, overallPercent: ringStats[ringId].B.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "B" }, 
+					{ percent: ringStats[ringId].C.percent, overallPercent: ringStats[ringId].C.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "C" }, 
+					{ percent: ringStats[ringId].D.percent, overallPercent: ringStats[ringId].D.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "D" } 
+				] });
+		}
+		return formattedStats;
+	},
+
+	parseGradeStats: function(ringAreasGeometry) {
+		let cityStats = {'A':{area:0,percent:0},'B':{area:0,percent:0},'C':{area:0,percent:0},'D':{area:0,percent:0}},
+			totalArea = 0;
+		ringAreasGeometry.forEach((ring) => {
+			cityStats[ring.holc_grade].area += ring.area;
+			totalArea += ring.area;
+		});
+
+		Object.keys(cityStats).forEach((grade) => {
+			cityStats[grade].percent = cityStats[grade].area / totalArea;
+		});
+
+		//format for D3
+		let formattedStats = [];
+		Object.keys(cityStats).forEach((grade) => {
+			cityStats[grade].grade = grade;
+			formattedStats.push(cityStats[grade]);
+		});
+
+		return formattedStats;
 	},
 
 	parseAreaDescriptions: function(rawAdData) {
@@ -283,7 +359,8 @@ const CityStore = {
 				adData[d.holc_id] = {};
 			}
 			// assign properties    
-			adData[d.holc_id].area_geojson = JSON.parse(d.the_geojson);
+			adData[d.holc_id].area_geojson = (!adData[d.holc_id].area_geojson) ? JSON.parse(d.the_geojson) : adData[d.holc_id].area_geojson;
+			adData[d.holc_id].area_geojson_inverted = (!adData[d.holc_id].area_geojson_inverted) ? this.parseInvertedGeoJson(JSON.parse(d.the_geojson)) : adData[d.holc_id].area_geojson_inverted;
 			//adData[d.holc_id].name = d.name;
 			adData[d.holc_id].holc_grade = d.holc_grade;
 			adData[d.holc_id].sqmi = d.sqmi;
@@ -294,13 +371,13 @@ const CityStore = {
 			}
 			
 			// define category id for area description if undefined
-			if (d.sub_cat_id === "" && d.order === null) {
+			if (d.cat_id && d.sub_cat_id === "" && d.order === null) {
 				adData[d.holc_id].areaDesc[d.cat_id] = d.data;
-			} else if(typeof adData[d.holc_id].areaDesc[d.cat_id] === "undefined") {
+			} else if(d.cat_id && typeof adData[d.holc_id].areaDesc[d.cat_id] === "undefined") {
 				adData[d.holc_id].areaDesc[d.cat_id] = {};
 			}
 			// check for subcategories
-			if(d.sub_cat_id !== "") {
+			if(d.sub_cat_id) {
 				// create sub-object if we have a subcategory...
 				if(typeof adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] == "undefined") {
 					//console.log(d, adData[d.holc_id]);
@@ -319,9 +396,27 @@ const CityStore = {
 			else if (d.order) { 
 				adData[d.holc_id].areaDesc[d.cat_id][d.order] = rawAdData[row].data;
 			} 
+
+			if (Object.keys(adData[d.holc_id].areaDesc).length === 0) {
+				adData[d.holc_id].areaDesc = false;
+			}
+
 		}  // end if
 
 		return adData;
+	},
+
+	parseInvertedGeoJson: function(geojson) {
+		let worldLatLngs = [[90, 180], [90, -180], [-90, -180], [-90, 180]];
+
+		//Create a new set of latlngs, adding our world-sized ring first
+		let newLatLngs = [ worldLatLngs ];
+		geojson.coordinates.forEach((element, i) => {
+			newLatLngs.push(geojson.coordinates[i][0]);
+		});
+		geojson.coordinates = [newLatLngs];
+
+		return geojson;
 	},
 
 	parseADsByCat: function() {
@@ -404,8 +499,8 @@ AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			//console.log(`[2] The '${ AppActionTypes.loadInitialData }' event is handled by CityStore....`);
-			if (action.state.selectedCity.id) {
-				CityStore.loadData(action.state.selectedCity.id, true);
+			if (action.state.selectedCity) {
+				CityStore.loadData(action.state.selectedCity, true);
 			}
 			break;
 
@@ -416,6 +511,7 @@ AppDispatcher.register((action) => {
 		case AppActionTypes.ringAreaSelected:
 			CityStore.ringAreaSelected(action.value);
 			break;
+
 	}
 
 

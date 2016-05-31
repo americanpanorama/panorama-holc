@@ -40,11 +40,12 @@ body {
 	visibility: hidden;
 }
 
-
-
-.neighborhoodPolygon {
+.selectedGradedNeighborhoods,
+.neighborhoodPolygonInverted {
+	fill-opacity: 0.75;
 	stroke-opacity: 1;
 	fill: #000;
+	stroke-width : 2;
 
 	&.gradeA {
 		stroke: #418e41;
@@ -58,4 +59,9 @@ body {
 	&.gradeD {
 		stroke: #eb3f3f;
 	}
+}
+
+.neighborhoodPolygon {
+	stroke-opacity: 0;
+	fill-opacity: 0;
 }
