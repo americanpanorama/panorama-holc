@@ -58,11 +58,13 @@ export default class AreaDescription extends React.Component {
 
 		return (
 
-			<div>
-
-				<ul>
-					<li>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }>{ CityStore.getPreviousAreaId(this.props.areaId) }</span> : '' }</li>
-					<li>{ (CityStore.getNextAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getNextAreaId(this.props.areaId) }>{ CityStore.getNextAreaId(this.props.areaId) }</span> : '' }</li>
+			<div className='ad-selection'>
+				<ul className='area_description'>
+					<li><span className='left-arrow'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }></span> : '' }</span></li>
+					<li><span className='ad-left'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }>{ CityStore.getPreviousAreaId(this.props.areaId) }</span> : '' }</span></li>
+					<li><span className='right-arrow'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }></span> : '' }</span></li>
+					<li><span className='ad-right'>{ (CityStore.getNextAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getNextAreaId(this.props.areaId) }>{ CityStore.getNextAreaId(this.props.areaId) }</span> : '' }</span></li>
+					<li><h4>{ this.props.areaId }</h4></li>
 				</ul>
 		
 				{ ([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :

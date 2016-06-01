@@ -1032,6 +1032,45 @@ ul.right-stat {
   width: 50%;
   float: right; }
 
+.ad-left {
+  margin: 8px 0px;
+  float: left;
+  width: 30px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  cursor: pointer; }
+
+.ad-right {
+  margin: 8px 0px -40px;
+  float: right;
+  display: inline-block;
+  background-repeat: no-repeat;
+  cursor: pointer; }
+
+.right-arrow {
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid grey;
+  border-bottom: 1px solid grey;
+  background: transparent;
+  transform: rotate(-45deg);
+  float: right;
+  margin-right: 4px;
+  margin-top: 10px;
+  cursor: pointer; }
+
+.left-arrow {
+  width: 10px;
+  height: 10px;
+  border-left: 1px solid grey;
+  border-bottom: 1px solid grey;
+  background: transparent;
+  transform: rotate(45deg);
+  float: left;
+  margin-left: 4px;
+  margin-top: 10px;
+  cursor: pointer; }
+
 header .header-main, header .header-sub {
   font-family: 'Lora', serif;
   font-weight: 100;
@@ -1110,12 +1149,10 @@ ul.area_description {
   font-size: 16px;
   color: #0c789a;
   list-style: none;
-  margin: 1em 0 0 0;
+  margin: 0;
   padding: 0; }
   ul.area_description li {
-    list-style: none;
-    margin: 0;
-    padding: 3px 0; }
+    list-style: none; }
   ul.area_description .catNum, ul.area_description .catLetter {
     text-align: right;
     display: inline-block;
@@ -1178,6 +1215,14 @@ ul.area_description {
     color: #888;
     font-style: italic;
     margin-left: 4px; }
+
+.ad-selection li h4 {
+  color: #BD7171;
+  font-size: 1.3em;
+  font-weight: bolder;
+  text-align: center;
+  padding-right: 34px;
+  margin-right: 10px; }
 
 h2 {
   text-align: center;
@@ -1266,8 +1311,7 @@ h2 {
   margin-bottom: 20px;
   height: calc(100% - 50px - 20px); }
   .panorama.item-selector ul {
-    height: 100%;
-    padding: 200px 0; }
+    height: 100%; }
   .panorama.item-selector li.selected {
     background-color: #d3e0df;
     border-width: 0px !important; }

@@ -93,9 +93,11 @@ export default class ADCat extends React.Component {
 						if (grade == neighborhoodId.charAt(0)) {
 							return (
 								<li key={ 'cat' + grade + neighborhoodId } onClick={ this.props.onNeighborhoodClick } onMouseEnter={ this.props.onNeighborhoodHover } onMouseLeave={ this.props.onNeighborhoodOut } id={ neighborhoodId }>
-									<span id={ neighborhoodId }>{ neighborhoodId }</span>: 
+									<span className='subcatName' id={ neighborhoodId }>{ neighborhoodId }</span>: 
 									{ (typeof(idiosyncraticDisplay) === 'function') ? idiosyncraticDisplay(categoryData[neighborhoodId]) : this.renderDatum(categoryData[neighborhoodId]) }
 								</li>
+
+
 							);
 						}
 					})}
@@ -150,12 +152,19 @@ export default class ADCat extends React.Component {
 			nextCat = CityStore.getNextCatIds(this.props.catNum, this.props.catLetter);
 
 		return (
-			<div>
-				<h3>{ CityStore.getCatTitle(this.props.catNum, this.props.catLetter) }</h3>
+			<div className='ad-selection'>
 				
-				<ul>
-					<li>{ (previousCat) ? <span onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...previousCat) }>{ CityStore.getCatTitle(...previousCat) }</span> : '' }</li>
-					<li>{ (nextCat) ? <span onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...nextCat) }>{ CityStore.getCatTitle(...nextCat) }</span> : '' }</li>
+				
+				<ul className='area_description'>
+					<li>{ (previousCat) ?<span className='left-arrow' onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...previousCat) }></span> : '' }</li>
+					<li>{ (previousCat) ? <span className='ad-left' onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...previousCat) }>{ (previousCat[1]) ? previousCat[0] + previousCat[1] : previousCat[0] }</span> : '' }</li>
+					
+					<li>{ (nextCat) ?<span className='right-arrow' onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...nextCat) }></span> : '' }</li>
+					<li>{ (nextCat) ?  <span className='ad-right' onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...nextCat) }>{ (nextCat[1]) ? nextCat[0] + nextCat[1] : nextCat[0] }</span> : '' }</li>
+					<li><h4>{ CityStore.getCatTitle(this.props.catNum, this.props.catLetter) }</h4></li>
+					
+					
+					
 				</ul>
 
 				{ this.renderGrade('A') }
