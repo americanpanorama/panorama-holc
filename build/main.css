@@ -1115,17 +1115,28 @@ body {
 .hidden {
   visibility: hidden; }
 
-.neighborhoodPolygon {
+.selectedGradedNeighborhoods,
+.neighborhoodPolygonInverted {
+  fill-opacity: 0.75;
   stroke-opacity: 1;
-  fill: #000; }
-  .neighborhoodPolygon.gradeA {
+  fill: #000;
+  stroke-width: 2; }
+  .selectedGradedNeighborhoods.gradeA,
+  .neighborhoodPolygonInverted.gradeA {
     stroke: #418e41; }
-  .neighborhoodPolygon.gradeB {
+  .selectedGradedNeighborhoods.gradeB,
+  .neighborhoodPolygonInverted.gradeB {
     stroke: #4a4ae4; }
-  .neighborhoodPolygon.gradeC {
+  .selectedGradedNeighborhoods.gradeC,
+  .neighborhoodPolygonInverted.gradeC {
     stroke: #f4f570; }
-  .neighborhoodPolygon.gradeD {
+  .selectedGradedNeighborhoods.gradeD,
+  .neighborhoodPolygonInverted.gradeD {
     stroke: #eb3f3f; }
+
+.neighborhoodPolygon {
+  stroke-opacity: 0;
+  fill-opacity: 0; }
 
 .city-selector ul, .city-selector li {
   list-style: none; }
