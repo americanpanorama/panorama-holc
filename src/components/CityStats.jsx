@@ -127,6 +127,10 @@ export default class CityStats extends React.Component {
 			let scope = this;	
 			var color = function(i) { return ['#418e41', '#4a4ae4', '#f4f570', '#eb3f3f'][i]; };
 			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#A3A34B', '#eb3f3f'][i]; };
+			var colorGrade = function(grade) {
+				let gradeColors = {'A':'#418e41','B':'#4a4ae4','C':'#f4f570','D':'#eb3f3f'};
+				return gradeColors[grade];
+			}
 
 			var pie = d3.layout.pie()
 				.value((d) => d.percent)
@@ -155,20 +159,39 @@ export default class CityStats extends React.Component {
 			  .selectAll('path')
 			  .data((d) => pie(d.percents))
 			  .enter().append('path')
+			  .filter((d) => d.data.percent > 0)
 			  .attr('transform', 'translate(' + (scope.WIDTH / 2) + ',' + (scope.HEADER * 2 + scope.MARGIN * 5 + scope.STATSHEIGHT + scope.DIAMETER / 2) + ')')
 			  .attr('d', arc)
-			  .attr('fill', (d,i) => color(i))
+			  .attr('fill', (d,i) => colorGrade(d.data.grade))
 			  .attr('fill-opacity', (d) => d.data.opacity)
-			  .attr('stroke', (d,i) => color(i))
+			  .attr('stroke', (d,i) => colorGrade(d.data.grade))
 			  .attr('stroke-width', 0)
+			  .attr('data-opacity', (d) => d.data.opacity)
 			  .attr('class', (d) => 'sliceGrade' + d.data.grade)
 			  .on("mouseover", function(d) {
 				  d3.select(this)
 					.transition()
-					.duration(1000)
+					.duration(2000)
 				  	.attr('fill-opacity', 1);
 				  d3.select('#ring' + d.data.ringId + "grade" + d.data.grade)
 				    .attr('opacity', 1);
+				  d3.selectAll('.areaBar')
+					.transition()
+					.duration(2000)
+					.attr('opacity', .4);
+				  d3.selectAll('.barGrade' + d.data.grade)
+					.filter('.ring' + d.data.ringId)
+					.transition()
+					.duration(2000)
+					.attr('opacity', 1);
+				  d3.selectAll('.barGradePercent' + d.data.grade)
+					.filter('.ring' + d.data.ringId)
+					.transition()
+					.duration(500)
+					.attr('opacity', 1);
+				  d3.selectAll('.overallPercent')
+				  	.transition()
+					.attr('opacity', 0);
 				  scope.onHover(d.data.ringId, d.data.grade);
 			  })
 			  .on("mouseout", function(d) {
@@ -178,9 +201,19 @@ export default class CityStats extends React.Component {
 					.attr('fill-opacity', (d) => d.data.opacity);
 				  d3.select('#ring' + d.data.ringId + "grade" + d.data.grade )
 					.attr('opacity', 0);
+				  d3.selectAll('.areaBar')
+					.transition()
+					.duration(2000)
+					.attr('opacity', .7);
+				  d3.selectAll('.areaBarPercent')
+				  	.transition()
+					.attr('opacity', 0);
+				  d3.selectAll('.overallPercent')
+				  	.transition()
+					.attr('opacity', 1);
 			  });	
 
-			// add thin stroke line for each slice of pie
+			// add thin stroke line for each slice of pies
 			ringNodes
 			  .selectAll('path.border')
 			  .data((d) => pie(d.percents) )
@@ -193,18 +226,37 @@ export default class CityStats extends React.Component {
 			  .attr('stroke-width', 0.25)
 			  .attr('stroke-opacity', 0.7);
 
+			// a tranparent border around each slice
+			// it's made opaque for highlighting and thus needs
+			// to be added after the slice and the border
+			ringNodes
+			  .selectAll('paths.sliceBorder')
+			  .data((d) => pie(d.percents))
+			  .enter().append('path')
+			  .filter((d) => d.data.percent > 0)
+			  .attr('transform', 'translate(' + (scope.WIDTH / 2) + ',' + (scope.HEADER * 2 + scope.MARGIN * 5 + scope.STATSHEIGHT + scope.DIAMETER / 2) + ')')
+			  .attr('d', arc)
+			  .attr('fill-opacity', 0)
+			  .attr('stroke', (d,i) => colorGrade(d.data.grade))
+			  .attr('stroke-width', 0)
+			  .attr('pointer-events', 'none')
+			  .attr('class', (d) => 'sliceBorder grade' + d.data.grade);
+
 			// add text for each slice of pie
 			ringNodes
-			  .selectAll('text')
+			  .selectAll('text.burgessSlicePercent')
 			  .data((d) => pie(d.percents) )
 			  .enter().append('text')
+			  .filter((d) => d.data.percent > 0)
 			  .attr('transform', (d) => 'translate(' + (arc.centroid(d)[0] + scope.WIDTH / 2) + ',' + (arc.centroid(d)[1] + scope.HEADER * 2 + scope.MARGIN * 5 + scope.STATSHEIGHT + scope.DIAMETER / 2) + ')')
 			  .attr('text-anchor', "middle")
 			  .style('font', "11px Arial")
 			  .attr('dy', 5.5)
-			  .attr('fill', (d) => (d.data.grade == 'C') ? 'black' : 'white')
+			  
 			  .attr('opacity', 0)
 			  .attr('id', (d) => 'ring' + d.data.ringId + 'grade' + d.data.grade)
+			  .attr('class', (d) => 'burgessSlicePercent grade' + d.data.grade)
+			  .attr('fill', (d) => (d.data.grade == 'C') ? 'black' : 'white')
 			  .attr('pointer-events', 'none')
 			  .text((d) => percent(d.value));
 
@@ -212,12 +264,12 @@ export default class CityStats extends React.Component {
 			  .selectAll('rect')
 			  .data(ringstats)
 			  .enter().append('rect')
-			  .attr('class', (d,i,j) => 'barGrade' + d.percents[j].grade)
+			  .attr('class', (d,i,j) => 'areaBar barGrade' + d.percents[j].grade + ' ring' + (i + 1))
 			  .attr('height', scope.STATSHEIGHT)
-			  .attr('width', (d, i, j) => Math.round(d.percents[j].overallPercent * scope.WIDTH))
+			  .attr('width', (d,i,j) => Math.round(d.percents[j].overallPercent * scope.WIDTH))
 			  .attr('opacity', .7)
 			  .attr('y', scope.HEADER + scope.MARGIN)
-			  .attr('x', (d, i, j) => {
+			  .attr('x', (d,i,j) => {
 				let x = 0;
 				for (let j0 = 0; j0 <= 3; j0++) {
 					for (let i0 = 0; i0 <= 3; i0++) {
@@ -231,26 +283,68 @@ export default class CityStats extends React.Component {
 			  .attr('fill', (d,i,j) => color(j))
 			  .on("mouseover", function(d,i,j) {
 				let grade = ['A','B','C','D'][j];
+				d3.selectAll(".areaBar")
+				  .transition()
+				  .duration(1000)
+				  .attr('opacity', .4);
 				d3.selectAll("rect.barGrade" + grade)
 				  .transition()
 				  .duration(1000)
 				  .attr('opacity', 1);
-				/* d3.selectAll(".sliceGrade" + grade)
+				d3.selectAll(".sliceBorder")
+				  .filter(".grade" + grade)
 				  .transition()
 				  .duration(1000)
-				  .attr('stroke-width', 5); */
+				  .attr('stroke-width', 5);
+				d3.selectAll(".burgessSlicePercent")
+				  .filter(".grade" + grade)
+				  .filter((d) => d.data.percent > .06)
+				  .transition()
+				  .attr('fill', 'black')
+				  .attr('opacity', 1);
 				scope.onGradeHover(grade);
 			  }).
 			  on("mouseout", function(d,i,j) {
 				let grade = ['A','B','C','D'][j];
-				d3.selectAll("rect.barGrade" + grade)
+				d3.selectAll(".areaBar")
 				  .transition()
 				  .attr('opacity', .7);
-				d3.selectAll(".sliceGrade" + grade)
+				d3.selectAll(".sliceBorder")
 				  .transition()
 				  .attr('stroke-width', 0);
+				d3.selectAll(".burgessSlicePercent")
+				  .transition()
+				  .attr('opacity', 0)
+				  .attr('fill', (d) => (d.data.grade == 'C') ? 'black' : 'white');
 				scope.onGradeHoverOut();
 			  });
+
+			// percents for each of these slices in the area chart
+			ringNodes
+			  .selectAll('text.slicePercent')
+			  .data(ringstats)
+			  .enter().append('text')
+			  .attr('x', (d,i,j) => {
+				let x = 0;
+				for (let j0 = 0; j0 <= 3; j0++) {
+					for (let i0 = 0; i0 <= 3; i0++) {
+						if (ringstats[j0].percents[i0].grade < d.percents[j].grade || (ringstats[j0].percents[i0].grade == d.percents[j].grade && ringstats[j0].percents[i0].ringId < d.percents[j].ringId)) {
+							x+= Math.round(ringstats[j0].percents[i0].overallPercent * scope.WIDTH);
+						}
+					}
+				}
+				x += Math.round(d.percents[j].overallPercent * scope.WIDTH / 2);
+				return x;
+			  })
+			  .attr('y', scope.HEADER + scope.MARGIN + 20)
+			  .attr('class', (d,i,j) => 'areaBarPercent barGradePercent' + d.percents[j].grade + ' ring' + (i + 1))
+			  .attr('pointer-events', 'none')
+			  .attr("text-anchor", "middle")
+			  .attr("font-family", "sans-serif")
+			  .attr("font-size", "10px")
+			  .attr('fill', (d,i,j) => (d.percents[j].grade == 'C') ? 'black' : 'white')
+			  .attr("opacity", 0)
+			  .text((d,i,j) => percent(d.percents[j].overallPercent));
 
 			ringNodes
 			  .selectAll('text.overallPercent')
@@ -265,6 +359,7 @@ export default class CityStats extends React.Component {
 				return x;
 			  })
 			  .attr('y', scope.HEADER + scope.MARGIN + 20)
+			  .attr('pointer-events', 'none')
 			  .attr("text-anchor", "middle")
 			  .attr("font-family", "sans-serif")
 			  .attr("font-size", "10px")

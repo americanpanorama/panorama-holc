@@ -1090,18 +1090,18 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
   stroke: black;
   stroke-width: 1; }
 
-.gradeA {
-  fill: #418e41; }
-
+/* .gradeA {
+	fill: #418e41;
+}
 .gradeB {
-  fill: #4a4ae4; }
-
+	fill: #4a4ae4;
+}
 .gradeC {
-  fill: #f4f570; }
-
+	fill: #f4f570;
+}
 .gradeD {
-  fill: #eb3f3f; }
-
+	fill: #eb3f3f;
+} */
 .selected {
   visibility: visible !important;
   fill-opacity: 1; }

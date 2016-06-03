@@ -46,7 +46,10 @@ const CityStore = {
 		gradeStats: [],
 		areaDescriptions: {},
 		ADsByCat: {},
-		polygonBoundingBox: null
+		polygonBoundingBox: null,
+		gradedArea: null,
+		gradedAreaOfRings: {},
+		gradedAreaByGrade: {}
 	},
 
 	// TODO: Make a generic DataLoader class to define an interface,
@@ -64,7 +67,7 @@ const CityStore = {
 				format: "JSON"
 			},
 			{
-				query: "WITH the_hull as (select ST_ConvexHull(ST_Collect(ST_Envelope(holc_polygons.the_geom_webmercator))) as hull, ad_id FROM holc_polygons where ad_id = " + cityId + " GROUP BY ad_id), maxdist as (SELECT st_length( st_transform(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat), 4326), 3857), hull  ), 2163)) / 3.5 as distintv, ST_SetSRID(ST_MakePoint( looplng,looplat),4326)::geography as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = " + cityId + " Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5)::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5)::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5)::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5)::geometry),3857) as buffer1 FROM maxdist ), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ) SELECT rhp.holc_grade, city_rings.ring_id, rhp.holc_id, ring_area, ST_AsGeoJSON(ST_Transform(ST_Intersection(rhp.the_geom_webmercator, city_rings.the_geom_webmercator), 4326)) as the_geojson, st_area(ST_Intersection(rhp.the_geom_webmercator, city_rings.the_geom_webmercator)) as area FROM holc_polygons rhp, city_rings WHERE rhp.ad_id = " + cityId + " and ST_Intersects(rhp.the_geom_webmercator, city_rings.the_geom_webmercator) order by ring_id, holc_grade, holc_id",
+				query: "WITH the_hull as ( select ST_ConvexHull(ST_Collect(ST_Envelope(digitalscholarshiplab.holc_polygons.the_geom_webmercator))) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = " + cityId + " GROUP BY ad_id), maxdist as (SELECT st_length( st_transform(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat), 4326), 3857), hull ), 2163)) / 3.5 as distintv, ST_SetSRID(ST_MakePoint( looplng,looplat),4326)::geography as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = " + cityId + " Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5)::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5)::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5)::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5)::geometry),3857) as buffer1 FROM maxdist ), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, st_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = " + cityId + " group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),3857) as the_geom_webmercator, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326)) as the_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area FROM city_rings, combined_grades",
 				format: "JSON"
 			},
 			{
@@ -82,6 +85,7 @@ const CityStore = {
 			}
 		]).then((response) => {
 			this.data.id = cityId;
+
 			let cityData = response[0][0];
 			this.data.name = cityData.city;
 			this.data.state = cityData.state;
@@ -92,7 +96,14 @@ const CityStore = {
 				ringId: 0,
 				grade: ''
 			};
-			this.data.ringAreasGeometry = response[1];
+
+			let ringData = response[1];
+			this.data.gradedArea = this.calculatedGradedArea(ringData);
+			this.data.gradedAreaOfRings = this.calculateGradedAreaOfRings(ringData);
+			this.data.gradedAreaByGrade = this.calculateGradedAreaByGrade(ringData);
+			this.data.ringAreasGeometry = this.parseRingAreaGeometry(ringData);
+
+
 			this.data.ringStats = this.parseRingStats(this.data.ringAreasGeometry);
 			this.data.outerRingRadius = (response[2][0]) ? response[2][0].distintv : false;
 			this.data.loopLatLng = (response[2][0]) ? [response[2][0].looplat, response[2][0].looplng] : false;
@@ -148,6 +159,10 @@ const CityStore = {
 
 	getSelectedGrade: function() {
 		return this.data.gradeSelected;
+	},
+
+	getGeoJsonForSelectedRingArea: function(ring, grade) {
+		return this.data.ringAreasGeometry[ring][grade].the_geojson;
 	},
 
 	getGeoJsonForGrade: function(grade) {
@@ -284,12 +299,63 @@ const CityStore = {
 		return arr;
 	},
 
-	parseRingStats: function(ringAreaGeometry) {
-		if (ringAreaGeometry.length == 0) {
+	calculatedGradedArea: function(geometries) {
+		let gradedTotalArea = 0;
+		geometries.forEach((d) => {
+			gradedTotalArea += d.area;
+		});
+
+		return gradedTotalArea;
+	},
+
+	calculateGradedAreaOfRings: function(geometries) {
+		let gradedAreaOfRings = {1:0,2:0,3:0,4:0};
+		geometries.forEach((d) => {
+			gradedAreaOfRings[d.ring] += d.area;
+		});
+
+		return gradedAreaOfRings;
+	},
+
+	calculateGradedAreaByGrade: function(geometries) {
+		let gradedAreaByGrade = {'A':0,'B':0,'C':0,'D':0};
+		geometries.forEach((d) => {
+			gradedAreaByGrade[d.grade] += d.area;
+		});
+
+		return gradedAreaByGrade;
+	},
+
+	parseRingAreaGeometry: function(geometries) {
+		if (geometries.length == 0) {
 			return false;
 		}
 
-		let ringCumulative = {
+		let ringAreasGeometry  = {
+			1: {'A':{},'B':{},'C':{},'D':{}},
+			2: {'A':{},'B':{},'C':{},'D':{}},
+			3: {'A':{},'B':{},'C':{},'D':{}},
+			4: {'A':{},'B':{},'C':{},'D':{}}
+		};
+
+		geometries.forEach((d) => {
+			ringAreasGeometry[d.ring].density = this.data.gradedAreaOfRings[d.ring] / d.ring_area;
+			ringAreasGeometry[d.ring][d.grade] = {
+				'the_geojson': JSON.parse(d.the_geojson),
+				'percent': d.area / this.data.gradedAreaOfRings[d.ring],
+				'overallPercent': d.area / this.data.gradedArea
+			}
+		});
+
+		return ringAreasGeometry;
+	},
+
+	parseRingStats: function(ringStats) {
+		if (ringStats.length == 0) {
+			return false;
+		}
+
+		/* let ringCumulative = {
 				1: {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'total': 0},
 				2: {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'total': 0},
 				3: {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'total': 0},
@@ -298,12 +364,13 @@ const CityStore = {
 			areaOfRings = {},
 			totalGradedArea = 0, 
 			ringStats = { 1 : {}, 2: {}, 3: {}, 4: {} };
-		ringAreaGeometry.map((ring) => {
+		ringAreaGeometry.forEach((ring) => {
 			ringCumulative[ring.ring_id][ring.holc_grade] += ring.area;
 			ringCumulative[ring.ring_id].total += ring.area;
 			areaOfRings[ring.ring_id] = ring.ring_area;
 			totalGradedArea += ring.area;
 		});
+		console.log(totalGradedArea);
 		Object.keys(ringCumulative).map((ring_id) => {
 			Object.keys(ringCumulative[ring_id]).map((grade) => {
 				ringStats[ring_id][grade] = (ringStats[ring_id][grade]) ? ringStats[ring_id][grade] : {};
@@ -311,7 +378,7 @@ const CityStore = {
 				ringStats[ring_id].density = ringCumulative[ring_id].total / areaOfRings[ring_id];
 				ringStats[ring_id][grade].overallPercent = ringCumulative[ring_id][grade] / totalGradedArea;
 			});
-		});
+		}); */
 
 		//format for D3
 		let formattedStats = [];
@@ -324,29 +391,20 @@ const CityStore = {
 					{ percent: ringStats[ringId].D.percent, overallPercent: ringStats[ringId].D.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "D" } 
 				] });
 		}
+
 		return formattedStats;
 	},
 
 	parseGradeStats: function(ringAreasGeometry) {
-		let cityStats = {'A':{area:0,percent:0},'B':{area:0,percent:0},'C':{area:0,percent:0},'D':{area:0,percent:0}},
-			totalArea = 0;
-		ringAreasGeometry.forEach((ring) => {
-			cityStats[ring.holc_grade].area += ring.area;
-			totalArea += ring.area;
-		});
-
-		Object.keys(cityStats).forEach((grade) => {
-			cityStats[grade].percent = cityStats[grade].area / totalArea;
-		});
+		let grades = ['A','B','C','D'];
 
 		//format for D3
-		let formattedStats = [];
-		Object.keys(cityStats).forEach((grade) => {
-			cityStats[grade].grade = grade;
-			formattedStats.push(cityStats[grade]);
+		return grades.map((grade) => {
+			return {
+				grade: grade,
+				percent: this.data.gradedAreaByGrade[grade] / this.data.gradedArea
+			}
 		});
-
-		return formattedStats;
 	},
 
 	parseAreaDescriptions: function(rawAdData) {
@@ -407,7 +465,7 @@ const CityStore = {
 	},
 
 	parseInvertedGeoJson: function(geojson) {
-		let worldLatLngs = [[90, 180], [90, -180], [-90, -180], [-90, 180]];
+		let worldLatLngs = [[180, 90],[180, -90],[-180, -90],[-180,  90]];
 
 		//Create a new set of latlngs, adding our world-sized ring first
 		let newLatLngs = [ worldLatLngs ];

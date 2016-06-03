@@ -87,7 +87,7 @@ export default class App extends React.Component {
 			selectedState: (hashState.city || !hashState.state) ? null : hashState.state,
 			selectedCategory: (hashState.category) ? hashState.category : null,
 			selectedRingGrade: { 
-				ringId: null, 
+				ring: null, 
 				grade: null
 			},
 			selectedGrade: null,
@@ -133,7 +133,7 @@ export default class App extends React.Component {
 			selectedNeighborhood: null,
 			selectedCategory: null,
 			selectedRingGrade: {
-				ringId: null,
+				ring: null,
 				grade: null
 			},
 			highlightedNeighborhood: null,
@@ -147,7 +147,7 @@ export default class App extends React.Component {
 	ringAreaSelected (ringNum, grade) {
 		this.setState({
 			selectedRingGrade: { 
-				ringId: ringNum, 
+				ring: ringNum, 
 				grade: grade
 			} 
 		});
@@ -156,7 +156,7 @@ export default class App extends React.Component {
 	ringAreaUnselected () {
 		this.setState({
 			selectedRingGrade: { 
-				ringId: null, 
+				ring: null, 
 				grade: null
 			} 
 		});
@@ -323,7 +323,7 @@ export default class App extends React.Component {
 			ringGeometries.map((item, i) => {
 				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id];
 				if (layerComponent) {
-					isSelected = (item.ring_id == this.state.selectedRingGrade.ringId && item.holc_grade == this.state.selectedRingGrade.grade);
+					isSelected = (item.ring_id == this.state.selectedRingGrade.ring && item.holc_grade == this.state.selectedRingGrade.grade);
 					styling = {
 						opacity: (isSelected) ? 1 : 0,
 						fillOpacity: (isSelected) ? 0.5 : 0,
@@ -496,11 +496,11 @@ export default class App extends React.Component {
 		});
 	}
 
-	isSelectedRing (ringNum) { return ringNum == this.state.selectedRingGrade.ringId; }
+	isSelectedRing (ringNum) { return ringNum == this.state.selectedRingGrade.ring; }
 
-	donutShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ringId > 0 && ringNum > this.state.selectedRingGrade.ringId; } 
+	donutShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ring > 0 && ringNum > this.state.selectedRingGrade.ring; } 
 
-	donutholeShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ringId > 1 && ringNum == this.state.selectedRingGrade.ringId - 1; }
+	donutholeShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ring > 1 && ringNum == this.state.selectedRingGrade.ring - 1; }
 
 	render () {
 
@@ -522,7 +522,8 @@ export default class App extends React.Component {
 					position: null
 				}
 			},
-			mapConfig = this.state.map || this.state.mapConfig;
+			mapConfig = this.state.map || this.state.mapConfig,
+			ADs = CityStore.getAreaDescriptions();
 
 		return (
 			<div className='container full-height'>
@@ -578,7 +579,39 @@ export default class App extends React.Component {
 
 								{ this.renderDonuts() }
 								{ this.renderDonutholes() }
-								{ this.renderRingShards() }
+
+								{ (this.state.selectedRingGrade.ring > 0) ?
+									<GeoJson 
+										data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
+										clickable={ false }
+										ref={ 'ring-' + this.state.selectedRingGrade.ring + '-grade-' + this.state.selectedRingGrade.grade }
+										key={ 'ringStroke'}
+										stroke={ false }
+										fillOpacity={ 0.7}
+										fillColor={ 'white' }
+									/> :
+									null
+								}
+
+								{ (this.state.selectedGrade) ?
+									<AreaPolygon 
+										data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
+										key={ 'selectedGradedNeighborhoods' } 
+										className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
+									/> :
+									null
+								}
+
+								{ (this.state.selectedNeighborhood) ?
+									<AreaPolygon
+										data={ ADs[this.state.selectedNeighborhood].area_geojson_inverted } 
+										clickable={ false }
+										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedNeighborhood].holc_grade } 
+										key={ 'neighborhoodPolygonInverted' + this.state.selectedNeighborhood }
+									/> :
+									null
+								}
+
 								{ this.renderNeighborhoodPolygons() } 
 							</Map>
 						</div>
@@ -610,15 +643,6 @@ export default class App extends React.Component {
 
 		if (CityStore.hasADData()) {
 			Object.keys(ADs).forEach((id) => {
-				if (id == this.state.selectedNeighborhood) {
-					layers.push(<AreaPolygon
-						data={ ADs[id].area_geojson_inverted } 
-						clickable={ false }
-						className={ 'neighborhoodPolygonInverted grade' + ADs[id].holc_grade } 
-						key={ 'neighborhoodPolygonInverted' + id }
-					/>);
-				}
-
 				layers.push(<AreaPolygon
 					data={ ADs[id].area_geojson }
 					className={ 'neighborhoodPolygon grade' + ADs[id].holc_grade }
@@ -629,37 +653,6 @@ export default class App extends React.Component {
 			});
 		}
 
-		// layer 
-		if (this.state.selectedGrade) {
-			// add a geojson with fake data--the real data added through componentdidupdate()
-			layers.push(<AreaPolygon 
-				data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
-				key={ 'selectedGradedNeighborhoods' } 
-				className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
-			/>);
-		}
-
-		return layers;
-	}
-
-	renderRingShards () {
-		// this has minimal styling as that's applied after rendering by updateCityPolygons()
-		let layers = [],
-			ringGeometries = CityStore.getRingAreasGeometry();
-
-		ringGeometries.map((item, i) => {
-			layers.push(
-				<GeoJson 
-					data={ JSON.parse(item.the_geojson) }
-					clickable={ false }
-					ref={ 'ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id }
-					key={ 'ringStroke' + i }
-					opacity={0}
-					fillOpacity={0}
-				/>
-			);
-		});
-
 		return layers;
 	}
 
@@ -669,18 +662,20 @@ export default class App extends React.Component {
 
 		if (outerRadius > 0) {
 			for (let ringNum = 5; ringNum >= 2; ringNum--) {
-				layers.push(
-					<Donut 
-						center={ CityStore.getLoopLatLng() } 
-						innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
-						outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
-						clickable={ false } 
-						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
-						fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
-						className={ 'donut' } 
-						key={ 'donut' + String(ringNum) } 
-					/>
-				);
+				if (!this.isSelectedRing(ringNum)) {
+					layers.push(
+						<Donut 
+							center={ CityStore.getLoopLatLng() } 
+							innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
+							outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
+							clickable={ false } 
+							fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
+							fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
+							className={ 'donut' } 
+							key={ 'donut' + String(ringNum) } 
+						/>
+					);
+				}
 			}
 		}
 
