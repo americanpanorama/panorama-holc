@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-import update from 'react-addons-update';
 //import "babel-polyfill";
 import Modal from 'react-modal';
-import { Map, TileLayer, GeoJson, Circle, MultiPolygon } from 'react-leaflet';
+import { Map, TileLayer, GeoJson, Circle } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
 import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
@@ -70,11 +69,6 @@ export default class App extends React.Component {
 	componentWillUnmount () { }
 
 	componentDidUpdate () {
-		/* if (CityStore.getAreaDescriptions()) {
-			this.updateAreaPolygons();
-		}
-		this.makeRingVisable(); */
-
 		//this.refs.the_map.leafletElement.options.maxZoom = (this.state.selectedCity && RasterStore.hasLoaded()) ? RasterStore.getSelectedCityMetadata('maxZoom') : null;
 	}
 
@@ -287,64 +281,10 @@ export default class App extends React.Component {
 		});
 	}
 
-	updateCityPolygons () {
-		// Update data in GeoJson layers, as described here:
-		// https://github.com/Leaflet/Leaflet/issues/1416
-		let layerComponent,
-			isSelected,
-			isHighlighted,
-			styling,
-			colors = {A: '#418e41', 'B': '#4a4ae4', 'C': '#f4f570', 'D': '#eb3f3f'},
-			ADs = CityStore.getAreaDescriptions(),
-			ringGeometries = CityStore.getRingAreasGeometry();
-
-		/* if (this.state.selectedGrade) {
-			layerComponent = this.refs['selectedGradedNeighborhood'];
-			layerComponent.getLeafletElement().clearLayers();
-			layerComponent.getLeafletElement().options.clickable = false;
-			layerComponent.getLeafletElement().options.invert = true;
-			layerComponent.getLeafletElement().addData(CityStore.getGeoJsonForGrade(this.state.selectedGrade));
-			layerComponent.getLeafletElement().setStyle({
-				fillOpacity: 0.75,
-				fillColor: 'black',
-				color: colors[this.state.selectedGrade],
-				weight: 2
-			});
-
-		}
-
-		if (this.state.selectedNeighborhood && this.refs['unselectNeighborhood']) {
-			layerComponent = this.refs['unselectNeighborhood'];
-			layerComponent.getLeafletElement().clearLayers();
-			layerComponent.getLeafletElement().addData(ADs[this.state.selectedNeighborhood].area_geojson);
-		} */
-
-		if (ringGeometries) {
-			ringGeometries.map((item, i) => {
-				layerComponent = this.refs['ring-' + item.ring_id + '-grade-' + item.holc_grade + '-id-' + item.holc_id];
-				if (layerComponent) {
-					isSelected = (item.ring_id == this.state.selectedRingGrade.ring && item.holc_grade == this.state.selectedRingGrade.grade);
-					styling = {
-						opacity: (isSelected) ? 1 : 0,
-						fillOpacity: (isSelected) ? 0.5 : 0,
-						fillColor: colors[item.holc_grade],
-						color: colors[item.holc_grade],
-						weight: 2
-					}
-					layerComponent.getLeafletElement().clearLayers();
-					layerComponent.getLeafletElement().addData(JSON.parse(item.the_geojson));
-					layerComponent.getLeafletElement().setStyle(styling);
-				}
-			});
-		}
-	}
-
 	// fit to window if necessary
 	makeRingVisable () {
 
 	}
-
-
 
 	changeHash () {
 		let newState = { 
@@ -527,15 +467,24 @@ export default class App extends React.Component {
 
 		return (
 			<div className='container full-height'>
-			<Navigation show_menu={ this.state.show_panorama_menu } on_hamburger_click={ this.onPanoramaMenuClick } nav_data={ this.getNavData() }  />
+				<Navigation 
+					show_menu={ this.state.show_panorama_menu } 
+					on_hamburger_click={ this.onPanoramaMenuClick } 
+					nav_data={ this.getNavData() } 
+				/>
 				<div className='row full-height'>
 					<div className='columns eight full-height'>
 						<header className='row u-full-width'>
-							<h1><span className='header-main'>Mapping Inequality</span><span className='header-sub'>Redlining in New Deal America</span></h1>
+							<h1>
+								<span className='header-main'>Mapping Inequality</span>
+								<span className='header-sub'>Redlining in New Deal America</span>
+							</h1>
 							<h4 onClick={ this.toggleAbout }>Introduction</h4><h4 onClick={ this.toggleAbout }>Bibliographic Notes & Bibliography</h4><h4 onClick={ this.toggleAbout }>Credits</h4>							
 							<hr className='style-eight'>
 							</hr>
-							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }><span className='icon info'/></button>
+							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }>
+								<span className='icon info'/>
+							</button>
 						</header>
 						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
 							<Map 
@@ -543,7 +492,7 @@ export default class App extends React.Component {
 								center={ this.state.map.center } 
 								zoom={ this.state.map.zoom }  
 								onLeafletMoveend={ this.onMapMoved } 
-							> 
+							>
 								{ tileLayers.layers.map((item, i) => {
 									return (
 										<TileLayer
@@ -552,7 +501,6 @@ export default class App extends React.Component {
 										/>
 									);
 								}) } 
-
 
 								{ RasterStore.getMapsList().map((item, i) => {
 									return (
@@ -586,9 +534,10 @@ export default class App extends React.Component {
 										clickable={ false }
 										ref={ 'ring-' + this.state.selectedRingGrade.ring + '-grade-' + this.state.selectedRingGrade.grade }
 										key={ 'ringStroke'}
-										stroke={ false }
-										fillOpacity={ 0.7}
-										fillColor={ 'white' }
+										stroke={ true }
+										color={ 'yellow'}
+										fillOpacity={ 0.5}
+										fillColor={ 'black' }
 									/> :
 									null
 								}
@@ -612,7 +561,21 @@ export default class App extends React.Component {
 									null
 								}
 
-								{ this.renderNeighborhoodPolygons() } 
+								{ (CityStore.hasADData()) ?
+									Object.keys(ADs).map((id) => {
+										return (
+											<AreaPolygon
+												data={ ADs[id].area_geojson }
+												className={ 'neighborhoodPolygon grade' + ADs[id].holc_grade }
+												key={ 'neighborhoodPolygon' + id } 
+												onClick={ this.onNeighborhoodClick }
+												neighborhoodId={ id } 
+											/>
+										)
+									}) :
+									null
+								}
+
 							</Map>
 						</div>
 					</div>
@@ -630,30 +593,11 @@ export default class App extends React.Component {
 						<div dangerouslySetInnerHTML={ this.parseModalCopy(this.state.modalOpen) }></div>
 					</Modal>
 
-				<IntroManager { ...this.state.intro } />
+					<IntroManager { ...this.state.intro } />
 				</div>
 			</div> 
 		);
 
-	}
-
-	renderNeighborhoodPolygons () {
-		let layers = [],
-			ADs = CityStore.getAreaDescriptions();
-
-		if (CityStore.hasADData()) {
-			Object.keys(ADs).forEach((id) => {
-				layers.push(<AreaPolygon
-					data={ ADs[id].area_geojson }
-					className={ 'neighborhoodPolygon grade' + ADs[id].holc_grade }
-					key={ 'neighborhoodPolygon' + id } 
-					onClick={ this.onNeighborhoodClick }
-					neighborhoodId={ id } 
-				/>);
-			});
-		}
-
-		return layers;
 	}
 
 	renderDonuts () {
@@ -710,46 +654,66 @@ export default class App extends React.Component {
 		let ADs = CityStore.getAreaDescriptions();
 
 		if (this.state.downloadOpen) {
-			title = <h2>{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div></h2>;
+			title = 	<h2>
+							{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
+							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+						</h2>;
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
 		} else if (this.state.selectedNeighborhood) {
 			theClass = 'area';
-			title = <h2>
-						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
-					</h2>;
-			content = <AreaDescription areaId={ this.state.selectedNeighborhood } areaData={ ADs[this.state.selectedNeighborhood] } formId={ CityStore.getFormId() } onCategoryClick={ this.onCategoryClick } onNeighborhoodClick={ this.onNeighborhoodClick } ref={'areadescription' + this.state.selectedNeighborhood } />;
+			title = 	<h2>
+							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
+							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
+							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = 	<AreaDescription 
+							areaId={ this.state.selectedNeighborhood } 
+							areaData={ ADs[this.state.selectedNeighborhood] } 
+							formId={ CityStore.getFormId() } 
+							onCategoryClick={ this.onCategoryClick } 
+							onNeighborhoodClick={ this.onNeighborhoodClick } 
+							ref={'areadescription' + this.state.selectedNeighborhood } 
+						/>;
 		} else if (this.state.selectedCategory && CityStore.getADsByCat(...this.state.selectedCategory.split('-'))) {
 			let [catNum, catLetter] = this.state.selectedCategory.split('-');
 			theClass = 'category';
-			title = <h2>
-						<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-						<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
-					</h2>;
-			content = <ADCat catNum={ catNum } catLetter = { catLetter } onNeighborhoodClick={ this.onNeighborhoodClick } onCategoryClick={ this.onCategoryClick } onNeighborhoodHover={ this.neighborhoodHighlighted } onNeighborhoodOut={ this.neighborhoodsUnhighlighted } />;
+			title = 	<h2>
+							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
+							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
+							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = 	<ADCat 
+							catNum={ catNum } 
+							catLetter = { catLetter } 
+							onNeighborhoodClick={ this.onNeighborhoodClick } 
+							onCategoryClick={ this.onCategoryClick } 
+							onNeighborhoodHover={ this.neighborhoodHighlighted } 
+							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
+						/>;
 		} else if (this.state.selectedCity) {
 			theClass = 'city';
-			title = <h2>
-								<span>{ RasterStore.getSelectedCityMetadata().name }</span>, <span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-								<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
-							</h2>;
-			content = <CityStats 
-				cityData={ CityStore.getCityData() } 
-				area={ CityStore.getArea() } 
-				gradeStats={ CityStore.getGradeStats() } 
-				ringStats={ CityStore.getRingStats() } 
-				areaSelected={ this.ringAreaSelected } 
-				areaUnselected={ this.ringAreaUnselected } 
-				gradeSelected={ this.gradeSelected } 
-				gradeUnselected={ this.gradeUnselected } 
-				triggerIntro={ this.triggerIntro } 
-				burgessDiagramVisible={ this.state.burgessDiagramVisible } 
-				toggleBurgessDiagram={ this.toggleBurgessDiagram } 
-			/>;
+			title = 	<h2>
+							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
+							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
+							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = 	<CityStats 
+							cityData={ CityStore.getCityData() } 
+							area={ CityStore.getArea() } 
+							gradeStats={ CityStore.getGradeStats() } 
+							ringStats={ CityStore.getRingStats() } 
+							areaSelected={ this.ringAreaSelected } 
+							areaUnselected={ this.ringAreaUnselected } 
+							gradeSelected={ this.gradeSelected } 
+							gradeUnselected={ this.gradeUnselected } 
+							triggerIntro={ this.triggerIntro } 
+							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
+							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
+						/>;
 		} else if (this.state.selectedState) {
 			theClass = 'state';
-			title = <h2>{ stateAbbrs[this.state.selectedState] }</h2>;
-			content = <StateStats stateName={this.state.selectedState} />;
+			title = 	<h2>{ stateAbbrs[this.state.selectedState] }</h2>;
+			content = 	<StateStats stateName={this.state.selectedState} />;
 		}
 
 

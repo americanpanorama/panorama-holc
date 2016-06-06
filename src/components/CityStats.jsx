@@ -79,24 +79,32 @@ export default class CityStats extends React.Component {
 	render () {
 
 		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
-			  population1930 = (this.props.cityData.population_1930) ? this.props.cityData.population_1930.toLocaleString() : '',
-			  population1940 = (this.props.cityData.population_1940) ? this.props.cityData.population_1940.toLocaleString() : '',
-			  area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + " sq mi" : '';
+			population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
+			population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
+			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + " sq mi" : '';
 
 		return (
 			<div className='stats'>
 				<div className='stat-columns'>
-				<ul className='left-stat'>
-					<li>Population in 1930:</li> <li><span className='state-stat'>{ population1930 }</span></li>
-					<li><span className='population-stat'>{ (Math.round(this.props.cityData.white_pop_1930 / this.props.cityData.population_1930 * 100 )) + '%' }</span> white</li><li><span className='population-stat'>{ (Math.round(this.props.cityData.black_pop_1930 / this.props.cityData.population_1930 * 100 )) + '%' }</span> African American</li>
-				</ul>
-				<ul className='right-stat'>	
-					<li>Population in 1940:</li> <li><span className='state-stat'>{ population1940 }</span></li>
-					<li><span className='population-stat'>{ (Math.round(this.props.cityData.white_pop_1940 / this.props.cityData.population_1940 * 100 )) + '%' }</span> white</li><li><span className='population-stat'>{ (Math.round(this.props.cityData.black_pop_1940 / this.props.cityData.population_1940 * 100 )) + '%' }</span> African American</li>
-					
-				</ul>
-				<li>Area of city graded: <span className='state-stat'>{ area }</span></li>
+					{ (population1930) ?
+						<ul className='left-stat'>
+							<li>Population in 1930:</li>
+							<li><span className='state-stat'>{ population1930 }</span></li>
+						</ul> :
+						null
+					}
+					{ this.render_population_1930() }
+
+					{ (population1940) ? 
+						<ul className='right-stat'>	
+							<li>Population in 1940:</li>
+							<li><span className='state-stat'>{ population1940 }</span></li>
+						</ul>:
+						null
+					}
+					{ this.render_population_1940() }
 				</div>
+
 				<div className='panorama nestedpiechart'>
 					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
 					{ (this.props.ringStats) ?
@@ -107,6 +115,76 @@ export default class CityStats extends React.Component {
 				</div>
 			</div>
 		);
+	}
+
+	render_population_1930 () {
+		let CD = this.props.cityData,
+			aggregated_pop = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930;
+		if (aggregated_pop == 0) {
+			return false
+		} else {
+			let proportions = [
+				{
+					'label': 'white',
+					'proportion': CD.white_pop_1930 / aggregated_pop
+				},
+				{
+					'label': 'African American',
+					'proportion': CD.black_pop_1930 / aggregated_pop
+				},
+				{
+					'label': 'Asian American',
+					'proportion': CD.asian_pacific_ilslander_1930 / aggregated_pop
+				},
+				{
+					'label': 'Native American',
+					'proportion': CD.american_indian_eskimo_1930 / aggregated_pop
+				}
+			];
+			proportions.sort((a,b) => a.proportion < b.proportion);
+			return <ul>
+				{ proportions.map((pop) => {
+					if (Math.round(pop.proportion * 100) !== 0) {
+						return <li key={ 'pop1930' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>
+					}
+				})}
+				</ul>;
+		}
+	}
+
+	render_population_1940 () {
+		let CD = this.props.cityData,
+			aggregated_pop = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940;
+		if (aggregated_pop == 0) {
+			return false
+		} else {
+			let proportions = [
+				{
+					'label': 'white',
+					'proportion': CD.white_pop_1940 / aggregated_pop
+				},
+				{
+					'label': 'African American',
+					'proportion': CD.black_pop_1940 / aggregated_pop
+				},
+				{
+					'label': 'Asian American',
+					'proportion': CD.asian_pacific_ilslander_1940 / aggregated_pop
+				},
+				{
+					'label': 'Native American',
+					'proportion': CD.american_indian_eskimo_1940 / aggregated_pop
+				}
+			];
+			proportions.sort((a,b) => a.proportion < b.proportion);
+			return <ul>
+				{ proportions.map((pop) => {
+					if (Math.round(pop.proportion * 100) !== 0) {
+						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>
+					}
+				})}
+				</ul>;
+		}
 	}
 
 	d3NestedPieChart = {
