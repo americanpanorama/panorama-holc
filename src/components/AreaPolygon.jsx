@@ -1,5 +1,5 @@
-import React from "react";
-import {GeoJson}  from "react-leaflet";
+import React from 'react';
+import {GeoJson}  from 'react-leaflet';
 
 export default class AreaPolygon extends GeoJson {
 

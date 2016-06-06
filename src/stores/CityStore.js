@@ -62,25 +62,25 @@ const CityStore = {
 	loadData: function (cityId, initial=false) {
 		this.dataLoader.query([
 			{
-				query: "SELECT * from holc_ads where id = " + cityId,
-				format: "JSON"
+				query: 'SELECT * from holc_ads where id = ' + cityId,
+				format: 'JSON'
 			},
 			{
-				query: "WITH the_hull as ( select ST_ConvexHull(ST_Collect(ST_Envelope(digitalscholarshiplab.holc_polygons.the_geom_webmercator))) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = " + cityId + " GROUP BY ad_id), maxdist as (SELECT st_length( st_transform(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat), 4326), 3857), hull ), 26918)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint( looplng,looplat),4326),26918)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = " + cityId + " Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,'quad_segs=32')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,'quad_segs=32')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,'quad_segs=32')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,'quad_segs=32')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, st_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = " + cityId + " group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),3857) as the_geom_webmercator, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326)) as the_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area FROM city_rings, combined_grades",
-				format: "JSON"
+				query: 'WITH the_hull as ( select ST_ConvexHull(ST_Collect(ST_Envelope(digitalscholarshiplab.holc_polygons.the_geom_webmercator))) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id), maxdist as (SELECT st_length( st_transform(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat), 4326), 3857), hull ), 26918)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint( looplng,looplat),4326),26918)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = ' + cityId + ' Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,\'quad_segs=32\')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,\'quad_segs=32\')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,\'quad_segs=32\')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,\'quad_segs=32\')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, st_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),3857) as the_geom_webmercator, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326)) as the_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area FROM city_rings, combined_grades',
+				format: 'JSON'
 			},
 			{
-				query: "with the_hull as (select ST_ConvexHull(ST_Collect(ST_Envelope(holc_polygons.the_geom_webmercator))) as hull, ad_id FROM holc_polygons where ad_id = " + cityId + " GROUP BY ad_id) select st_length( st_transform(st_longestline(    st_transform(ST_SetSRID(ST_Point(looplng,looplat), 4326), 3857), hull  ), 2163)) as distintv, looplat, looplng from holc_ads join the_hull on the_hull.ad_id = holc_ads.id and holc_ads.id = " + cityId,
-				format: "JSON"
+				query: 'with the_hull as (select ST_ConvexHull(ST_Collect(ST_Envelope(holc_polygons.the_geom_webmercator))) as hull, ad_id FROM holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id) select st_length( st_transform(st_longestline(    st_transform(ST_SetSRID(ST_Point(looplng,looplat), 4326), 3857), hull  ), 2163)) as distintv, looplat, looplng from holc_ads join the_hull on the_hull.ad_id = holc_ads.id and holc_ads.id = ' + cityId,
+				format: 'JSON'
 			},
 			{
-				query: "SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = " + cityId + " order by holc_id, cat_id, sub_cat_id, _order",
-				//"SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=" + cityId,
-				format: "JSON"
+				query: 'SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + cityId + ' order by holc_id, cat_id, sub_cat_id, _order',
+				//'SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=' + cityId,
+				format: 'JSON'
 			},
 			{
-				query: "Select St_AsGeoJSON(ST_SetSRID(st_extent (the_geom),2249)) as the_extnt from holc_polygons_bounds where ad_id = " + cityId,
-				format: "JSON"
+				query: 'Select St_AsGeoJSON(ST_SetSRID(st_extent (the_geom),2249)) as the_extnt from holc_polygons_bounds where ad_id = ' + cityId,
+				format: 'JSON'
 			}
 		]).then((response) => {
 			this.data.id = cityId;
@@ -120,9 +120,9 @@ const CityStore = {
 
 		}, (error) => {
 			// TODO: handle this.
-			console.log("Commodity received error:", error);
+			console.log('Commodity received error:', error);
 			throw error;
-		})
+		});
 	},
 
 	citySelected: function(cityId, callback) {
@@ -284,7 +284,7 @@ const CityStore = {
 		let arr = []; // array to store results
 
 		Object.keys(this.data.areaDescriptions).map((neighborhoodId, i) => {
-			if (this.data.areaDescriptions[neighborhoodId].areaDesc.hasOwnProperty(catNum) && typeof(catLetter) == "undefined") {
+			if (this.data.areaDescriptions[neighborhoodId].areaDesc.hasOwnProperty(catNum) && typeof(catLetter) == 'undefined') {
 				arr.push( { neighborhoodId: neighborhoodId, answer: this.data.areaDescriptions[neighborhoodId].areaDesc[catNum].a });
 			} else if (this.data.areaDescriptions[neighborhoodId].areaDesc.hasOwnProperty(catNum) &&this.data.areaDescriptions[neighborhoodId].areaDesc[catNum].hasOwnProperty(catLetter)) {
 				arr.push( { neighborhoodId: neighborhoodId, answer: this.data.areaDescriptions[neighborhoodId].areaDesc[catNum][catLetter].a });
@@ -343,7 +343,7 @@ const CityStore = {
 				'the_geojson': JSON.parse(d.the_geojson),
 				'percent': d.area / this.data.gradedAreaOfRings[d.ring],
 				'overallPercent': d.area / this.data.gradedArea
-			}
+			};
 		});
 
 		return ringAreasGeometry;
@@ -384,10 +384,10 @@ const CityStore = {
 		for (let ringId = 1; ringId <= 4; ringId++) {
 			formattedStats.push({ 
 				percents: [ 
-					{ percent: ringStats[ringId].A.percent, overallPercent: ringStats[ringId].A.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "A" }, 
-					{ percent: ringStats[ringId].B.percent, overallPercent: ringStats[ringId].B.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "B" }, 
-					{ percent: ringStats[ringId].C.percent, overallPercent: ringStats[ringId].C.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "C" }, 
-					{ percent: ringStats[ringId].D.percent, overallPercent: ringStats[ringId].D.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: "D" } 
+					{ percent: ringStats[ringId].A.percent, overallPercent: ringStats[ringId].A.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'A' }, 
+					{ percent: ringStats[ringId].B.percent, overallPercent: ringStats[ringId].B.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'B' }, 
+					{ percent: ringStats[ringId].C.percent, overallPercent: ringStats[ringId].C.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'C' }, 
+					{ percent: ringStats[ringId].D.percent, overallPercent: ringStats[ringId].D.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'D' } 
 				] });
 		}
 
@@ -402,7 +402,7 @@ const CityStore = {
 			return {
 				grade: grade,
 				percent: this.data.gradedAreaByGrade[grade] / this.data.gradedArea
-			}
+			};
 		});
 	},
 
@@ -412,7 +412,7 @@ const CityStore = {
 		for(var row in rawAdData) {
 			let d = rawAdData[row];
 			// define id if undefined
-			if(typeof adData[d.holc_id] == "undefined") {
+			if(typeof adData[d.holc_id] == 'undefined') {
 				adData[d.holc_id] = {};
 			}
 			// assign properties    
@@ -423,20 +423,20 @@ const CityStore = {
 			adData[d.holc_id].sqmi = d.sqmi;
 			
 			// define area description if undefined
-			if(typeof adData[d.holc_id].areaDesc == "undefined") {
+			if(typeof adData[d.holc_id].areaDesc == 'undefined') {
 				adData[d.holc_id].areaDesc = {};
 			}
 			
 			// define category id for area description if undefined
-			if (d.cat_id && d.sub_cat_id === "" && d.order === null) {
+			if (d.cat_id && d.sub_cat_id === ' && d.order' === null) {
 				adData[d.holc_id].areaDesc[d.cat_id] = d.data;
-			} else if(d.cat_id && typeof adData[d.holc_id].areaDesc[d.cat_id] === "undefined") {
+			} else if(d.cat_id && typeof adData[d.holc_id].areaDesc[d.cat_id] === 'undefined') {
 				adData[d.holc_id].areaDesc[d.cat_id] = {};
 			}
 			// check for subcategories
 			if(d.sub_cat_id) {
 				// create sub-object if we have a subcategory...
-				if(typeof adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] == "undefined") {
+				if(typeof adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] == 'undefined') {
 					//console.log(d, adData[d.holc_id]);
 					adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] = {};
 
@@ -524,7 +524,7 @@ const CityStore = {
 			while (i = (j = t.charAt(x++)).charCodeAt(0)) {
 				var m = (i == 46 || (i >=48 && i <= 57));
 				if (m !== n) {
-					tz[++y] = "";
+					tz[++y] = '';
 					n = m;
 				}
 				tz[y] += j;

@@ -81,7 +81,7 @@ export default class CityStats extends React.Component {
 		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
 			population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
 			population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
-			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + " sq mi" : '';
+			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
 
 		return (
 			<div className='stats'>
@@ -111,7 +111,7 @@ export default class CityStats extends React.Component {
 						<div className='content' ref='content'></div> :
 						<p>Area descriptions are not yet available but will be eventually.</p>
 					}
-					<img src='static/burgess.png' className={ burgessClassName } ref="burgessDiagram" id='burgessDiagram' />
+					<img src='static/burgess.png' className={ burgessClassName } ref='burgessDiagram' id='burgessDiagram' />
 				</div>
 			</div>
 		);
@@ -121,7 +121,7 @@ export default class CityStats extends React.Component {
 		let CD = this.props.cityData,
 			aggregated_pop = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930;
 		if (aggregated_pop == 0) {
-			return false
+			return false;
 		} else {
 			let proportions = [
 				{
@@ -145,7 +145,7 @@ export default class CityStats extends React.Component {
 			return <ul>
 				{ proportions.map((pop) => {
 					if (Math.round(pop.proportion * 100) !== 0) {
-						return <li key={ 'pop1930' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>
+						return <li key={ 'pop1930' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
 					}
 				})}
 				</ul>;
@@ -156,7 +156,7 @@ export default class CityStats extends React.Component {
 		let CD = this.props.cityData,
 			aggregated_pop = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940;
 		if (aggregated_pop == 0) {
-			return false
+			return false;
 		} else {
 			let proportions = [
 				{
@@ -180,7 +180,7 @@ export default class CityStats extends React.Component {
 			return <ul>
 				{ proportions.map((pop) => {
 					if (Math.round(pop.proportion * 100) !== 0) {
-						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>
+						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
 					}
 				})}
 				</ul>;
@@ -208,7 +208,7 @@ export default class CityStats extends React.Component {
 			var colorGrade = function(grade) {
 				let gradeColors = {'A':'#418e41','B':'#4a4ae4','C':'#f4f570','D':'#eb3f3f'};
 				return gradeColors[grade];
-			}
+			};
 
 			var pie = d3.layout.pie()
 				.value((d) => d.percent)
@@ -219,7 +219,7 @@ export default class CityStats extends React.Component {
 			var arcBorder = d3.svg.arc()
 				.innerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH)
 				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH);
-			var percent = d3.format(",%");
+			var percent = d3.format(',%');
 	
 			// <g> for each ring
 			let ringNodes = d3.select(node)
@@ -246,12 +246,12 @@ export default class CityStats extends React.Component {
 			  .attr('stroke-width', 0)
 			  .attr('data-opacity', (d) => d.data.opacity)
 			  .attr('class', (d) => 'sliceGrade' + d.data.grade)
-			  .on("mouseover", function(d) {
+			  .on('mouseover', function(d) {
 				  d3.select(this)
 					.transition()
 					.duration(2000)
 				  	.attr('fill-opacity', 1);
-				  d3.select('#ring' + d.data.ringId + "grade" + d.data.grade)
+				  d3.select('#ring' + d.data.ringId + 'grade' + d.data.grade)
 				    .attr('opacity', 1);
 				  d3.selectAll('.areaBar')
 					.transition()
@@ -272,12 +272,12 @@ export default class CityStats extends React.Component {
 					.attr('opacity', 0);
 				  scope.onHover(d.data.ringId, d.data.grade);
 			  })
-			  .on("mouseout", function(d) {
+			  .on('mouseout', function(d) {
 				  scope.onHoverOut();
 				  d3.select(this)
 				    .transition()
 					.attr('fill-opacity', (d) => d.data.opacity);
-				  d3.select('#ring' + d.data.ringId + "grade" + d.data.grade )
+				  d3.select('#ring' + d.data.ringId + 'grade' + d.data.grade )
 					.attr('opacity', 0);
 				  d3.selectAll('.areaBar')
 					.transition()
@@ -327,8 +327,8 @@ export default class CityStats extends React.Component {
 			  .enter().append('text')
 			  .filter((d) => d.data.percent > 0)
 			  .attr('transform', (d) => 'translate(' + (arc.centroid(d)[0] + scope.WIDTH / 2) + ',' + (arc.centroid(d)[1] + scope.HEADER * 2 + scope.MARGIN * 5 + scope.STATSHEIGHT + scope.DIAMETER / 2) + ')')
-			  .attr('text-anchor', "middle")
-			  .style('font', "11px Arial")
+			  .attr('text-anchor', 'middle')
+			  .style('font', '11px Arial')
 			  .attr('dy', 5.5)
 			  
 			  .attr('opacity', 0)
@@ -359,38 +359,38 @@ export default class CityStats extends React.Component {
 				return x;
 			  })
 			  .attr('fill', (d,i,j) => color(j))
-			  .on("mouseover", function(d,i,j) {
+			  .on('mouseover', function(d,i,j) {
 				let grade = ['A','B','C','D'][j];
-				d3.selectAll(".areaBar")
+				d3.selectAll('.areaBar')
 				  .transition()
 				  .duration(1000)
 				  .attr('opacity', .4);
-				d3.selectAll("rect.barGrade" + grade)
+				d3.selectAll('rect.barGrade' + grade)
 				  .transition()
 				  .duration(1000)
 				  .attr('opacity', 1);
-				d3.selectAll(".sliceBorder")
-				  .filter(".grade" + grade)
+				d3.selectAll('.sliceBorder')
+				  .filter('.grade' + grade)
 				  .transition()
 				  .duration(1000)
 				  .attr('stroke-width', 5);
-				d3.selectAll(".burgessSlicePercent")
-				  .filter(".grade" + grade)
+				d3.selectAll('.burgessSlicePercent')
+				  .filter('.grade' + grade)
 				  .filter((d) => d.data.percent > .06)
 				  .transition()
 				  .attr('fill', 'black')
 				  .attr('opacity', 1);
 				scope.onGradeHover(grade);
 			  }).
-			  on("mouseout", function(d,i,j) {
+			  on('mouseout', function(d,i,j) {
 				let grade = ['A','B','C','D'][j];
-				d3.selectAll(".areaBar")
+				d3.selectAll('.areaBar')
 				  .transition()
 				  .attr('opacity', .7);
-				d3.selectAll(".sliceBorder")
+				d3.selectAll('.sliceBorder')
 				  .transition()
 				  .attr('stroke-width', 0);
-				d3.selectAll(".burgessSlicePercent")
+				d3.selectAll('.burgessSlicePercent')
 				  .transition()
 				  .attr('opacity', 0)
 				  .attr('fill', (d) => (d.data.grade == 'C') ? 'black' : 'white');
@@ -417,11 +417,11 @@ export default class CityStats extends React.Component {
 			  .attr('y', scope.HEADER + scope.MARGIN + 20)
 			  .attr('class', (d,i,j) => 'areaBarPercent barGradePercent' + d.percents[j].grade + ' ring' + (i + 1))
 			  .attr('pointer-events', 'none')
-			  .attr("text-anchor", "middle")
-			  .attr("font-family", "sans-serif")
-			  .attr("font-size", "10px")
+			  .attr('text-anchor', 'middle')
+			  .attr('font-family', 'sans-serif')
+			  .attr('font-size', '10px')
 			  .attr('fill', (d,i,j) => (d.percents[j].grade == 'C') ? 'black' : 'white')
-			  .attr("opacity", 0)
+			  .attr('opacity', 0)
 			  .text((d,i,j) => percent(d.percents[j].overallPercent));
 
 			ringNodes
@@ -438,9 +438,9 @@ export default class CityStats extends React.Component {
 			  })
 			  .attr('y', scope.HEADER + scope.MARGIN + 20)
 			  .attr('pointer-events', 'none')
-			  .attr("text-anchor", "middle")
-			  .attr("font-family", "sans-serif")
-			  .attr("font-size", "10px")
+			  .attr('text-anchor', 'middle')
+			  .attr('font-family', 'sans-serif')
+			  .attr('font-size', '10px')
 			  .attr('fill', (d) => (d.grade == 'C') ? 'black' : 'white')
 			  .classed('overallPercent', true)
 			  .text((d) => percent(d.percent));
@@ -449,21 +449,21 @@ export default class CityStats extends React.Component {
 			  .append('text')
 			  .attr('x', scope.WIDTH / 2)
 			  .attr('y', scope.HEADER)
-			  .attr("text-anchor", "middle")
+			  .attr('text-anchor', 'middle')
 			  .text('Grading in Terms of Area');
 
 			ringNodes
 			  .append('text')
 			  .attr('x', scope.WIDTH / 2)
 			  .attr('y', scope.HEADER + scope.MARGIN * 4 + scope.STATSHEIGHT)
-			  .attr("text-anchor", "middle")
+			  .attr('text-anchor', 'middle')
 			  .text('Grading & Density Outward');
 
 			ringNodes
 			  .append('text')
 			  .attr('x', scope.WIDTH / 2)
 			  .attr('y', scope.HEADER * 2 + scope.MARGIN * 4 + scope.STATSHEIGHT)
-			  .attr("text-anchor", "middle")
+			  .attr('text-anchor', 'middle')
 			  .text('from City Center');
 
 		},

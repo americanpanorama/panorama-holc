@@ -57,7 +57,7 @@ const CartoDBLoader = {
 				}
 				callback(null, innerResponse);
 			} else {
-				callback(err)
+				callback(err);
 			}
 		}, {
 			'format': queryConfig.format,
@@ -66,6 +66,6 @@ const CartoDBLoader = {
 
 	}
 	
-}
+};
 
 export default CartoDBLoader;

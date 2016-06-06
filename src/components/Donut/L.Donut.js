@@ -85,7 +85,7 @@ const Donut = (function (L) {
 				'M', x2, y2,
 				'A', innerRadius, innerRadius, 0, 1, 0, pt.x, y2,
 				'Z'
-			].join(' ')
+			].join(' ');
 		},
 
 		getPathString: function () {

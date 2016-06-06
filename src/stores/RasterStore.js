@@ -52,16 +52,16 @@ const RasterStore = {
 
 		this.dataLoader.query([
 			{
-				query: "SELECT *, st_xmin(the_geom) as minLng, st_xmax(the_geom) as maxLng, st_ymin(the_geom) as minLat, st_ymax(the_geom) as maxLat, st_x(st_centroid(the_geom)) as centerLng, st_y(st_centroid(the_geom)) as centerLat FROM holc_maps order by state, file_name",
-				format: "JSON"
+				query: 'SELECT *, st_xmin(the_geom) as minLng, st_xmax(the_geom) as maxLng, st_ymin(the_geom) as minLat, st_ymax(the_geom) as maxLat, st_x(st_centroid(the_geom)) as centerLng, st_y(st_centroid(the_geom)) as centerLat FROM holc_maps order by state, file_name',
+				format: 'JSON'
 			},
 			{
-				query: "SELECT distinct(holc_ads.id), state, city FROM holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_polygons.ad_id = holc_ads.id order by state, city",
-				format: "JSON"
+				query: 'SELECT distinct(holc_ads.id), state, city FROM holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_polygons.ad_id = holc_ads.id order by state, city',
+				format: 'JSON'
 			},
 			{
-				query: "SELECT distinct(digitalscholarshiplab.holc_ads.id), city, state, st_xmin(digitalscholarshiplab.holc_polygons.the_geom) as minLng, st_xmax(digitalscholarshiplab.holc_polygons.the_geom) as maxLng, st_ymin(digitalscholarshiplab.holc_polygons.the_geom) as minLat, st_ymax(digitalscholarshiplab.holc_polygons.the_geom) as maxLat, st_x(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerLng, st_y(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerLat, looplat, looplng FROM digitalscholarshiplab.holc_polygons join digitalscholarshiplab.holc_ads on ad_id = digitalscholarshiplab.holc_ads.id order by state, city",
-				format: "JSON"
+				query: 'SELECT distinct(digitalscholarshiplab.holc_ads.id), city, state, st_xmin(digitalscholarshiplab.holc_polygons.the_geom) as minLng, st_xmax(digitalscholarshiplab.holc_polygons.the_geom) as maxLng, st_ymin(digitalscholarshiplab.holc_polygons.the_geom) as minLat, st_ymax(digitalscholarshiplab.holc_polygons.the_geom) as maxLat, st_x(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerLng, st_y(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerLat, looplat, looplng FROM digitalscholarshiplab.holc_polygons join digitalscholarshiplab.holc_ads on ad_id = digitalscholarshiplab.holc_ads.id order by state, city',
+				format: 'JSON'
 			}
 		]).then((response) => {
 			this.data.maps = this.parseMapData(response[0]);
@@ -75,7 +75,7 @@ const RasterStore = {
 		},
 		(error) => {
 			// TODO: handle this.
-			console.log("RasterStore received error:", log);
+			console.log('RasterStore received error:', log);
 			throw error;
 		});
 	},
@@ -121,7 +121,7 @@ const RasterStore = {
 		return [ 
 			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
 			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
-		]
+		];
 	},
 
 	getCenter: function() {
@@ -153,7 +153,7 @@ const RasterStore = {
 	},
 
 	getCitiesForState: function (state) {
-		return this.getCitiesList().filter(function(cityData) { return (cityData.state == state) });
+		return this.getCitiesList().filter(function(cityData) { return (cityData.state == state); });
 	},
 
 	getMapUrl: function () {
@@ -177,7 +177,7 @@ const RasterStore = {
 				id: this.data.maps[cityId].state,
 				name: stateAbbrs[this.data.maps[cityId].state],
 				citiesIds: this.getCitiesForState(this.data.maps[cityId].state).map((cityData) => cityData.id)
-			}
+			};
 		});
 		return statesObject;
 	},
@@ -206,7 +206,7 @@ const RasterStore = {
 			}
 		}); 
 
-		states.map((cityData) => { cityData.name = stateAbbrs[cityData.state] });
+		states.map((cityData) => { cityData.name = stateAbbrs[cityData.state]; });
 
 		return states;
 	},
@@ -245,10 +245,10 @@ const RasterStore = {
 				loopLat: mapData.looplat,
 				loopLng: mapData.looplng,
 				hasPolygons: false,
-				url: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/{z}/{x}/{y}.png",
-				mapurl: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/holc-scan.jpg",
-				mapThumbnail: "http://holc.s3-website-us-east-1.amazonaws.com/tiles/" + mapData.state + "/" + mapData.file_name.replace(/\s+/g, "")  + "/" + mapData.year + "/thumbnail.jpg"
-			}
+				url: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
+				mapurl: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg',
+				mapThumbnail: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg'
+			};
 
 		});
 
@@ -265,7 +265,7 @@ const RasterStore = {
 				id: citiesData.id,
 				city: citiesData.city,
 				state: citiesData.state,
-				name: citiesData.city +  ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? " **" : ' *'), // ", " + stateAbbrs[citiesData.state] +
+				name: citiesData.city +  ((this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1) ? ' **' : ' *'), // ", " + stateAbbrs[citiesData.state] +
 				minLat: citiesData.minlat,
 				maxLat: citiesData.maxlat,
 				minLng: citiesData.minlng,
@@ -276,7 +276,7 @@ const RasterStore = {
 				loopLng: citiesData.looplng,
 				hasPolygons: true,
 				hasADs: (this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1)
-			}
+			};
 		});
 
 		return cities;

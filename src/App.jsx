@@ -348,7 +348,7 @@ export default class App extends React.Component {
 
 		// toggle off if the selected intro box is clicked
 		if (this.state.intro.open && event && event.currentTarget && this.state.intro.step == parseInt(event.currentTarget.dataset.step)) {
-			this.setState({intro: {open: false}})
+			this.setState({intro: {open: false}});
 			return;
 		}
 
@@ -373,7 +373,7 @@ export default class App extends React.Component {
 		let hashState = HashManager.getState();
 
 		if (hashState.loc && hashState.loc.center) {
-			return [ hashState.loc.center[0], hashState.loc.center[1] ]
+			return [ hashState.loc.center[0], hashState.loc.center[1] ];
 		} else if (this.state.selectedCity) {
 			return RasterStore.getCenter();
 		} else if (this.state.selectedState) {
@@ -486,9 +486,9 @@ export default class App extends React.Component {
 								<span className='icon info'/>
 							</button>
 						</header>
-						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + "px"}}>
+						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + 'px'}}>
 							<Map 
-								ref="the_map" 
+								ref='the_map' 
 								center={ this.state.map.center } 
 								zoom={ this.state.map.zoom }  
 								onLeafletMoveend={ this.onMapMoved } 
@@ -571,7 +571,7 @@ export default class App extends React.Component {
 												onClick={ this.onNeighborhoodClick }
 												neighborhoodId={ id } 
 											/>
-										)
+										);
 									}) :
 									null
 								}
@@ -580,7 +580,7 @@ export default class App extends React.Component {
 						</div>
 					</div>
 					<div className='columns four full-height'>
-						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + "px" } }>
+						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + 'px' } }>
 							{ this.renderSidebar() }
 						</div>
 						<div className='row bottom-row template-tile city-selector'>
@@ -656,7 +656,7 @@ export default class App extends React.Component {
 		if (this.state.downloadOpen) {
 			title = 	<h2>
 							{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
-							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
 		} else if (this.state.selectedNeighborhood) {
@@ -664,7 +664,7 @@ export default class App extends React.Component {
 			title = 	<h2>
 							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
 							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = 	<AreaDescription 
 							areaId={ this.state.selectedNeighborhood } 
@@ -680,7 +680,7 @@ export default class App extends React.Component {
 			title = 	<h2>
 							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
 							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = 	<ADCat 
 							catNum={ catNum } 
@@ -695,7 +695,7 @@ export default class App extends React.Component {
 			title = 	<h2>
 							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
 							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-							<div className='downloadicon' href="#" onClick={ this.onDownloadClicked }></div>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = 	<CityStats 
 							cityData={ CityStore.getCityData() } 
@@ -722,7 +722,7 @@ export default class App extends React.Component {
 				{ title }
 				{ content }
 			</div>
-		)
+		);
 	}
 
 	parseModalCopy (subject) {
