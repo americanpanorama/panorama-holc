@@ -77,7 +77,7 @@ export default class App extends React.Component {
 
 		return {
 			selectedNeighborhood: (hashState.area) ? hashState.area : null,
-			selectedCity: (hashState.city) ? hashState.city : (hashState.state) ? null : 168, // Richmond
+			selectedCity: (hashState.city) ? parseInt(hashState.city) : (hashState.state) ? null : 168, // Richmond
 			selectedState: (hashState.city || !hashState.state) ? null : hashState.state,
 			selectedCategory: (hashState.category) ? hashState.category : null,
 			selectedRingGrade: { 
@@ -121,7 +121,7 @@ export default class App extends React.Component {
 	}
 
 	storeChanged () {
-		this.setState({
+		let newState = {
 			selectedState: RasterStore.getSelectedCityMetadata('state'),
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
 			selectedNeighborhood: null,
@@ -130,12 +130,17 @@ export default class App extends React.Component {
 				ring: null,
 				grade: null
 			},
-			highlightedNeighborhood: null,
-			map: {
+			highlightedNeighborhood: null
+		};
+		// only change the map location it it's not already visible
+		let mapBounds = this.refs.the_map.leafletElement.getBounds();
+		if (!mapBounds.intersects(RasterStore.getMapBounds())) {
+			newState.map = {
 				center: RasterStore.getCenter(),
 				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds())
 			}
-		}, this.changeHash);
+		}
+		this.setState(newState, this.changeHash);
 	}
 
 	ringAreaSelected (ringNum, grade) {
@@ -259,12 +264,12 @@ export default class App extends React.Component {
 	}
 
 	onMapMoved (event) {
-		if (event && event.target) {
+		/* if (event && event.target) {
 			AppActions.mapMoved({
 				zoom: event.target.getZoom(),
 				center: event.target.getCenter()
 			});
-		}
+		} */
 
 		let newState = {};
 		newState[HashManager.MAP_STATE_KEY] = {
@@ -272,7 +277,62 @@ export default class App extends React.Component {
 			center: event.target.getCenter()
 		};
 
+		
+		let mapBounds = event.target.getBounds(),
+			visibleMaps = this.getVisibleMaps(event.target.getBounds()),
+			visibleMapsIds = Object.keys(visibleMaps);
+
+		// select city if it's the only one visible
+		if (visibleMapsIds.length == 1 && parseInt(visibleMapsIds[0]) !== this.state.selectedCity) {
+			let cityId = parseInt(visibleMapsIds[0]);
+			newState.city = cityId;
+			AppActions.citySelected(cityId, this.updateSelectedState);
+		}
+		// deselect city if the zoom is 9 or below or if the map doesn't overlap
+		else if ((event.target.getZoom() <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds())) {
+			this.setState({
+				selectedCity: null
+			});
+			newState.city = null;
+		}
+
+
+
 		HashManager.updateHash(newState);
+	}
+
+	getVisibleMaps(viewBounds) {
+		let rasters = RasterStore.getAllRasters(),
+			visibleMaps = {};
+
+		Object.keys(rasters).forEach((id) => {
+			if (viewBounds.intersects(rasters[id].bounds)) {
+				visibleMaps[id] = rasters[id];
+			}
+		});
+
+		return visibleMaps;
+	}
+
+	getVisibleMapsByState() {
+		if (!this.refs.the_map) {
+			return {}
+		}
+
+		let visibleMaps = this.getVisibleMaps(this.refs.the_map.leafletElement.getBounds()),
+			maps = {};
+
+		Object.keys(visibleMaps).forEach((id) => {
+			maps[visibleMaps[id].state] =  (maps[visibleMaps[id].state]) ? maps[visibleMaps[id].state] : [];
+			maps[visibleMaps[id].state].push(visibleMaps[id]);
+		});
+
+		// alphabetize
+		Object.keys(maps).forEach((the_state) => {
+			maps[the_state].sort((a,b) => a.city > b.city);
+		});
+
+		return maps;
 	}
 
 	onDownloadClicked () {
@@ -443,8 +503,6 @@ export default class App extends React.Component {
 	donutholeShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ring > 1 && ringNum == this.state.selectedRingGrade.ring - 1; }
 
 	render () {
-
-		//console.log(this.state);
 				
 		let modalStyle = {
 				overlay : {
@@ -534,10 +592,7 @@ export default class App extends React.Component {
 										clickable={ false }
 										ref={ 'ring-' + this.state.selectedRingGrade.ring + '-grade-' + this.state.selectedRingGrade.grade }
 										key={ 'ringStroke'}
-										stroke={ true }
-										color={ 'yellow'}
-										fillOpacity={ 0.5}
-										fillColor={ 'black' }
+										className={ 'selectedRing grade' + this.state.selectedGrade } 
 									/> :
 									null
 								}
@@ -601,6 +656,10 @@ export default class App extends React.Component {
 	}
 
 	renderDonuts () {
+		if (!this.state.selectedCity) {
+			return null;
+		}
+
 		let layers = [],
 			outerRadius = CityStore.getOuterRingRadius();
 
@@ -614,7 +673,8 @@ export default class App extends React.Component {
 							outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
 							clickable={ false } 
 							fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
-							fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
+							fillColor= { (this.isSelectedRing(ringNum)) ? 'transparent' : '#000' } 
+							weight={ 10 }
 							className={ 'donut' } 
 							key={ 'donut' + String(ringNum) } 
 						/>
@@ -627,6 +687,10 @@ export default class App extends React.Component {
 	}
 
 	renderDonutholes() {
+		if (!this.state.selectedCity) {
+			return null;
+		}
+
 		let layers = [],
 			outerRadius = CityStore.getOuterRingRadius();
 
@@ -710,10 +774,13 @@ export default class App extends React.Component {
 							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
 						/>;
-		} else if (this.state.selectedState) {
+		} else if (!this.state.selectedCity) {
 			theClass = 'state';
+			let visibleStates = this.getVisibleMapsByState();
 			title = 	<h2>{ stateAbbrs[this.state.selectedState] }</h2>;
-			content = 	<StateStats stateName={this.state.selectedState} />;
+			content = 	Object.keys(visibleStates).map((theState) => {
+				return <StateStats stateName={ stateAbbrs[theState] } cities={ visibleStates[theState] } key={ theState }/>;
+			});
 		}
 
 

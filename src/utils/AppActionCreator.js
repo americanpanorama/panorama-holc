@@ -63,12 +63,12 @@ export const AppActions = {
 	 * Dispatch action when map is zoomed or panned.
 	 * @param {Object} mapState 	{ zoom, center: { lat, lng } }
 	 */
-	mapMoved: (mapState) => {
+	/* mapMoved: (mapState) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.mapMoved,
 			value: mapState
 		});
-	}
+	} */
 
 };
 

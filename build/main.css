@@ -1082,8 +1082,8 @@ body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__C
   color: #454545; }
 
 .donut, .donuthole {
-  stroke-width: 1;
-  stroke: white;
+  stroke-width: 5;
+  stroke: #ddd;
   stroke-dasharray: 5,5; }
 
 .ringArea {
@@ -1115,24 +1115,33 @@ body {
 .hidden {
   visibility: hidden; }
 
+.gradeStroke.gradeA, .gradeA.selectedGradedNeighborhoods,
+.gradeA.neighborhoodPolygonInverted, .gradeA.selectedRing {
+  stroke: #418e41; }
+
+.gradeStroke.gradeB, .gradeB.selectedGradedNeighborhoods,
+.gradeB.neighborhoodPolygonInverted, .gradeB.selectedRing {
+  stroke: #4a4ae4; }
+
+.gradeStroke.gradeC, .gradeC.selectedGradedNeighborhoods,
+.gradeC.neighborhoodPolygonInverted, .gradeC.selectedRing {
+  stroke: #f4f570; }
+
+.gradeStroke.gradeD, .gradeD.selectedGradedNeighborhoods,
+.gradeD.neighborhoodPolygonInverted, .gradeD.selectedRing {
+  stroke: #eb3f3f; }
+
 .selectedGradedNeighborhoods,
 .neighborhoodPolygonInverted {
   fill-opacity: 0.75;
   stroke-opacity: 1;
   fill: #000;
   stroke-width: 2; }
-  .selectedGradedNeighborhoods.gradeA,
-  .neighborhoodPolygonInverted.gradeA {
-    stroke: #418e41; }
-  .selectedGradedNeighborhoods.gradeB,
-  .neighborhoodPolygonInverted.gradeB {
-    stroke: #4a4ae4; }
-  .selectedGradedNeighborhoods.gradeC,
-  .neighborhoodPolygonInverted.gradeC {
-    stroke: #f4f570; }
-  .selectedGradedNeighborhoods.gradeD,
-  .neighborhoodPolygonInverted.gradeD {
-    stroke: #eb3f3f; }
+
+.selectedRing {
+  stroke-width: 2;
+  fill: #666;
+  fill-opacity: .9; }
 
 .neighborhoodPolygon {
   stroke-opacity: 0;

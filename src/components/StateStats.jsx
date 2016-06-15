@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
+import CitySnippet from './CitySnippet.jsx';
 
 
 export default class Downloader extends React.Component {
@@ -24,7 +25,12 @@ export default class Downloader extends React.Component {
 
 	render () {
 		return (
-			<div>State: {this.props.stateName}</div>
+			<div>
+				<h2>{ this.props.stateName }</h2>
+				{ this.props.cities.map((cityData) => {
+					return <CitySnippet cityData={ cityData } key={ 'city' + cityData.cityId } />
+				}) }
+			</div>
 		);
 	}
 }

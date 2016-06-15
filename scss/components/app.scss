@@ -1,6 +1,6 @@
 .donut, .donuthole {
-	stroke-width: 1;
-	stroke: white;
+	stroke-width: 5;
+	stroke: #ddd;
 	stroke-dasharray: 5,5;
 }
 
@@ -40,13 +40,7 @@ body {
 	visibility: hidden;
 }
 
-.selectedGradedNeighborhoods,
-.neighborhoodPolygonInverted {
-	fill-opacity: 0.75;
-	stroke-opacity: 1;
-	fill: #000;
-	stroke-width : 2;
-
+.gradeStroke {
 	&.gradeA {
 		stroke: #418e41;
 	}
@@ -59,6 +53,24 @@ body {
 	&.gradeD {
 		stroke: #eb3f3f;
 	}
+}
+
+.selectedGradedNeighborhoods,
+.neighborhoodPolygonInverted {
+	@extend .gradeStroke;
+
+	fill-opacity: 0.75;
+	stroke-opacity: 1;
+	fill: #000;
+	stroke-width : 2;
+}
+
+.selectedRing {
+	@extend .gradeStroke;
+
+	stroke-width: 2;
+	fill: #666;
+	fill-opacity: .9;
 }
 
 .neighborhoodPolygon {
