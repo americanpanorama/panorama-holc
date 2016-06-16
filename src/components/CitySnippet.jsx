@@ -38,12 +38,12 @@ export default class Downloader extends React.Component {
 
 	render () {
 		return (
-			<div>
+			<div className='city-snippet'>
 				<h3>{this.props.cityData.city}</h3>
-				<div>Population (1940): { this.props.cityData.population_1940.toLocaleString() }</div>
+				<div><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.population_1940.toLocaleString() }</span></div>
 				{ this.render_population_details() }
 				{ (this.props.cityData.hasPolygons) ?
-					<div id='barchart' ref='barchart'></div> :
+					<div className='barchart' ref='barchart'></div> :
 					null
 				}
 			</div>
@@ -75,7 +75,7 @@ export default class Downloader extends React.Component {
 				}
 			];
 			proportions.sort((a,b) => a.proportion < b.proportion);
-			return <ul>
+			return <ul className='city-snippet'>
 				{ proportions.map((pop) => {
 					if (Math.round(pop.proportion * 100) !== 0) {
 						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
@@ -89,7 +89,7 @@ export default class Downloader extends React.Component {
 		// layout constants
 		WIDTH: 250,
 		HEIGHT: 30,
-		MARGIN: 10,
+		MARGIN: 20,
 
 		update: function(node, gradeStats) {
 			if (Object.keys(gradeStats).length === 0) { 
@@ -117,7 +117,7 @@ export default class Downloader extends React.Component {
 
 			let theChart = d3.select(node)
 				.append('svg')
-				.attr('width', scope.WIDTH)
+				.attr('width', scope.WIDTH + scope.MARGIN)
 				.attr('height', scope.HEIGHT)
 				.attr('id', 'barchart')
 				.selectAll('g')
@@ -133,14 +133,14 @@ export default class Downloader extends React.Component {
 			  .attr('width', (d) => d.width)
 			  .attr('opacity', .7)
 			  .attr('y', 0)
-			  .attr('x', (d) => d.x)
+			  .attr('x', (d) => d.x + scope.MARGIN)
 			  .attr('fill', (d) => colorGrade(d.grade));
 
 			theChart
 			  .selectAll('text')
 			  .data(gradeStats)
 			  .enter().append('text')
-			  .attr('x', (d) => d.x + d.width / 2)
+			  .attr('x', (d) => d.x + d.width / 2 + scope.MARGIN)
 			  .attr('y', 20)
 			  .attr('text-anchor', 'middle')
 			  .attr('font-family', 'sans-serif')

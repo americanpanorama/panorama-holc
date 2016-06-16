@@ -123,6 +123,7 @@ header {
 		display: inline-block;
 		background-color: #b8cdcb;
 		padding: 0 10px;
+		letter-spacing: .02em;
 	}
 
 	h4:hover {
@@ -301,8 +302,16 @@ hr.style-eight:after {
 
 }
 
+.content {
+	height: 60px;
+}
+
+.stats {
+	height: 415px;
+}
+
 .stat-columns {
-	height: 200px;
+	height: 160px;
 }
 
 .stats li {
@@ -373,4 +382,69 @@ ul.right-stat {
 	margin-top: 10px;
 	cursor: pointer;
 
+}
+
+
+
+.city-snippet {
+
+	h3 {
+		border-bottom: 1px solid red;
+	}
+
+	ul {
+		font-family: 'Lato';
+    	font-size: 16px;
+    	color: #0c789a;
+    	list-style: none;
+    	margin: 0 0 10px 20px;
+    	padding: 0;
+	
+   	
+	
+    	li {
+    		font-size: smaller;
+    	    list-style: none;
+    	    display: inline;
+	
+    	    &:after {
+    	    	content: "; ";
+    	    }
+	
+    	    &:last-child:after {
+    	    	content: '';
+    	    }
+
+    	}
+	
+	
+	
+		.catName {
+    	    font-weight: bolder;
+    	    color: #555;
+    	}
+	
+		.subcatData {
+    	    margin-left: 5px;
+    	    line-height: 1.3;
+    	    font-weight: bolder;
+    	}
+	
+    	.subcatName {
+    	    margin-left: 0px;
+    	}
+	
+    	.city-hr {
+    		color: #000;
+    		margin: -10px 0 10px 0;
+    	}
+    }
+}
+
+.city-snippet h3 {
+	font-size: 1.3em;
+}
+
+.barchart {
+	margin-bottom: 20px;
 }
