@@ -59,7 +59,10 @@ const CityStore = {
 	// can be used here.
 	dataLoader: CartoDBLoader,
 
-	loadData: function (cityId, initial=false) {
+	loadData: function (cityId, options) {
+		let initial = (typeof(options.initial) !== 'undefined') ? options.initial : false,
+			zoomTo = (typeof(options.zoomTo) !== 'undefined') ? options.zoomTo : false;
+
 		this.dataLoader.query([
 			{
 				query: 'SELECT * from holc_ads where id = ' + cityId,
@@ -109,8 +112,7 @@ const CityStore = {
 			if (initial) {
 				this.emit(AppActionTypes.initialDataLoaded);
 			} else {
-				console.log('[4b] CityStore updated its data and calls storeChanged');
-				this.emit(AppActionTypes.storeChanged);
+				this.emit(AppActionTypes.storeChanged, {zoomToCity: zoomTo});
 			}
 
 		}, (error) => {
@@ -120,11 +122,8 @@ const CityStore = {
 		});
 	},
 
-	citySelected: function(cityId, callback) {
-		this.loadData(cityId);
-		if (callback) {
-			callback();
-		}
+	citySelected: function(cityId, options) {
+		this.loadData(cityId, options);
 	},
 
 	getFormId: function() {
@@ -552,12 +551,12 @@ AppDispatcher.register((action) => {
 		case AppActionTypes.loadInitialData:
 			//console.log(`[2] The '${ AppActionTypes.loadInitialData }' event is handled by CityStore....`);
 			if (action.state.selectedCity) {
-				CityStore.loadData(action.state.selectedCity, true);
+				CityStore.loadData(action.state.selectedCity, {initial: true, zoomTo: true});
 			}
 			break;
 
 		case AppActionTypes.citySelected:
-			CityStore.citySelected(action.value, function () {});
+			CityStore.citySelected(action.value, action.options);
 			break;
 
 		case AppActionTypes.ringAreaSelected:

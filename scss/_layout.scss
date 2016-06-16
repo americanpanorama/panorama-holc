@@ -384,6 +384,31 @@ ul.right-stat {
 
 }
 
+.simpleDonut {
+	stroke: none;
+	fill-opacity: .6;
+
+	&.grade_a {
+		fill: #418e41;
+	}
+	&.grade_b {
+		fill: #4a4ae4;
+	}
+	&.grade_c {
+		fill: #f4f570;
+	}
+	&.grade_d {
+		fill: #eb3f3f;
+	}
+}
+
+.cityCircle {
+	stroke: #eb3f3f;
+	stroke-width: 1;
+	fill-opacity: .3;
+	fill: silver;
+}
+
 
 
 .city-snippet {

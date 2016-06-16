@@ -1078,6 +1078,24 @@ ul.right-stat {
   margin-top: 10px;
   cursor: pointer; }
 
+.simpleDonut {
+  stroke: none;
+  fill-opacity: .6; }
+  .simpleDonut.grade_a {
+    fill: #418e41; }
+  .simpleDonut.grade_b {
+    fill: #4a4ae4; }
+  .simpleDonut.grade_c {
+    fill: #f4f570; }
+  .simpleDonut.grade_d {
+    fill: #eb3f3f; }
+
+.cityCircle {
+  stroke: #eb3f3f;
+  stroke-width: 1;
+  fill-opacity: .3;
+  fill: silver; }
+
 .city-snippet h3 {
   border-bottom: 1px solid red; }
 

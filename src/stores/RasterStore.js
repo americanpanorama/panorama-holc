@@ -217,6 +217,29 @@ const RasterStore = {
 			}
 		}
 	},
+
+	calculateSimpleRingsRadii (areaData) {
+		let furthestRadius = 25000,
+			fullArea = Math.PI * furthestRadius * furthestRadius,
+			outerRadius,
+			innerRadius = 0,
+			donutArea,
+			gradeArea,
+			radii = {};
+
+		['d','c','b','a'].forEach((grade) => {
+			let donutholeArea = Math.PI * innerRadius * innerRadius,
+				gradeArea = fullArea * (areaData[grade] / areaData.total),
+				outerRadius = Math.round(Math.sqrt((gradeArea + donutholeArea) / Math.PI));
+			radii[grade] = {
+				'inner': innerRadius,
+				'outer': outerRadius
+			};
+			innerRadius = outerRadius;
+		});
+
+		return radii;
+	},
 	
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
@@ -269,7 +292,8 @@ const RasterStore = {
 					'b': areaData.area_b,
 					'c': areaData.area_c,
 					'd': areaData.area_d
-				}
+				},
+				maps[areaData.ad_id].radii = this.calculateSimpleRingsRadii(maps[areaData.ad_id].area)
 			}
 		});
 

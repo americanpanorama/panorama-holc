@@ -21,7 +21,7 @@ export default class Donut extends Path {
 	componentWillMount() {
 		const {center, outerRadius, innerRadius, ...props} = this.props;
 		super.componentWillMount();
-		this.leafletElement = new donut(center, outerRadius, innerRadius, this.getPathOptions(props));
+		this.leafletElement = new donut(center, outerRadius, innerRadius, props);
 	}
 
 	componentDidUpdate(prevProps) {

@@ -28,7 +28,7 @@ export default class Downloader extends React.Component {
 			<div>
 				<h2>{ this.props.stateName }</h2>
 				{ this.props.cities.map((cityData) => {
-					return <CitySnippet cityData={ cityData } key={ 'city' + cityData.cityId } />
+					return <CitySnippet cityData={ cityData } onCityClick={ this.props.onCityClick } key={ 'city' + cityData.cityId } />
 				}) }
 			</div>
 		);

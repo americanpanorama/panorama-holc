@@ -2,7 +2,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 //import "babel-polyfill";
 import Modal from 'react-modal';
-import { Map, TileLayer, GeoJson, Circle } from 'react-leaflet';
+import { Map, TileLayer, GeoJson, Circle, Rectangle } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
 import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
@@ -120,7 +120,7 @@ export default class App extends React.Component {
 		});
 	}
 
-	storeChanged () {
+	storeChanged (options) {
 		let newState = {
 			selectedState: RasterStore.getSelectedCityMetadata('state'),
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
@@ -132,9 +132,9 @@ export default class App extends React.Component {
 			},
 			highlightedNeighborhood: null
 		};
-		// only change the map location it it's not already visible
+		// only change the map location if that's requested or it's not already visible
 		let mapBounds = this.refs.the_map.leafletElement.getBounds();
-		if (!mapBounds.intersects(RasterStore.getMapBounds())) {
+		if ((options && options.zoomToCity) || !mapBounds.intersects(RasterStore.getMapBounds())) {
 			newState.map = {
 				center: RasterStore.getCenter(),
 				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds())
@@ -211,12 +211,17 @@ export default class App extends React.Component {
 	}
 
 	onCitySelected (value, index) {
+		console.log(value.target);
+		// for click on state name in sidebar
+		value = (value.target) ? (value.target.options) ? value.target.options : value.target : value;
+		value.zoomTo = (typeof(value.zoomTo) == 'undefined') ? true : value.zoomTo;
+
 		this.setState({
 			selectedNeighborhood: null
 		});
 
 		if (value && value.id) {
-			AppActions.citySelected(value.id, this.updateSelectedState);
+			AppActions.citySelected(value.id, {zoomTo: value.zoomTo});
 		}
 	}
 
@@ -631,6 +636,42 @@ export default class App extends React.Component {
 									null
 								}
 
+								{ (this.state.selectedCity == null) ?
+									RasterStore.getMapsList().map((item, i) => {
+										return ((item.radii) ?
+											Object.keys(item.radii).map((grade) => {
+												return (item.radii[grade].inner == 0) ?
+													<Circle
+														center={ [item.centerLat, item.centerLng] }
+														radius={ item.radii[grade].outer }
+														id={ item.cityId }
+														onClick={ this.onCitySelected }
+														key={ 'clickableDonut' + item.cityId + grade }
+														className={ 'simpleDonut grade_' + grade }
+													/> :
+													<Donut
+														center={ [item.centerLat, item.centerLng] }
+														innerRadius={ item.radii[grade].inner }
+														outerRadius={ item.radii[grade].outer }
+														id={ item.cityId }
+														onClick={ this.onCitySelected }
+														key={ 'clickableDonut' + item.cityId + grade }
+														className={ 'simpleDonut grade_' + grade }
+													/>
+											}) :
+											<Circle
+												center={ [item.centerLat, item.centerLng] }
+												radius={ 25000 }
+												id={ item.cityId }
+												onClick={ this.onCitySelected }
+												key={ 'clickableMap' + item.cityId }
+												className={ 'cityCircle '}
+											/> 
+										);
+									}) :
+									null
+								}
+
 							</Map>
 						</div>
 					</div>
@@ -674,7 +715,7 @@ export default class App extends React.Component {
 							clickable={ false } 
 							fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
 							fillColor= { (this.isSelectedRing(ringNum)) ? 'transparent' : '#000' } 
-							weight={ 10 }
+							weight={ 1 }
 							className={ 'donut' } 
 							key={ 'donut' + String(ringNum) } 
 						/>
@@ -779,7 +820,7 @@ export default class App extends React.Component {
 			let visibleStates = this.getVisibleMapsByState();
 			title = 	<h2>{ stateAbbrs[this.state.selectedState] }</h2>;
 			content = 	Object.keys(visibleStates).map((theState) => {
-				return <StateStats stateName={ stateAbbrs[theState] } cities={ visibleStates[theState] } key={ theState }/>;
+				return <StateStats stateName={ stateAbbrs[theState] } cities={ visibleStates[theState] } onCityClick={ this.onCitySelected }  key={ theState }/>;
 			});
 		}
 
