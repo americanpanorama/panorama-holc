@@ -3,7 +3,7 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import CitySnippet from './CitySnippet.jsx';
 
 
-export default class Downloader extends React.Component {
+export default class StateStats extends React.Component {
 	// property validation
 	static propTypes = {
 		stateName: PropTypes.string

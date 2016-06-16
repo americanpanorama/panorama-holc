@@ -2,7 +2,7 @@ import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import * as d3 from 'd3';
 
-export default class Downloader extends React.Component {
+export default class CitySnippet extends React.Component {
 	// property validation
 	static propTypes = {
 		cityData: PropTypes.object
@@ -37,6 +37,7 @@ export default class Downloader extends React.Component {
 	}
 
 	render () {
+		console.log(this.props);
 		return (
 			<div className='city-snippet'>
 				<h3 onClick={ this.props.onCityClick } id={ this.props.cityData.cityId }>{this.props.cityData.city}</h3>

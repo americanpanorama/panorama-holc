@@ -2,6 +2,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 //import "babel-polyfill";
 import Modal from 'react-modal';
+import {Typeahead} from 'react-typeahead';
 import { Map, TileLayer, GeoJson, Circle, Rectangle } from 'react-leaflet';
 import leafletsnogylop from 'leaflet.snogylop';
 import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
@@ -12,6 +13,8 @@ import RasterStore from './stores/RasterStore';
 
 // components (views)
 import CityStats from './components/CityStats.jsx';
+import CitySnippet from './components/CitySnippet.jsx';
+import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 import StateStats from './components/StateStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
 import ADCat from './components/ADCat.jsx';
@@ -42,7 +45,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted'];
+		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -211,7 +214,6 @@ export default class App extends React.Component {
 	}
 
 	onCitySelected (value, index) {
-		console.log(value.target);
 		// for click on state name in sidebar
 		value = (value.target) ? (value.target.options) ? value.target.options : value.target : value;
 		value.zoomTo = (typeof(value.zoomTo) == 'undefined') ? true : value.zoomTo;
@@ -238,6 +240,13 @@ export default class App extends React.Component {
 				center: RasterStore.getCenterForState(value.id)
 			}
 		}, this.changeHash());
+	}
+
+	onSearchChange (result, event) {
+		console.log(result.target, event.target);
+		//event.preventDefault();
+		//event.stopPropagation();
+		this.onCitySelected({id: result.cityId, zoomTo: true});
 	}
 
 	onNeighborhoodClick (event) {
@@ -381,7 +390,7 @@ export default class App extends React.Component {
 			dimensions = {};
 
 		dimensions.upperRight = {
-			height: window.innerHeight - bottomRowHeight - 3 * containerPadding
+			height: headerHeight - containerPadding //window.innerHeight - bottomRowHeight - 3 * containerPadding
 		};
 
 		dimensions.left = {
@@ -507,7 +516,25 @@ export default class App extends React.Component {
 
 	donutholeShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ring > 1 && ringNum == this.state.selectedRingGrade.ring - 1; }
 
+	searchDisplay () {
+		let citiesOptions = RasterStore.getCityIdsAndNames(),
+			citiesData = RasterStore.getAllRasters();
+		return citiesOptions.map((cityOption) => {
+			return {
+				id: cityOption.id,
+				cityName: cityOption.cityName,
+				display: <CitySnippet 
+					cityData={ citiesData[cityOption.id] } 
+					onCityClick={ this.props.onCityClick } 
+					key={ 'citySearch' + cityOption.id } 
+				/>
+			}
+		});
+	}
+
 	render () {
+
+		console.log(RasterStore.getCityIdsAndNames());
 				
 		let modalStyle = {
 				overlay : {
@@ -676,12 +703,18 @@ export default class App extends React.Component {
 						</div>
 					</div>
 					<div className='columns four full-height'>
-						<div className='row top-row template-tile' style={ { height: this.state.dimensions.upperRight.height + 'px' } }>
-							{ this.renderSidebar() }
+						<div className='row top-row template-tile city-selector'  style={ { overflow: 'visible', height: this.state.dimensions.upperRight.height + 'px' } }>
+							<Typeahead
+								options={ RasterStore.getMapsList() }
+								placeholder={ 'Search by city or state' }
+								filterOption={ 'city' }
+								displayOption={(city, i) => city.cityId }
+								onOptionSelected={ this.onCitySelected }
+								customListComponent={ TypeAheadCitySnippet }
+							/>
 						</div>
-						<div className='row bottom-row template-tile city-selector'>
-							<HolcItemSelector { ...this.getItemSelectorConfig() } />
-							<button className='intro-button' data-step='2' onClick={ this.triggerIntro }><span className='icon info'/></button>
+						<div className='row full-height template-tile'>
+							{ this.renderSidebar() }
 						</div>
 					</div>
 					<Modal isOpen={ this.state.modalOpen } onRequestClose={ this.closeModal} style={ modalStyle }>
@@ -820,7 +853,12 @@ export default class App extends React.Component {
 			let visibleStates = this.getVisibleMapsByState();
 			title = 	<h2>{ stateAbbrs[this.state.selectedState] }</h2>;
 			content = 	Object.keys(visibleStates).map((theState) => {
-				return <StateStats stateName={ stateAbbrs[theState] } cities={ visibleStates[theState] } onCityClick={ this.onCitySelected }  key={ theState }/>;
+				return <StateStats 
+					stateName={ stateAbbrs[theState] } 
+					cities={ visibleStates[theState] } 
+					onCityClick={ this.onCitySelected }  
+					key={ theState }
+				/>;
 			});
 		}
 

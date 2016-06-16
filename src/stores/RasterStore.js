@@ -122,6 +122,29 @@ const RasterStore = {
 		];
 	},
 
+	getCityNames: function () {
+		return Object.keys(this.data.maps).map((id) => this.data.maps[id].city + ', ' +stateAbbrs[this.data.maps[id].state]);
+	},
+
+	getCityIdsWithNames: function () {
+		let idsAndNames = {};
+
+		Object.keys(this.data.maps).forEach((id) => {
+			idsAndNames[id] = this.data.maps[id].city + ', ' +stateAbbrs[this.data.maps[id].state]
+		});
+
+		return idsAndNames;
+	},
+
+	getCityIdsAndNames: function () {
+		return Object.keys(this.data.maps).map((id) => {
+			return {
+				id: parseInt(id),
+				cityName: this.data.maps[id].city + ', ' + stateAbbrs[this.data.maps[id].state]
+			}
+		});
+	},
+
 	getCenter: function() {
 		return [ this.getSelectedCityMetadata('centerLat'), this.getSelectedCityMetadata('centerLng')];
 	},
