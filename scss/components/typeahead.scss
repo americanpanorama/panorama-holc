@@ -1,0 +1,27 @@
+.city-selector {
+	overflow-y: hidden;
+	position: fixed;
+	z-index: 1000;
+	pointer-events: none;
+	
+	background-color: transparent;
+
+	input {
+		margin-bottom: 50px;
+		width: 100%;
+		pointer-events: auto;
+	}
+
+	.typeahead {
+		overflow-y: visible;
+
+		.city-snippet {
+			pointer-events: auto;
+
+			&:last-of-type {
+				padding-bottom: 2000px;
+			}
+		}
+	}
+
+}

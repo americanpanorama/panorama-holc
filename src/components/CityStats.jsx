@@ -84,28 +84,32 @@ export default class CityStats extends React.Component {
 			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
 
 		return (
-			<div className='stats'>
-				<div className='stat-columns'>
-					{ (population1930) ?
-						<ul className='left-stat'>
-							<li>Population in 1930:</li>
-							<li><span className='state-stat'>{ population1930 }</span></li>
-						</ul> :
-						null
-					}
-					{ this.render_population_1930() }
+			<div className='cityStats'>
+				<div className='row'>
+					<div className='columns six'>
+						{ (population1930) ?
+							<ul>
+								<li>Population in 1930:</li>
+								<li><span className='state-stat'>{ population1930 }</span></li>
+							</ul> :
+							null
+						}
+						{ this.render_population_1930() }
+					</div>
 
-					{ (population1940) ? 
-						<ul className='right-stat'>	
-							<li>Population in 1940:</li>
-							<li><span className='state-stat'>{ population1940 }</span></li>
-						</ul>:
-						null
-					}
-					{ this.render_population_1940() }
+					<div className='columns six'>
+						{ (population1940) ? 
+							<ul>	
+								<li>Population in 1940:</li>
+								<li><span className='state-stat'>{ population1940 }</span></li>
+							</ul>:
+							null
+						}
+						{ this.render_population_1940() }
+					</div>
 				</div>
 
-				<div className='panorama nestedpiechart'>
+				<div className='nestedpiechart'>
 					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
 					{ (this.props.ringStats) ?
 						<div className='content' ref='content'></div> :
@@ -192,7 +196,7 @@ export default class CityStats extends React.Component {
 		HEADER: 25,
 		WIDTH: 250,
 		DIAMETER: 250, // of the donut
-		STATSHEIGHT: 30,
+		STATSHEIGHT: 18,
 		DONUTWIDTH: 35,
 		MARGIN: 10,
 
@@ -256,9 +260,13 @@ export default class CityStats extends React.Component {
 				  d3.selectAll('.areaBar')
 					.transition()
 					.duration(2000)
-					.attr('opacity', .4);
+					.attr('height', scope.STATSHEIGHT * 0.5)
+					.attr('y', scope.HEADER + scope.MARGIN + scope.STATSHEIGHT * 0.25)
+					.attr('opacity', .25);
 				  d3.selectAll('.barGrade' + d.data.grade)
 					.filter('.ring' + d.data.ringId)
+					.attr('height', scope.STATSHEIGHT)
+					.attr('y', scope.HEADER + scope.MARGIN)
 					.transition()
 					.duration(2000)
 					.attr('opacity', 1);
@@ -282,6 +290,8 @@ export default class CityStats extends React.Component {
 				  d3.selectAll('.areaBar')
 					.transition()
 					.duration(2000)
+					.attr('height', scope.STATSHEIGHT)
+					.attr('y', scope.HEADER + scope.MARGIN)
 					.attr('opacity', .7);
 				  d3.selectAll('.areaBarPercent')
 				  	.transition()
@@ -414,7 +424,7 @@ export default class CityStats extends React.Component {
 				x += Math.round(d.percents[j].overallPercent * scope.WIDTH / 2);
 				return x;
 			  })
-			  .attr('y', scope.HEADER + scope.MARGIN + 20)
+			  .attr('y', scope.HEADER + scope.MARGIN + 13)
 			  .attr('class', (d,i,j) => 'areaBarPercent barGradePercent' + d.percents[j].grade + ' ring' + (i + 1))
 			  .attr('pointer-events', 'none')
 			  .attr('text-anchor', 'middle')
@@ -436,7 +446,7 @@ export default class CityStats extends React.Component {
 				}
 				return x;
 			  })
-			  .attr('y', scope.HEADER + scope.MARGIN + 20)
+			  .attr('y', scope.HEADER + scope.MARGIN + 13)
 			  .attr('pointer-events', 'none')
 			  .attr('text-anchor', 'middle')
 			  .attr('font-family', 'sans-serif')

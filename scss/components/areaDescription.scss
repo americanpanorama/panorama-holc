@@ -207,6 +207,51 @@ h2 {
     background-color: #dcc1c1;
 }
 
+.ad-left {
+    margin: 8px 0px;
+    float: left;
+    width: 30px;
+    display: inline-block;    
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.ad-right {
+    margin: 8px 0px -40px;
+    float: right;
+    display: inline-block;   
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.right-arrow {
+    width: 10px;
+    height: 10px;
+    border-right: 1px solid grey;
+    border-bottom: 1px solid grey;
+    background: transparent;
+    transform: rotate(-45deg);
+    float: right;
+    margin-right: 4px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.left-arrow {
+    width:10px;
+    height:10px;
+    border-left:1px solid grey;
+    border-bottom:1px solid grey;
+    background:transparent;
+    transform:rotate(45deg);
+    float: left;
+    margin-left: 4px;
+    margin-top: 10px;
+    cursor: pointer;
+
+}
+
+
 
 
 

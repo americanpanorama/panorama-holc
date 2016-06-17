@@ -1,0 +1,68 @@
+.city-snippet {
+	background-color: #f3f3f3;
+	padding: 0 0 20px 0;
+	margin: 0;
+
+	* {
+		pointer-events: none;
+	}
+
+	h3 {
+		border-bottom: 1px solid red;
+		font-size: 1.3em;
+		margin: 0;
+	}
+
+	ul {
+		font-family: 'Lato';
+    	font-size: 16px;
+    	color: #0c789a;
+    	list-style: none;
+    	padding: 0 0 10px 20px;
+	
+   	
+	
+    	li {
+    		font-size: smaller;
+    	    list-style: none;
+    	    display: inline;
+	
+    	    &:after {
+    	    	content: "; ";
+    	    }
+	
+    	    &:last-child:after {
+    	    	content: '';
+    	    }
+
+    	}
+	
+	
+	
+		.catName {
+    	    font-weight: bolder;
+    	    color: #555;
+    	}
+	
+		.subcatData {
+    	    margin-left: 5px;
+    	    line-height: 1.3;
+    	    font-weight: bolder;
+    	}
+	
+    	.subcatName {
+    	    margin-left: 0px;
+    	}
+	
+    	.city-hr {
+    		color: #000;
+    		margin: -10px 0 10px 0;
+    	}
+    }
+
+	.barchart {
+		height: 15px;
+		cursor: pointer;
+	}
+}
+

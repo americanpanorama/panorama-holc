@@ -47,6 +47,7 @@ const CityStore = {
 		areaDescriptions: {},
 		ADsByCat: {},
 		polygonBoundingBox: null,
+		polygonsCenter: null,
 		gradedArea: null,
 		gradedAreaOfRings: {},
 		gradedAreaByGrade: {}
@@ -78,7 +79,7 @@ const CityStore = {
 				format: 'JSON'
 			},
 			{
-				query: 'Select St_AsGeoJSON(ST_SetSRID(st_extent (the_geom),2249)) as the_extnt from holc_polygons_bounds where ad_id = ' + cityId,
+				query: 'Select st_x(st_centroid(ST_SetSRID(st_extent(the_geom),4326))) as centerLng, st_y(st_centroid(ST_SetSRID(st_extent(the_geom),4326))) as centerLat, st_xmin(ST_SetSRID(st_extent(the_geom),4326)) as minlng, st_ymin(ST_SetSRID(st_extent(the_geom),4326)) as minlat, st_xmax(ST_SetSRID(st_extent(the_geom),4326)) as maxlng, st_ymax(ST_SetSRID(st_extent(the_geom),4326)) as maxlat from digitalscholarshiplab.holc_polygons where ad_id = ' + cityId,
 				format: 'JSON'
 			}
 		]).then((response) => {
@@ -106,7 +107,12 @@ const CityStore = {
 			this.data.areaDescriptions = this.parseAreaDescriptions(response[2]);
 			this.data.ADsByCat = this.parseADsByCat();
 			this.data.gradeStats = this.parseGradeStats(this.data.ringAreasGeometry);
-			this.data.polygonBoundingBox = response[3];
+
+			let polygonLatLngs = response[3][0];
+			if (polygonLatLngs.minlat) {
+				this.data.polygonBoundingBox = [ [polygonLatLngs.minlat, polygonLatLngs.minlng], [polygonLatLngs.maxlat, polygonLatLngs.maxlng] ];
+				this.data.polygonsCenter = [ polygonLatLngs.centerlat, polygonLatLngs.centerlng ];
+			}
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
 			if (initial) {
@@ -190,6 +196,14 @@ const CityStore = {
 
 	getAreaDescriptions: function() {
 		return this.data.areaDescriptions;
+	},
+
+	getPolygonsBounds: function() {
+		return this.data.polygonBoundingBox;
+	},
+
+	getPolygonsCenter: function() {
+		return this.data.polygonsCenter;
 	},
 
 	hasADData: function() {
@@ -405,6 +419,7 @@ const CityStore = {
 
 		for(var row in rawAdData) {
 			let d = rawAdData[row];
+
 			// define id if undefined
 			if(typeof adData[d.holc_id] == 'undefined') {
 				adData[d.holc_id] = {};
@@ -422,7 +437,7 @@ const CityStore = {
 			}
 			
 			// define category id for area description if undefined
-			if (d.cat_id && d.sub_cat_id === ' && d.order' === null) {
+			if (d.cat_id && d.sub_cat_id === '' && d.order === null) {
 				adData[d.holc_id].areaDesc[d.cat_id] = d.data;
 			} else if(d.cat_id && typeof adData[d.holc_id].areaDesc[d.cat_id] === 'undefined') {
 				adData[d.holc_id].areaDesc[d.cat_id] = {};

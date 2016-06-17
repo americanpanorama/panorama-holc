@@ -18,7 +18,6 @@ import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 import StateStats from './components/StateStats.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
 import ADCat from './components/ADCat.jsx';
-import HolcItemSelector from './components/ItemSelector.jsx';
 import Downloader from './components/Downloader.jsx';
 import Donut from './components/Donut/Donut.jsx';
 import AreaPolygon from './components/AreaPolygon.jsx';
@@ -45,7 +44,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','updateSelectedState','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange'];
+		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -81,7 +80,6 @@ export default class App extends React.Component {
 		return {
 			selectedNeighborhood: (hashState.area) ? hashState.area : null,
 			selectedCity: (hashState.city) ? parseInt(hashState.city) : (hashState.state) ? null : 168, // Richmond
-			selectedState: (hashState.city || !hashState.state) ? null : hashState.state,
 			selectedCategory: (hashState.category) ? hashState.category : null,
 			selectedRingGrade: { 
 				ring: null, 
@@ -93,7 +91,7 @@ export default class App extends React.Component {
 			intro: {
 				open: false
 			},
-			modalOpen: false,
+			modalSectionOpen: null,
 			downloadOpen: false,
 			map: {
 				zoom: 12,
@@ -114,7 +112,6 @@ export default class App extends React.Component {
 
 	initialDataLoaded () {
 		this.setState({
-			selectedState: RasterStore.getSelectedCityMetadata('state'),
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
 			map: {
 				center: this.getLoc(),
@@ -125,7 +122,7 @@ export default class App extends React.Component {
 
 	storeChanged (options) {
 		let newState = {
-			selectedState: RasterStore.getSelectedCityMetadata('state'),
+
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
 			selectedNeighborhood: null,
 			selectedCategory: null,
@@ -138,9 +135,12 @@ export default class App extends React.Component {
 		// only change the map location if that's requested or it's not already visible
 		let mapBounds = this.refs.the_map.leafletElement.getBounds();
 		if ((options && options.zoomToCity) || !mapBounds.intersects(RasterStore.getMapBounds())) {
+			let center = (CityStore.getPolygonsCenter()) ? CityStore.getPolygonsCenter() : RasterStore.getCenter(),
+				bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.getMapBounds(),
+				zoom = this.refs.the_map.leafletElement.getBoundsZoom(bounds);
 			newState.map = {
-				center: RasterStore.getCenter(),
-				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds())
+				center: center,
+				zoom: zoom
 			}
 		}
 		this.setState(newState, this.changeHash);
@@ -203,12 +203,6 @@ export default class App extends React.Component {
 		}, this.changeHash);
 	}
 
-	updateSelectedState () {
-		this.setState({
-			selectedState: RasterStore.getSelectedCityMetadata('state'),
-		});
-	}
-
 	onWindowResize (event) {
 		this.computeComponentDimensions();
 	}
@@ -232,7 +226,6 @@ export default class App extends React.Component {
 		value = (value.target) ? value.target : value;
 				
 		this.setState({
-			selectedState: value.id,
 			selectedCity: null,
 			selectedNeighborhood: null,
 			map: {
@@ -300,7 +293,7 @@ export default class App extends React.Component {
 		if (visibleMapsIds.length == 1 && parseInt(visibleMapsIds[0]) !== this.state.selectedCity) {
 			let cityId = parseInt(visibleMapsIds[0]);
 			newState.city = cityId;
-			AppActions.citySelected(cityId, this.updateSelectedState);
+			AppActions.citySelected(cityId);
 		}
 		// deselect city if the zoom is 9 or below or if the map doesn't overlap
 		else if ((event.target.getZoom() <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds())) {
@@ -362,7 +355,6 @@ export default class App extends React.Component {
 
 	changeHash () {
 		let newState = { 
-			state: this.state.selectedState,
 			city: this.state.selectedCity,
 			area: this.state.selectedNeighborhood,
 			category: this.state.selectedCategory
@@ -389,11 +381,12 @@ export default class App extends React.Component {
 			bottomRowHeight = 300,
 			dimensions = {};
 
-		dimensions.upperRight = {
-			height: headerHeight - containerPadding //window.innerHeight - bottomRowHeight - 3 * containerPadding
+		dimensions.search = {
+			width: window.innerWidth / 3 - 2 * containerPadding,
+			height: window.innerHeight - 2 * containerPadding
 		};
 
-		dimensions.left = {
+		dimensions.bottom = {
 			height: window.innerHeight - headerHeight - 2 * containerPadding
 		};
 
@@ -402,11 +395,12 @@ export default class App extends React.Component {
 
 	openModal (event) {
 		let section = event.target.id;
-		this.setState({ modalOpen: section });
+		console.log(event.target, section);
+		this.setState({ modalSectionOpen: section });
 	}
 
 	closeModal() {
-		this.setState({ modalOpen: false});
+		this.setState({ modalSectionOpen: null});
 	}
 
 	toggleBurgessDiagram () {
@@ -416,7 +410,7 @@ export default class App extends React.Component {
 	}
 
 	triggerIntro (event) {
-		if (this.state.modalOpen) {
+		if (this.state.modalSectionOpen) {
 			this.closeModal();
 		}
 
@@ -450,8 +444,6 @@ export default class App extends React.Component {
 			return [ hashState.loc.center[0], hashState.loc.center[1] ];
 		} else if (this.state.selectedCity) {
 			return RasterStore.getCenter();
-		} else if (this.state.selectedState) {
-			return RasterStore.getCenterForState(this.state.selectedState);
 		} else {
 			return [30,-90];
 		}
@@ -463,58 +455,10 @@ export default class App extends React.Component {
 			return hashState.loc.zoom;
 		} else if (this.state.selectedCity) {
 			return this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds());
-		} else if (this.state.selectedState) {
-			return this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(this.state.selectedState));
 		} else {
 			return 12;
 		}
 	}
-
-	getItemSelectorConfig() {
-		// get a list of the states in order to adjust color
-		let stateList = RasterStore.getStatesList().map(item => item.id);
-		let stateClasses = {};
-		let selectedIndex = stateList.indexOf(this.state.selectedState);
-		for (let i in stateList) {
-			stateClasses[stateList[i]] = 'offset' + ((Math.abs(selectedIndex - i) < 5) ? Math.abs(selectedIndex - i) : 5);
-		}
-
-		return {
-			title: 'Select a city:',
-			items: RasterStore.getCitiesList().map(item => { 
-				item.className = stateClasses[item.state]; 
-				return item; 
-			}),
-			selectedItem: {id: 168}, //{ id: (this.state.selectedCity) ? this.state.selectedCity : RasterStore.getFirstCityOfState(this.state.selectedState).id},
-			onItemSelected: this.onCitySelected,
-			stateItems: RasterStore.getStatesList().map((item, index) => {
-				let selectedIndex, offset;
-				RasterStore.getStatesList().forEach((item2, index2) => { 
-					if (item2.id == this.state.selectedState) {
-						selectedIndex = index2;
-					}
-				});
-				offset = (Math.abs(selectedIndex - index) < 5) ? Math.abs(selectedIndex - index) : 5;
-				item.className = 'offset' + offset;
-				return item;
-			}),
-			selectedStateItem: { id: this.state.selectedState },
-			onStateSelected: this.onStateSelected
-		};
-	}
-
-	getNavData () {
-		// remove the current map from the list
-		return panoramaNavData.filter((item, i) => {
-			return (item.url.indexOf('holc') === -1);
-		});
-	}
-
-	isSelectedRing (ringNum) { return ringNum == this.state.selectedRingGrade.ring; }
-
-	donutShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ring > 0 && ringNum > this.state.selectedRingGrade.ring; } 
-
-	donutholeShouldBeMasked (ringNum) { return this.state.selectedRingGrade.ring > 1 && ringNum == this.state.selectedRingGrade.ring - 1; }
 
 	searchDisplay () {
 		let citiesOptions = RasterStore.getCityIdsAndNames(),
@@ -532,9 +476,109 @@ export default class App extends React.Component {
 		});
 	}
 
-	render () {
+	parseModalCopy (subject) {
+		let modalCopy = '';
 
-		console.log(RasterStore.getCityIdsAndNames());
+		if (subject) {
+			try {
+				modalCopy = appConfig.modalContent[subject].join('\n');
+			} catch (error) {
+				console.warn('Error parsing modal copy: ', subject);
+				modalCopy = 'Error parsing modal copy.';
+			}
+		}
+
+		// React requires this format to render a string as HTML,
+		// via dangerouslySetInnerHTML.
+		return {
+			__html: modalCopy
+		};
+	}
+
+	renderSidebar() {
+		let title, content, theClass;
+		let ADs = CityStore.getAreaDescriptions();
+
+		if (this.state.downloadOpen) {
+			title = 	<h2>
+							{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
+		} else if (this.state.selectedNeighborhood) {
+			theClass = 'area';
+			title = 	<h2>
+							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
+							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = 	<AreaDescription 
+							areaId={ this.state.selectedNeighborhood } 
+							areaData={ ADs[this.state.selectedNeighborhood] } 
+							formId={ CityStore.getFormId() } 
+							onCategoryClick={ this.onCategoryClick } 
+							onNeighborhoodClick={ this.onNeighborhoodClick } 
+							ref={'areadescription' + this.state.selectedNeighborhood } 
+						/>;
+		} else if (this.state.selectedCategory && CityStore.getADsByCat(...this.state.selectedCategory.split('-'))) {
+			let [catNum, catLetter] = this.state.selectedCategory.split('-');
+			theClass = 'category';
+			title = 	<h2>
+							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
+							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = 	<ADCat 
+							catNum={ catNum } 
+							catLetter = { catLetter } 
+							onNeighborhoodClick={ this.onNeighborhoodClick } 
+							onCategoryClick={ this.onCategoryClick } 
+							onNeighborhoodHover={ this.neighborhoodHighlighted } 
+							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
+						/>;
+		} else if (this.state.selectedCity) {
+			theClass = 'city';
+			title = 	<h2>
+							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
+							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
+							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
+						</h2>;
+			content = 	<CityStats 
+							cityData={ CityStore.getCityData() } 
+							area={ CityStore.getArea() } 
+							gradeStats={ CityStore.getGradeStats() } 
+							ringStats={ CityStore.getRingStats() } 
+							areaSelected={ this.ringAreaSelected } 
+							areaUnselected={ this.ringAreaUnselected } 
+							gradeSelected={ this.gradeSelected } 
+							gradeUnselected={ this.gradeUnselected } 
+							triggerIntro={ this.triggerIntro } 
+							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
+							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
+						/>;
+		} else if (!this.state.selectedCity) {
+			theClass = 'state';
+			let visibleStates = this.getVisibleMapsByState();
+			content = 	Object.keys(visibleStates).map((theState) => {
+				return <StateStats 
+					stateName={ stateAbbrs[theState] } 
+					cities={ visibleStates[theState] } 
+					onCityClick={ this.onCitySelected }  
+					key={ theState }
+				/>;
+			});
+		}
+
+
+		return (
+			<div className={ theClass } key={ theClass }>
+				{ title }
+				{ content }
+			</div>
+		);
+	}
+
+	render () {
 				
 		let modalStyle = {
 				overlay : {
@@ -553,14 +597,17 @@ export default class App extends React.Component {
 				}
 			},
 			mapConfig = this.state.map || this.state.mapConfig,
-			ADs = CityStore.getAreaDescriptions();
+			ADs = CityStore.getAreaDescriptions(),
+			outerRadius = CityStore.getOuterRingRadius();
+
+		console.log(CityStore.getFormId());
 
 		return (
 			<div className='container full-height'>
 				<Navigation 
 					show_menu={ this.state.show_panorama_menu } 
 					on_hamburger_click={ this.onPanoramaMenuClick } 
-					nav_data={ this.getNavData() } 
+					nav_data={ panoramaNavData.filter((item, i) => item.url.indexOf('holc') === -1) } 
 				/>
 				<div className='row full-height'>
 					<div className='columns eight full-height'>
@@ -569,14 +616,16 @@ export default class App extends React.Component {
 								<span className='header-main'>Mapping Inequality</span>
 								<span className='header-sub'>Redlining in New Deal America</span>
 							</h1>
-							<h4 onClick={ this.toggleAbout }>Introduction</h4><h4 onClick={ this.toggleAbout }>Bibliographic Notes & Bibliography</h4><h4 onClick={ this.toggleAbout }>Credits</h4>							
+							<h4 onClick={ this.openModal } id={ 'about' }>Introduction</h4>
+							<h4 onClick={ this.openModal } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
+							<h4 onClick={ this.openModal } id={ 'credits' }>Credits</h4>
 							<hr className='style-eight'>
 							</hr>
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }>
 								<span className='icon info'/>
 							</button>
 						</header>
-						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.left.height + 'px'}}>
+						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 							<Map 
 								ref='the_map' 
 								center={ this.state.map.center } 
@@ -615,16 +664,48 @@ export default class App extends React.Component {
 									);
 								}) }
 
-								{ this.renderDonuts() }
-								{ this.renderDonutholes() }
+								{ (outerRadius > 0) ?
+									<Circle 
+										center={ CityStore.getLoopLatLng() } 
+										radius={ outerRadius / 7 } 
+										fillOpacity={ (this.state.selectedRingGrade.ring >= 2) ? 0.75 : 0 } 
+										fillColor= { '#000' } 
+										clickable={ false } 
+										className={ 'donuthole' } 
+										key={ 'donuthole' } 
+									/> :
+									null
+								}
+							
+								{ (outerRadius > 0) ?
+									[2,3,4,5].map((ringNum) => {
+										return (
+											<Donut 
+												center={ CityStore.getLoopLatLng() } 
+												innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
+												outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
+												clickable={ false } 
+												fillOpacity={ (this.state.selectedRingGrade.ring > 0 && ringNum !== this.state.selectedRingGrade.ring) ? 0.75 : 0 } 
+												fillColor= { '#000' } 
+												weight={ 1 }
+												className={ 'donut' } 
+												key={ 'donut' + String(ringNum) } 
+											/>
+										);
+									}) :
+									null
+								}
 
 								{ (this.state.selectedRingGrade.ring > 0) ?
 									<GeoJson 
 										data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
 										clickable={ false }
-										ref={ 'ring-' + this.state.selectedRingGrade.ring + '-grade-' + this.state.selectedRingGrade.grade }
-										key={ 'ringStroke'}
-										className={ 'selectedRing grade' + this.state.selectedGrade } 
+										key={ 'ringStroke'} 
+										fillColor={ '#000'}
+										fillOpacity={0.65}
+										weight={ 2 }
+										opacity={ 0.9 }
+										className={ 'gradeStroke grade' + this.state.selectedRingGrade.grade}
 									/> :
 									null
 								}
@@ -638,7 +719,7 @@ export default class App extends React.Component {
 									null
 								}
 
-								{ (this.state.selectedNeighborhood) ?
+								{ (this.state.selectedNeighborhood && ADs[this.state.selectedNeighborhood] && ADs[this.state.selectedNeighborhood].area_geojson_inverted) ?
 									<AreaPolygon
 										data={ ADs[this.state.selectedNeighborhood].area_geojson_inverted } 
 										clickable={ false }
@@ -663,7 +744,7 @@ export default class App extends React.Component {
 									null
 								}
 
-								{ (this.state.selectedCity == null) ?
+								{ (this.state.selectedCity == null && this.state.map.zoom <= 11) ?
 									RasterStore.getMapsList().map((item, i) => {
 										return ((item.radii) ?
 											Object.keys(item.radii).map((grade) => {
@@ -703,23 +784,28 @@ export default class App extends React.Component {
 						</div>
 					</div>
 					<div className='columns four full-height'>
-						<div className='row top-row template-tile city-selector'  style={ { overflow: 'visible', height: this.state.dimensions.upperRight.height + 'px' } }>
+						<div className='row template-tile city-selector' style={{height: this.state.dimensions.search.height + 'px', width: this.state.dimensions.search.width + 'px'}}>
 							<Typeahead
 								options={ RasterStore.getMapsList() }
 								placeholder={ 'Search by city or state' }
-								filterOption={ 'city' }
+								filterOption={ 'searchName' }
 								displayOption={(city, i) => city.cityId }
 								onOptionSelected={ this.onCitySelected }
 								customListComponent={ TypeAheadCitySnippet }
+								maxVisible={ 8 }
 							/>
 						</div>
-						<div className='row full-height template-tile'>
+						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 							{ this.renderSidebar() }
 						</div>
 					</div>
-					<Modal isOpen={ this.state.modalOpen } onRequestClose={ this.closeModal} style={ modalStyle }>
+					<Modal 
+						isOpen={ this.state.modalSectionOpen !== null } 
+						onRequestClose={ this.closeModal} 
+						style={ modalStyle }
+					>
 						<button className='close' onClick={ this.closeModal }><span>×</span></button>
-						<div dangerouslySetInnerHTML={ this.parseModalCopy(this.state.modalOpen) }></div>
+						<div dangerouslySetInnerHTML={ this.parseModalCopy(this.state.modalSectionOpen) }></div>
 					</Modal>
 
 					<IntroManager { ...this.state.intro } />
@@ -727,166 +813,5 @@ export default class App extends React.Component {
 			</div> 
 		);
 
-	}
-
-	renderDonuts () {
-		if (!this.state.selectedCity) {
-			return null;
-		}
-
-		let layers = [],
-			outerRadius = CityStore.getOuterRingRadius();
-
-		if (outerRadius > 0) {
-			for (let ringNum = 5; ringNum >= 2; ringNum--) {
-				if (!this.isSelectedRing(ringNum)) {
-					layers.push(
-						<Donut 
-							center={ CityStore.getLoopLatLng() } 
-							innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
-							outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
-							clickable={ false } 
-							fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : this.donutShouldBeMasked(ringNum) ? 0.75 : 0 } 
-							fillColor= { (this.isSelectedRing(ringNum)) ? 'transparent' : '#000' } 
-							weight={ 1 }
-							className={ 'donut' } 
-							key={ 'donut' + String(ringNum) } 
-						/>
-					);
-				}
-			}
-		}
-
-		return layers;
-	}
-
-	renderDonutholes() {
-		if (!this.state.selectedCity) {
-			return null;
-		}
-
-		let layers = [],
-			outerRadius = CityStore.getOuterRingRadius();
-
-		if (outerRadius > 0) {
-			for (let ringNum = 3; ringNum >= 1; ringNum--) {
-				layers.push(
-					<Circle 
-						center={ CityStore.getLoopLatLng() } 
-						radius={ (ringNum * 2 - 1) / 7 * outerRadius } 
-						fillOpacity={ (this.isSelectedRing(ringNum)) ? 0.5 : (this.donutholeShouldBeMasked(ringNum)) ? 0.75 : 0 } 
-						fillColor= { (this.isSelectedRing(ringNum)) ? 'white' : '#000' } 
-						clickable={ false } 
-						className={ 'donuthole' } 
-						key={ 'donuthole' + ringNum } 
-					/>
-				);
-			}
-		}
-
-		return layers;
-	}
-
-	renderSidebar() {
-		let title, content, theClass;
-		let ADs = CityStore.getAreaDescriptions();
-
-		if (this.state.downloadOpen) {
-			title = 	<h2>
-							{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-		} else if (this.state.selectedNeighborhood) {
-			theClass = 'area';
-			title = 	<h2>
-							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
-							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = 	<AreaDescription 
-							areaId={ this.state.selectedNeighborhood } 
-							areaData={ ADs[this.state.selectedNeighborhood] } 
-							formId={ CityStore.getFormId() } 
-							onCategoryClick={ this.onCategoryClick } 
-							onNeighborhoodClick={ this.onNeighborhoodClick } 
-							ref={'areadescription' + this.state.selectedNeighborhood } 
-						/>;
-		} else if (this.state.selectedCategory && CityStore.getADsByCat(...this.state.selectedCategory.split('-'))) {
-			let [catNum, catLetter] = this.state.selectedCategory.split('-');
-			theClass = 'category';
-			title = 	<h2>
-							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
-							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = 	<ADCat 
-							catNum={ catNum } 
-							catLetter = { catLetter } 
-							onNeighborhoodClick={ this.onNeighborhoodClick } 
-							onCategoryClick={ this.onCategoryClick } 
-							onNeighborhoodHover={ this.neighborhoodHighlighted } 
-							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
-						/>;
-		} else if (this.state.selectedCity) {
-			theClass = 'city';
-			title = 	<h2>
-							<span>{ RasterStore.getSelectedCityMetadata().name }</span>, 
-							<span onClick={ this.onStateSelected } id={ this.state.selectedState }>{ this.state.selectedState }</span>
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = 	<CityStats 
-							cityData={ CityStore.getCityData() } 
-							area={ CityStore.getArea() } 
-							gradeStats={ CityStore.getGradeStats() } 
-							ringStats={ CityStore.getRingStats() } 
-							areaSelected={ this.ringAreaSelected } 
-							areaUnselected={ this.ringAreaUnselected } 
-							gradeSelected={ this.gradeSelected } 
-							gradeUnselected={ this.gradeUnselected } 
-							triggerIntro={ this.triggerIntro } 
-							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
-							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
-						/>;
-		} else if (!this.state.selectedCity) {
-			theClass = 'state';
-			let visibleStates = this.getVisibleMapsByState();
-			title = 	<h2>{ stateAbbrs[this.state.selectedState] }</h2>;
-			content = 	Object.keys(visibleStates).map((theState) => {
-				return <StateStats 
-					stateName={ stateAbbrs[theState] } 
-					cities={ visibleStates[theState] } 
-					onCityClick={ this.onCitySelected }  
-					key={ theState }
-				/>;
-			});
-		}
-
-
-		return (
-			<div className={ 'punchcard-container ' + theClass } key={ theClass }>
-				{ title }
-				{ content }
-			</div>
-		);
-	}
-
-	parseModalCopy (subject) {
-		let modalCopy = '';
-
-		if (subject) {
-			try {
-				modalCopy = appConfig.modalContent[subject].join('\n');
-			} catch (error) {
-				console.warn('Error parsing modal copy: ', subject);
-				modalCopy = 'Error parsing modal copy.';
-			}
-		}
-
-		// React requires this format to render a string as HTML,
-		// via dangerouslySetInnerHTML.
-		return {
-			__html: modalCopy
-		};
 	}
 }

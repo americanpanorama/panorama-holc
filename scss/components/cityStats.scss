@@ -1,0 +1,50 @@
+.cityStats {
+	li {
+		list-style: none;
+	}
+
+		.stats {
+		    /* height: 415px; */
+		}
+		
+		.stats li {
+		    ;
+		}
+		
+		.state-stat {
+		    color: #0c789a;
+		    font-weight: bolder;
+		    margin-top: 4px;
+		}
+		
+		.population-stat {
+		    color: #0c789a;
+		    font-weight: bolder;
+		    margin: 0px 2px 0px 0px;
+		}
+		
+		ul.left-stat {
+		    width: 50%;
+		    float: left
+		}
+		
+		ul.right-stat {
+		    width: 50%;
+		    float: right;
+		}
+		
+
+
+	.nestedpiechart {
+		text-align: center;
+		svg {
+			shape-rendering: 'crispEdges';
+		}
+	
+		#burgessDiagram {
+			position: relative;
+			top: -352px;
+			pointer-events: none;	
+		}
+	}
+}

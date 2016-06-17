@@ -9,8 +9,10 @@
 
 // component styles
 @import "components/app";
-@import "components/citySelectorPanel";
-@import "components/nestedPieChart";
+@import "components/citySnippet";
+@import "components/cityStats";
 @import "components/areaDescription";
 @import "components/itemSelector";
+@import "components/downloader";
 @import "components/intro";
+@import "components/typeahead";

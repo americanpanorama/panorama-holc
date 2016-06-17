@@ -1,0 +1,36 @@
+.download_menu ul {
+    font-family: 'Lato';
+    font-size: 16px;
+    color: #0c789a;
+    list-style: none;
+    margin: 1em 0 0 0;
+    padding: 0;
+
+    li {
+        list-style: none;
+        background-color: #fafafa;
+        height: 100px;
+    }
+
+    li a {
+    	text-decoration: none;
+    	
+    }
+
+    h3 {
+    	padding: 20px 4px;
+    }
+
+    img {
+    	float: right;
+    	margin: -66px 15px 0;
+    	width: 100px;
+    }
+
+}
+
+.citydownloads h3 {
+    background-color: #eaf0ef;
+    text-align: center;
+    cursor: pointer;
+}

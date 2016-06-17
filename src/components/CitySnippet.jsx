@@ -37,10 +37,9 @@ export default class CitySnippet extends React.Component {
 	}
 
 	render () {
-		console.log(this.props);
 		return (
-			<div className='city-snippet'>
-				<h3 onClick={ this.props.onCityClick } id={ this.props.cityData.cityId }>{this.props.cityData.city}</h3>
+			<div className='city-snippet' onClick={ this.props.onCityClick } id={ this.props.cityData.cityId }>
+				<h3 >{this.props.cityData.city + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
 				<div><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.population_1940.toLocaleString() }</span></div>
 				{ this.render_population_details() }
 				{ (this.props.cityData.hasPolygons) ?
@@ -76,7 +75,7 @@ export default class CitySnippet extends React.Component {
 				}
 			];
 			proportions.sort((a,b) => a.proportion < b.proportion);
-			return <ul className='city-snippet'>
+			return <ul>
 				{ proportions.map((pop) => {
 					if (Math.round(pop.proportion * 100) !== 0) {
 						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
@@ -89,7 +88,7 @@ export default class CitySnippet extends React.Component {
 	d3Chart = {
 		// layout constants
 		WIDTH: 250,
-		HEIGHT: 30,
+		HEIGHT: 15,
 		MARGIN: 20,
 
 		update: function(node, gradeStats) {
@@ -142,7 +141,7 @@ export default class CitySnippet extends React.Component {
 			  .data(gradeStats)
 			  .enter().append('text')
 			  .attr('x', (d) => d.x + d.width / 2 + scope.MARGIN)
-			  .attr('y', 20)
+			  .attr('y', 11)
 			  .attr('text-anchor', 'middle')
 			  .attr('font-family', 'sans-serif')
 			  .attr('font-size', '10px')

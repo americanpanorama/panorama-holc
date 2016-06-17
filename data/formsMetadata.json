@@ -142,6 +142,43 @@
 		"13": "Trend of Desireability Next 10-15 Years",
 		"14": "Clarifying Remarks",
 		"15": "Information for this form was obtained from"
+	},
+	"19371001": {
+		"1": {
+			"header": "Area Characteristics",
+			"subcats": {
+				"a": "Description of Terrain",
+				"b": "Favorable Influences",
+				"c": "Detrimental Influences",
+				"d": "Percentage of land improved",
+				"e": "Trend of desireability next 10-15 yrs."
+			}
+		},
+		"2": {
+			"header": "Inhabitants",
+			"subcats": {
+				"a": "Occupation",
+				"b": "Estimated Annual Family Income",
+				"c": "Foreign-born families",
+				"d": "Negro",
+				"e": "Infiltration of",
+				"f": "Relief families",
+				"g": "Population is"
+			}
+		},
+		"4": {
+			"header": "Availability of Mortgage Funds",
+			"subcats": {
+				"a": "Home purchase",
+				"b": "Home building"
+			}
+		},
+		"5": "Clarifying Remarks",
+		"6": [
+			"Name and Location",
+			"Security Grade",
+			"Area No."
+		],
 	}
 
 }

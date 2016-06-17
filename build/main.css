@@ -811,30 +811,11 @@ body {
     body {
       font-size: 2px; } }
 
-h1 {
-  font-size: 1.8em; }
-
-h2 {
-  font-size: 1.4em; }
-
-h3 {
-  font-size: 1em; }
-
-h4 {
-  font-size: 0.87em; }
-
-h5 {
-  font-size: 0.5em; }
-
-h6 {
-  font-size: 0.35em; }
-
 .container {
   padding: 20px; }
 
 .full-height {
-  height: 100%;
-  min-height: 100%; }
+  height: 100%; }
 
 .template-tile {
   position: relative;
@@ -845,21 +826,8 @@ h6 {
   overflow-y: auto;
   background-color: #f3f3f3; }
 
-.punchcard-container {
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto; }
-
 .top-row {
   margin-bottom: 20px; }
-
-.citydownloads h3 {
-  background-color: #eaf0ef;
-  text-align: center;
-  cursor: pointer; }
-
-.bottom-row {
-  height: 300px; }
 
 header {
   position: relative;
@@ -905,6 +873,13 @@ header {
   width: 100%;
   height: 100%;
   background: #f3f3f3; }
+
+.city-selector {
+  height: 100px;
+  padding-right: -20px; }
+
+.dataViewer {
+  margin-top: 100px; }
 
 .intro-button {
   display: block;
@@ -990,125 +965,109 @@ header {
   z-index: 100;
   cursor: pointer; }
 
-.download_menu ul {
-  font-family: 'Lato';
-  font-size: 16px;
-  color: #0c789a;
-  list-style: none;
-  margin: 1em 0 0 0;
-  padding: 0; }
-  .download_menu ul li {
-    list-style: none;
-    background-color: #fafafa;
-    height: 100px; }
-  .download_menu ul li a {
-    text-decoration: none; }
-  .download_menu ul h3 {
-    padding: 20px 4px; }
-  .download_menu ul img {
-    float: right;
-    margin: -66px 15px 0;
-    width: 100px; }
+/* .content {
+	height: 60px;
+} */
+header .header-main, header .header-sub {
+  font-family: 'Lora', serif;
+  font-weight: 100;
+  color: #454545; }
 
-.content {
-  height: 60px; }
+body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__Content ul {
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  color: #454545; }
 
-.stats {
-  /* height: 415px; */ }
+h1 {
+  font-size: 1.8em; }
 
-.stat-columns {
-  height: 160px; }
+h2 {
+  font-size: 1.4em; }
 
-.stats li {
-  list-style: none; }
+h3 {
+  font-size: 1em; }
 
-.state-stat {
-  color: #0c789a;
-  font-weight: bolder;
-  margin-top: 4px; }
+h4 {
+  font-size: 0.87em; }
 
-.population-stat {
-  color: #0c789a;
-  font-weight: bolder;
-  margin: 0px 2px 0px 0px; }
+h5 {
+  font-size: 0.5em; }
 
-ul.left-stat {
-  width: 50%;
-  float: left; }
+h6 {
+  font-size: 0.35em; }
 
-ul.right-stat {
-  width: 50%;
-  float: right; }
+body {
+  font-size: 16px; }
 
-.ad-left {
-  margin: 8px 0px;
-  float: left;
-  width: 30px;
-  display: inline-block;
-  background-repeat: no-repeat;
-  cursor: pointer; }
+.hidden {
+  visibility: hidden; }
 
-.ad-right {
-  margin: 8px 0px -40px;
-  float: right;
-  display: inline-block;
-  background-repeat: no-repeat;
-  cursor: pointer; }
+.leaflet-container .donut, .leaflet-container .donuthole {
+  stroke-width: 1;
+  stroke: #ddd;
+  stroke-dasharray: 5,5; }
 
-.right-arrow {
-  width: 10px;
-  height: 10px;
-  border-right: 1px solid grey;
-  border-bottom: 1px solid grey;
-  background: transparent;
-  transform: rotate(-45deg);
-  float: right;
-  margin-right: 4px;
-  margin-top: 10px;
-  cursor: pointer; }
+.leaflet-container .ringArea {
+  stroke: black;
+  stroke-width: 1; }
 
-.left-arrow {
-  width: 10px;
-  height: 10px;
-  border-left: 1px solid grey;
-  border-bottom: 1px solid grey;
-  background: transparent;
-  transform: rotate(45deg);
-  float: left;
-  margin-left: 4px;
-  margin-top: 10px;
-  cursor: pointer; }
+.leaflet-container .gradeStroke.gradeA, .leaflet-container .gradeA.selectedGradedNeighborhoods, .leaflet-container .gradeA.neighborhoodPolygonInverted {
+  stroke: #418e41; }
 
-.simpleDonut {
+.leaflet-container .gradeStroke.gradeB, .leaflet-container .gradeB.selectedGradedNeighborhoods, .leaflet-container .gradeB.neighborhoodPolygonInverted {
+  stroke: #4a4ae4; }
+
+.leaflet-container .gradeStroke.gradeC, .leaflet-container .gradeC.selectedGradedNeighborhoods, .leaflet-container .gradeC.neighborhoodPolygonInverted {
+  stroke: #f4f570; }
+
+.leaflet-container .gradeStroke.gradeD, .leaflet-container .gradeD.selectedGradedNeighborhoods, .leaflet-container .gradeD.neighborhoodPolygonInverted {
+  stroke: #eb3f3f; }
+
+.leaflet-container .selectedGradedNeighborhoods,
+.leaflet-container .neighborhoodPolygonInverted {
+  fill-opacity: 0.75;
+  stroke-opacity: 1;
+  fill: #000;
+  stroke-width: 2; }
+
+.leaflet-container .neighborhoodPolygon {
+  stroke-opacity: 0;
+  fill-opacity: 0; }
+
+.leaflet-container .simpleDonut {
   stroke: none;
   fill-opacity: .6; }
-  .simpleDonut.grade_a {
+  .leaflet-container .simpleDonut.grade_a {
     fill: #418e41; }
-  .simpleDonut.grade_b {
+  .leaflet-container .simpleDonut.grade_b {
     fill: #4a4ae4; }
-  .simpleDonut.grade_c {
+  .leaflet-container .simpleDonut.grade_c {
     fill: #f4f570; }
-  .simpleDonut.grade_d {
+  .leaflet-container .simpleDonut.grade_d {
     fill: #eb3f3f; }
 
-.cityCircle {
+.leaflet-container .cityCircle {
   stroke: #eb3f3f;
   stroke-width: 1;
   fill-opacity: .3;
   fill: silver; }
 
 .city-snippet {
-  background-color: #f3f3f3; }
+  background-color: #f3f3f3;
+  padding: 0 0 20px 0;
+  margin: 0; }
+  .city-snippet * {
+    pointer-events: none; }
   .city-snippet h3 {
     border-bottom: 1px solid red;
-    font-size: 1.3em; }
+    font-size: 1.3em;
+    margin: 0; }
   .city-snippet ul {
     font-family: 'Lato';
     font-size: 16px;
     color: #0c789a;
     list-style: none;
-    margin: 0 0 10px 20px;
-    padding: 0; }
+    padding: 0 0 10px 20px; }
     .city-snippet ul li {
       font-size: smaller;
       list-style: none;
@@ -1129,106 +1088,39 @@ ul.right-stat {
     .city-snippet ul .city-hr {
       color: #000;
       margin: -10px 0 10px 0; }
+  .city-snippet .barchart {
+    height: 15px;
+    cursor: pointer; }
 
-.barchart {
-  margin-bottom: 20px; }
-
-.city-selector {
-  z-index: 100; }
-
-.typeahead input {
-  margin-bottom: 50px;
-  width: 100%; }
-
-header .header-main, header .header-sub {
-  font-family: 'Lora', serif;
-  font-weight: 100;
-  color: #454545; }
-
-body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__Content ul {
-  font-family: 'Lato', sans-serif;
-  font-weight: 300;
-  color: #454545; }
-
-.donut, .donuthole {
-  stroke-width: 5;
-  stroke: #ddd;
-  stroke-dasharray: 5,5; }
-
-.ringArea {
-  stroke: black;
-  stroke-width: 1; }
-
-/* .gradeA {
-	fill: #418e41;
-}
-.gradeB {
-	fill: #4a4ae4;
-}
-.gradeC {
-	fill: #f4f570;
-}
-.gradeD {
-	fill: #eb3f3f;
-} */
-.selected {
-  visibility: visible !important;
-  fill-opacity: 1; }
-
-.ringMask {
-  fill: #333; }
-
-body {
-  font-size: 16px; }
-
-.hidden {
-  visibility: hidden; }
-
-.gradeStroke.gradeA, .gradeA.selectedGradedNeighborhoods,
-.gradeA.neighborhoodPolygonInverted, .gradeA.selectedRing {
-  stroke: #418e41; }
-
-.gradeStroke.gradeB, .gradeB.selectedGradedNeighborhoods,
-.gradeB.neighborhoodPolygonInverted, .gradeB.selectedRing {
-  stroke: #4a4ae4; }
-
-.gradeStroke.gradeC, .gradeC.selectedGradedNeighborhoods,
-.gradeC.neighborhoodPolygonInverted, .gradeC.selectedRing {
-  stroke: #f4f570; }
-
-.gradeStroke.gradeD, .gradeD.selectedGradedNeighborhoods,
-.gradeD.neighborhoodPolygonInverted, .gradeD.selectedRing {
-  stroke: #eb3f3f; }
-
-.selectedGradedNeighborhoods,
-.neighborhoodPolygonInverted {
-  fill-opacity: 0.75;
-  stroke-opacity: 1;
-  fill: #000;
-  stroke-width: 2; }
-
-.selectedRing {
-  stroke-width: 2;
-  fill: #666;
-  fill-opacity: .9; }
-
-.neighborhoodPolygon {
-  stroke-opacity: 0;
-  fill-opacity: 0; }
-
-.city-selector ul, .city-selector li {
+.cityStats li {
   list-style: none; }
 
-.panorama.nestedpiechart {
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+.cityStats .stats {
+  /* height: 415px; */ }
+
+.cityStats .state-stat {
+  color: #0c789a;
+  font-weight: bolder;
+  margin-top: 4px; }
+
+.cityStats .population-stat {
+  color: #0c789a;
+  font-weight: bolder;
+  margin: 0px 2px 0px 0px; }
+
+.cityStats ul.left-stat {
+  width: 50%;
+  float: left; }
+
+.cityStats ul.right-stat {
+  width: 50%;
+  float: right; }
+
+.cityStats .nestedpiechart {
   text-align: center; }
-  .panorama.nestedpiechart svg {
-    display: inline-block;
-    shape-rendering: 'crispEdges';
-    margin-top: 20px; }
-  .panorama.nestedpiechart #burgessDiagram {
+  .cityStats .nestedpiechart svg {
+    shape-rendering: 'crispEdges'; }
+  .cityStats .nestedpiechart #burgessDiagram {
     position: relative;
     top: -352px;
     pointer-events: none; }
@@ -1392,6 +1284,45 @@ h2 {
 .grade-headerD h2 {
   background-color: #dcc1c1; }
 
+.ad-left {
+  margin: 8px 0px;
+  float: left;
+  width: 30px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  cursor: pointer; }
+
+.ad-right {
+  margin: 8px 0px -40px;
+  float: right;
+  display: inline-block;
+  background-repeat: no-repeat;
+  cursor: pointer; }
+
+.right-arrow {
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid grey;
+  border-bottom: 1px solid grey;
+  background: transparent;
+  transform: rotate(-45deg);
+  float: right;
+  margin-right: 4px;
+  margin-top: 10px;
+  cursor: pointer; }
+
+.left-arrow {
+  width: 10px;
+  height: 10px;
+  border-left: 1px solid grey;
+  border-bottom: 1px solid grey;
+  background: transparent;
+  transform: rotate(45deg);
+  float: left;
+  margin-left: 4px;
+  margin-top: 10px;
+  cursor: pointer; }
+
 .panorama.item-selector {
   width: 100%;
   min-width: 10em;
@@ -1427,6 +1358,31 @@ h2 {
     color: #9ce1f7;
     font-weight: 312; }
 
+.download_menu ul {
+  font-family: 'Lato';
+  font-size: 16px;
+  color: #0c789a;
+  list-style: none;
+  margin: 1em 0 0 0;
+  padding: 0; }
+  .download_menu ul li {
+    list-style: none;
+    background-color: #fafafa;
+    height: 100px; }
+  .download_menu ul li a {
+    text-decoration: none; }
+  .download_menu ul h3 {
+    padding: 20px 4px; }
+  .download_menu ul img {
+    float: right;
+    margin: -66px 15px 0;
+    width: 100px; }
+
+.citydownloads h3 {
+  background-color: #eaf0ef;
+  text-align: center;
+  cursor: pointer; }
+
 .introjs-tooltiptext {
   font-size: 16px; }
 
@@ -1434,3 +1390,20 @@ h2 {
   max-width: 600px;
   width: 500px;
   line-height: 1.4; }
+
+.city-selector {
+  overflow-y: hidden;
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  background-color: transparent; }
+  .city-selector input {
+    margin-bottom: 50px;
+    width: 100%;
+    pointer-events: auto; }
+  .city-selector .typeahead {
+    overflow-y: visible; }
+    .city-selector .typeahead .city-snippet {
+      pointer-events: auto; }
+      .city-selector .typeahead .city-snippet:last-of-type {
+        padding-bottom: 2000px; }

@@ -276,6 +276,7 @@ const RasterStore = {
 				id: mapData.ad_id,
 				city: mapData.file_name,
 				state: mapData.state,
+				searchName: mapData.file_name + ', ' + stateAbbrs[mapData.state],
 				name: mapData.file_name, // + ", " + mapData.state,
 				minZoom: mapData.minzoom,
 				maxZoom: mapData.maxzoom,
