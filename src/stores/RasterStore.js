@@ -52,7 +52,7 @@ const RasterStore = {
 
 		this.dataLoader.query([
 			{
-				query: 'SELECT population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, ad_id, holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps join holc_maps_ads_join hmaj on hmaj.map_id = holc_maps.map_id join holc_ads on holc_ads.city_id = hmaj.ad_id order by state, file_name',
+				query: 'SELECT population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, ad_id, holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps join holc_maps_ads_join hmaj on hmaj.map_id = holc_maps.map_id join holc_ads on holc_ads.city_id = hmaj.ad_id order by parent_id desc',
 				format: 'JSON'
 			},
 			{
@@ -64,7 +64,7 @@ const RasterStore = {
 				format: 'JSON'
 			}
 		]).then((response) => {
-			this.data.maps = this.parseMapData(response[0], response[2]);
+			this.data.maps = this.parseMapData(response[0], response[2], response[1]);
 			this.data.cityIdsWithADs = response[1].map((row) => row.id);
 			
 			this.data.selectedCity = state.selectedCity;
@@ -241,6 +241,10 @@ const RasterStore = {
 		}
 	},
 
+	selectedHasPolygons: function() {
+		return (this.data.maps[this.data.selectedCity]) ? this.data.maps[this.data.selectedCity].hasPolygons : false;
+	},
+
 	calculateSimpleRingsRadii (areaData) {
 		let furthestRadius = 25000,
 			fullArea = Math.PI * furthestRadius * furthestRadius,
@@ -267,17 +271,19 @@ const RasterStore = {
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
 
-	parseMapData: function (citiesData, citiesWithPolygonsData) {
+	parseMapData: function (citiesData, citiesWithPolygonsData, citiesWithADs) {
 		let maps = {};
 
 		citiesData.forEach(mapData => {
-			maps[mapData.ad_id] = {
+			maps[mapData.map_id] = {
 				cityId : mapData.ad_id,
 				id: mapData.ad_id,
-				city: mapData.file_name,
+				ad_id: mapData.ad_id,
+				parent_id: mapData.parent_id,
+				city: mapData.name,
 				state: mapData.state,
-				searchName: mapData.file_name + ', ' + stateAbbrs[mapData.state],
-				name: mapData.file_name, // + ", " + mapData.state,
+				searchName: (mapData.parent_id) ? '' : mapData.name + ', ' + stateAbbrs[mapData.state],
+				name: mapData.name, // + ", " + mapData.state,
 				minZoom: mapData.minzoom,
 				maxZoom: mapData.maxzoom,
 				bounds: [ [mapData.minlat,mapData.minlng], [mapData.maxlat,mapData.maxlng] ],
@@ -300,11 +306,11 @@ const RasterStore = {
 				white_pop_1930: mapData.white_pop_1930,
 				white_pop_1940: mapData.white_pop_1940,
 				hasPolygons: false,
-				url: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
-				mapurl: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg',
-				mapThumbnail: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg'
-			};
-
+				hasADs: false,
+				url: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
+				mapurl: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData	.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg',
+				mapThumbnail: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg'
+			}
 		});
 
 		citiesWithPolygonsData.forEach(areaData => {
@@ -320,6 +326,14 @@ const RasterStore = {
 				maps[areaData.ad_id].radii = this.calculateSimpleRingsRadii(maps[areaData.ad_id].area)
 			}
 		});
+
+		citiesWithADs.forEach(areaData => {
+			if (maps[areaData.id]) {
+				maps[areaData.id].hasADs = true;
+			}
+		});
+
+		console.log(maps);
 
 		return maps;
 

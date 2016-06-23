@@ -85,6 +85,10 @@ export default class CityStats extends React.Component {
 
 		return (
 			<div className='cityStats'>
+				{ (this.props.hasADs) ?
+					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 
+					<div className='adInstructions'>area descriptions aren't yet but will eventually be available for this city</div>
+				}
 				<div className='row'>
 					<div className='columns six'>
 						{ (population1930) ?

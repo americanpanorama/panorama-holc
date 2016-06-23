@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
-import _ from 'lodash';
 import Leaflet from 'leaflet';
 import formsMetadata from '../../data/formsMetadata.json';
 
@@ -70,11 +69,11 @@ const CityStore = {
 				format: 'JSON'
 			},
 			{
-				query: 'WITH the_hull as (select ST_Collect(digitalscholarshiplab.holc_polygons.the_geom_webmercator) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id), maxdist as (SELECT st_distance_sphere(st_transform(st_endpoint(st_longestline(st_transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857), hull)), 4326), ST_SetSRID(ST_MakePoint(looplng,looplat), 4326)) as outerringradius, st_length(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat),4326),3857), hull)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = ' + cityId + ' Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,\'quad_segs=32\')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,\'quad_segs=32\')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,\'quad_segs=32\')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,\'quad_segs=32\')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, ST_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),3857) as the_geom_webmercator, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326)) as the_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area, outerringradius FROM city_rings, combined_grades, maxdist',
+				query: 'WITH the_hull as (select ST_Collect(digitalscholarshiplab.holc_polygons.the_geom_webmercator) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id), maxdist as (SELECT st_distance_sphere(st_transform(st_endpoint(st_longestline(st_transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857), hull)), 4326), ST_SetSRID(ST_MakePoint(looplng,looplat), 4326)) as outerringradius, st_length(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat),4326),3857), hull)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = ' + cityId + ' Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,\'quad_segs=32\')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,\'quad_segs=32\')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,\'quad_segs=32\')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,\'quad_segs=32\')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, ST_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_AsGeoJSON(ST_Transform(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as the_geojson, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as inverted_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area, outerringradius FROM city_rings, combined_grades, maxdist',
 				format: 'JSON'
 			},
 			{
-				query: 'SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + cityId + ' order by holc_id, cat_id, sub_cat_id, _order',
+				query: 'SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 3) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + cityId + ' order by holc_id, cat_id, sub_cat_id, _order',
 				//'SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=' + cityId,
 				format: 'JSON'
 			},
@@ -164,21 +163,32 @@ const CityStore = {
 		return this.data.ringAreasGeometry[ring][grade].the_geojson;
 	},
 
+	getInvertedGeoJsonForSelectedRingArea: function(ring, grade) {
+		return this.data.ringAreasGeometry[ring][grade].inverted_geojson;
+	},
+
 	getGeoJsonForGrade: function(grade) {
-		let polygons = [[[90, 180], [90, -180], [-90, -180], [-90, 180]]];
+		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],
+			holes = [];
 		Object.keys(this.data.areaDescriptions).forEach((id, i) => {
 			if (this.data.areaDescriptions[id].holc_grade == grade) {
-				this.data.areaDescriptions[id].area_geojson.coordinates.forEach((coords) => {
-					polygons.push(coords[0]);
+				this.data.areaDescriptions[id].area_geojson.coordinates[0].forEach((coords, i2) => {
+					if (i2 == 0) {
+						polygons.push(coords);
+					} else {
+						holes.push(coords);
+					}
 				});
 			}
 		});
+
+		polygons = (holes.length > 0) ? [polygons.concat(holes)] : [polygons]
 
 		let geojson = {
 			'type': 'Feature',
 			'geometry': {
 				'type': 'MultiPolygon',
-				'coordinates': [polygons]
+				'coordinates': polygons
 			},
 			'properties': {}
 		};
@@ -349,6 +359,7 @@ const CityStore = {
 			ringAreasGeometry[d.ring].density = this.data.gradedAreaOfRings[d.ring] / d.ring_area;
 			ringAreasGeometry[d.ring][d.grade] = {
 				'the_geojson': JSON.parse(d.the_geojson),
+				'inverted_geojson': JSON.parse(d.inverted_geojson),
 				'percent': d.area / this.data.gradedAreaOfRings[d.ring],
 				'overallPercent': d.area / this.data.gradedArea
 			};
@@ -473,14 +484,19 @@ const CityStore = {
 	},
 
 	parseInvertedGeoJson: function(geojson) {
-		let worldLatLngs = [[180, 90],[180, -90],[-180, -90],[-180,  90]];
-
 		//Create a new set of latlngs, adding our world-sized ring first
-		let newLatLngs = [ worldLatLngs ];
-		geojson.coordinates.forEach((element, i) => {
-			newLatLngs.push(geojson.coordinates[i][0]);
+		let NWHemisphere = [[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]],
+			newLatLngs = [ NWHemisphere ],
+			holes =[];
+
+		geojson.coordinates[0].forEach((element, i) => {
+			if (i == 0) {
+				newLatLngs.push(element);
+			} else {
+				holes.push(element);
+			}
 		});
-		geojson.coordinates = [newLatLngs];
+		geojson.coordinates = (holes.length > 0) ? [newLatLngs.concat(holes)] : [newLatLngs]
 
 		return geojson;
 	},

@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { render } from 'react-dom';
 //import "babel-polyfill";
 import Modal from 'react-modal';
+import Slider from 'rc-slider';
 import {Typeahead} from 'react-typeahead';
-import { Map, TileLayer, GeoJson, Circle, Rectangle } from 'react-leaflet';
-import leafletsnogylop from 'leaflet.snogylop';
+import { Map, TileLayer, GeoJson, Circle, LayerGroup } from 'react-leaflet';
 import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
 // stores
@@ -44,7 +43,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange'];
+		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange','onSliderChange'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -96,6 +95,9 @@ export default class App extends React.Component {
 			map: {
 				zoom: 12,
 				center: [30, 90]
+			},
+			raster: {
+				opacity: 1
 			},
 			dimensions: {
 				left: {
@@ -181,7 +183,7 @@ export default class App extends React.Component {
 			selectedNeighborhood: id,
 			selectedCategory: null,
 			highlightedNeighborhood: null
-		}, this.changeHash);
+		}, this.changeHash );
 	}
 
 	neighborhoodHighlighted (event) {
@@ -236,14 +238,12 @@ export default class App extends React.Component {
 	}
 
 	onSearchChange (result, event) {
-		console.log(result.target, event.target);
-		//event.preventDefault();
-		//event.stopPropagation();
 		this.onCitySelected({id: result.cityId, zoomTo: true});
 	}
 
 	onNeighborhoodClick (event) {
 		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id;
+		console.log(neighborhoodId);
 		this.neighborhoodSelected((neighborhoodId !== this.state.selectedNeighborhood) ? neighborhoodId : null);
 	}
 
@@ -264,6 +264,14 @@ export default class App extends React.Component {
 		});
 	}
 
+	onSliderChange (value) {
+		this.setState({
+			raster: {
+				opacity: value / 100
+			}
+		});
+	}
+
 	onPanoramaMenuClick () {
 		this.setState({
 			show_panorama_menu: !this.state.show_panorama_menu
@@ -278,32 +286,48 @@ export default class App extends React.Component {
 			});
 		} */
 
-		let newState = {};
-		newState[HashManager.MAP_STATE_KEY] = {
-			zoom: event.target.getZoom(),
-			center: event.target.getCenter()
-		};
-
-		
-		let mapBounds = event.target.getBounds(),
+		let newState = {},
+			zoom = event.target.getZoom(),
+			center = event.target.getCenter(),
+			mapBounds = event.target.getBounds(),
 			visibleMaps = this.getVisibleMaps(event.target.getBounds()),
 			visibleMapsIds = Object.keys(visibleMaps);
+
+		newState[HashManager.MAP_STATE_KEY] = {
+			zoom: zoom,
+			center: center
+		};
 
 		// select city if it's the only one visible
 		if (visibleMapsIds.length == 1 && parseInt(visibleMapsIds[0]) !== this.state.selectedCity) {
 			let cityId = parseInt(visibleMapsIds[0]);
 			newState.city = cityId;
-			AppActions.citySelected(cityId);
+			this.setState({
+				map: {
+					zoom: zoom
+				}
+			}, AppActions.citySelected(cityId));
 		}
 		// deselect city if the zoom is 9 or below or if the map doesn't overlap
-		else if ((event.target.getZoom() <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds())) {
+		else if ((zoom <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds())) {
 			this.setState({
 				selectedCity: null
 			});
 			newState.city = null;
+			if (this.state.map.zoom !== zoom) {
+				this.setState({
+					map: {
+						zoom: zoom
+					}
+				});
+			}
+		} else if (this.state.map.zoom !== zoom) {
+			this.setState({
+				map: {
+					zoom: zoom
+				}
+			});
 		}
-
-
 
 		HashManager.updateHash(newState);
 	}
@@ -555,6 +579,7 @@ export default class App extends React.Component {
 							triggerIntro={ this.triggerIntro } 
 							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
+							hasADs={ CityStore.hasADData() }
 						/>;
 		} else if (!this.state.selectedCity) {
 			theClass = 'state';
@@ -579,7 +604,6 @@ export default class App extends React.Component {
 	}
 
 	render () {
-				
 		let modalStyle = {
 				overlay : {
 					backgroundColor: null
@@ -599,8 +623,6 @@ export default class App extends React.Component {
 			mapConfig = this.state.map || this.state.mapConfig,
 			ADs = CityStore.getAreaDescriptions(),
 			outerRadius = CityStore.getOuterRingRadius();
-
-		console.log(CityStore.getFormId());
 
 		return (
 			<div className='container full-height'>
@@ -630,26 +652,37 @@ export default class App extends React.Component {
 								ref='the_map' 
 								center={ this.state.map.center } 
 								zoom={ this.state.map.zoom }  
-								onLeafletMoveend={ this.onMapMoved } 
+								onMoveend={ this.onMapMoved } 
 							>
+
 								{ tileLayers.layers.map((item, i) => {
-									return (
+									return (this.state.map.zoom < 10 ) ?
 										<TileLayer
-											key={ 'basetiles' + i }
-											url={ item.url }
+											key='noLabels'
+											url={ item.urlNoLabels }
+											zIndex={ -1 }
+										/> : 
+										<TileLayer
+											key='labels'
+											url={ item.urlLabels }
+											zIndex={ -1 }
 										/>
-									);
 								}) } 
 
 								{ RasterStore.getMapsList().map((item, i) => {
-									return (
-										<TileLayer
-											key={ 'holctiles' + i }
-											url={ item.url }
-											minZoom={ item.minZoom }
-											bounds= { [[item.minLat,item.minLng],[item.maxLat,item.maxLng]]}
-										/>
-									);
+									let mapBounds = this.refs.the_map.leafletElement.getBounds();
+									if (mapBounds.intersects(item.bounds)) {
+										return (
+											<TileLayer
+												key={ 'holctiles' + i}
+												className={ 'tilesForCity' + item.cityId }
+												url={ item.url }
+												minZoom={ item.minZoom }
+												bounds= { item.bounds }
+												opacity={ this.state.raster.opacity }
+											/>
+										);
+									}
 								}) }
 
 								{ cartodbLayers.layergroup.layers.map((item, i) => {
@@ -697,16 +730,28 @@ export default class App extends React.Component {
 								}
 
 								{ (this.state.selectedRingGrade.ring > 0) ?
-									<GeoJson 
-										data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
-										clickable={ false }
-										key={ 'ringStroke'} 
-										fillColor={ '#000'}
-										fillOpacity={0.65}
-										weight={ 2 }
-										opacity={ 0.9 }
-										className={ 'gradeStroke grade' + this.state.selectedRingGrade.grade}
-									/> :
+									<LayerGroup>
+										<GeoJson 
+											data={ CityStore.getInvertedGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
+											clickable={ false }
+											key={ 'invertedRingStroke'} 
+											fillColor={ '#000'}
+											fillOpacity={ 0.6 }
+											color={ '#fff' }
+											weight={ 2 }
+											opacity={ 0.9 }
+											className={ 'invertedRingGradedArea' }
+										/>
+										<GeoJson 
+											data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
+											clickable={ false }
+											key={ 'ringStroke'} 
+											fillOpacity={ (1 - this.state.raster.opacity) / 2 }
+											weight={ 2 }
+											opacity={ 0.9 }
+											className={ 'ringGradedArea grade' + this.state.selectedRingGrade.grade}
+										/>
+									</LayerGroup> :
 									null
 								}
 
@@ -715,6 +760,16 @@ export default class App extends React.Component {
 										data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
 										key={ 'selectedGradedNeighborhoods' } 
 										className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
+									/> :
+									null
+								}
+
+								{ (this.state.highlightedNeighborhood && ADs[this.state.highlightedNeighborhood] && ADs[this.state.highlightedNeighborhood].area_geojson_inverted) ?
+									<AreaPolygon
+										data={ ADs[this.state.highlightedNeighborhood].area_geojson_inverted } 
+										clickable={ false }
+										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.highlightedNeighborhood].holc_grade } 
+										key={ 'neighborhoodPolygonInverted' + this.state.highlightedNeighborhood }
 									/> :
 									null
 								}
@@ -729,7 +784,7 @@ export default class App extends React.Component {
 									null
 								}
 
-								{ (CityStore.hasADData()) ?
+								{ (RasterStore.selectedHasPolygons()) ?
 									Object.keys(ADs).map((id) => {
 										return (
 											<AreaPolygon
@@ -738,6 +793,11 @@ export default class App extends React.Component {
 												key={ 'neighborhoodPolygon' + id } 
 												onClick={ this.onNeighborhoodClick }
 												neighborhoodId={ id } 
+												//fillOpacity={ (id == this.state.selectedNeighborhood) ? 1 : 0 }
+												style={{
+													opacity:(this.state.selectedRingGrade.ring > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
+													fillOpacity: (this.state.selectedRingGrade.ring > 0) ? 0 : (1 - this.state.raster.opacity) / 5
+												}}
 											/>
 										);
 									}) :
@@ -780,9 +840,20 @@ export default class App extends React.Component {
 									null
 								}
 
+
+
 							</Map>
 						</div>
 					</div>
+
+					<div className='opacitySlider'>
+						<Slider 
+							vertical={ true }
+							defaultValue={ this.state.raster.opacity * 100 }
+							onAfterChange={ this.onSliderChange }
+						/>
+					</div>
+
 					<div className='columns four full-height'>
 						<div className='row template-tile city-selector' style={{height: this.state.dimensions.search.height + 'px', width: this.state.dimensions.search.width + 'px'}}>
 							<Typeahead
@@ -797,6 +868,7 @@ export default class App extends React.Component {
 						</div>
 						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 							{ this.renderSidebar() }
+
 						</div>
 					</div>
 					<Modal 

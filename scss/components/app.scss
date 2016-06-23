@@ -19,9 +19,29 @@ body {
 		stroke-width: 1;
 	}	
 	
-
+	.neighborhoodPolygon,
+	.ringGradedArea {
+		stroke-width: 2;
+		&.gradeA {
+			stroke: $gradeA;
+			fill: $gradeA;
+		}
+		&.gradeB {
+			stroke: $gradeB;
+			fill: $gradeB;
+		}
+		&.gradeC {
+			stroke: $gradeC;
+			fill: $gradeC;
+		}
+		&.gradeD {
+			stroke: $gradeD;
+			fill: $gradeD;
+		}
+	}
 	
-	.gradeStroke {
+	.selectedGradedNeighborhoods,
+	.neighborhoodPolygonInverted {
 		&.gradeA {
 			stroke: $gradeA;
 		}
@@ -34,21 +54,11 @@ body {
 		&.gradeD {
 			stroke: $gradeD;
 		}
-	}
-	
-	.selectedGradedNeighborhoods,
-	.neighborhoodPolygonInverted {
-		@extend .gradeStroke;
 	
 		fill-opacity: 0.75;
 		stroke-opacity: 1;
 		fill: #000;
 		stroke-width : 2;
-	}
-	
-	.neighborhoodPolygon {
-		stroke-opacity: 0;
-		fill-opacity: 0;
 	}
 	
 	.simpleDonut {

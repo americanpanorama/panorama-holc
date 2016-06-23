@@ -52,8 +52,8 @@ export default class AreaDescription extends React.Component {
 
 		return (
 
-			<div className='ad-selection'>
-				<ul className='area_description'>
+			<div>
+				<ul className='ad-selection'>
 					<li><span className='left-arrow'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }></span> : '' }</span></li>
 					<li><span className='ad-left'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }>{ CityStore.getPreviousAreaId(this.props.areaId) }</span> : '' }</span></li>
 					<li><span className='right-arrow'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }></span> : '' }</span></li>
@@ -192,7 +192,7 @@ export default class AreaDescription extends React.Component {
 								<td>100%</td>
 							</tr>
 							<tr>
-								<th>{ AD[7][5] } level</th>
+								<th>{ (AD[7] && AD[7][5] ) ? AD[7][5] : ''} level</th>
 								<td>{ (AD[7] && AD[7][9] ) ? AD[7][9] : <span className='empty'>empty</span> }</td>
 								<td>{ (AD[7] && AD[7][10] ) ? AD[7][10] : <span className='empty'>empty</span> }</td>
 								<td>{ (AD[7] && AD[7][11] ) ? AD[7][11] : <span className='empty'>empty</span> }</td>

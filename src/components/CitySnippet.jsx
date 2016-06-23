@@ -39,6 +39,10 @@ export default class CitySnippet extends React.Component {
 	render () {
 		return (
 			<div className='city-snippet' onClick={ this.props.onCityClick } id={ this.props.cityData.cityId }>
+				{ (this.props.cityData.hasADs) ?
+					<h4>area descriptions available</h4> : 
+					''
+				}
 				<h3 >{this.props.cityData.city + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
 				<div><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.population_1940.toLocaleString() }</span></div>
 				{ this.render_population_details() }

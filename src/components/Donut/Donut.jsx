@@ -1,6 +1,5 @@
-import React, {PropTypes, Children} from 'react';
+import React, {PropTypes} from 'react';
 import { Path, PropTypes as LeafletPropTypes } from 'react-leaflet';
-import { DomEvent } from 'leaflet';
 import donut from './L.Donut.js';
 
 

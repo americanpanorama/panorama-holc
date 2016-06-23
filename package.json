@@ -1,7 +1,7 @@
 {
   "name": "holc",
   "version": "0.0.1",
-  "description": "Template for starting new projects using the @panorama toolkit.",
+  "description": "Application to explore and analyze HOLC maps and area descriptions.",
   "main": "index.js",
   "scripts": {
     "start": "gulp",
@@ -22,7 +22,7 @@
     "dataviz",
     "geoviz"
   ],
-  "author": "stamen",
+  "author": "digitalscholarshiplab",
   "license": "ISC",
   "dependencies": {
     "@panorama/toolkit": "*",
@@ -30,11 +30,9 @@
     "d3": "^3.5.6",
     "flux": "^2.1.1",
     "leaflet": "^0.7.5",
-    "leaflet.snogylop": "https://github.com/ebrelsford/Leaflet.snogylop.git",
-    "lodash": "^3.10.1",
-    "react": "^0.14.0",
+    "react": "^15.0.1",
     "react-dom": "^0.14.0",
-    "react-leaflet": "^0.8.0",
+    "react-leaflet": "^0.11.4",
     "react-modal": "^0.6.1",
     "queue-async": "^1.0.7"
   },
@@ -62,6 +60,7 @@
     "gulp-sass": "^2.1.0",
     "gulp-uglify": "^1.4.1",
     "gulp-util": "^3.0.6",
+    "lodash": "^3.10.1",
     "node-sass": "^3.4.1",
     "parcelify": "^2.1.0",
     "reactify": "^1.1.1",

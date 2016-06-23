@@ -123,6 +123,7 @@ function browserifyTask (options) {
 
 		// Distro bundles up a dummy vendors.js with nothing in it,
 		// so that loading vendors.js from index.html does not fail.
+		process.env.NODE_ENV = 'production';
 		browserify({ require: '' })
 			.bundle()
 			.pipe(source('vendors.js'))
@@ -166,7 +167,6 @@ function copyTask(options) {
 
 function lintTask(options) {
 	console.log('ESLinting...');
-	console.log(options);
 	return gulp.src(options.lintsrc)
 		.pipe($.eslint())
 		.pipe($.eslint.format())

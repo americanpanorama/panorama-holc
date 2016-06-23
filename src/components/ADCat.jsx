@@ -155,7 +155,7 @@ export default class ADCat extends React.Component {
 			<div className='ad-selection'>
 				
 				
-				<ul className='area_description'>
+				<ul className='ad_cat'>
 					<li>{ (previousCat) ?<span className='left-arrow' onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...previousCat) }></span> : '' }</li>
 					<li>{ (previousCat) ? <span className='ad-left' onClick={ this.props.onCategoryClick } id={ CityStore.getCategoryString(...previousCat) }>{ (previousCat[1]) ? previousCat[0] + previousCat[1] : previousCat[0] }</span> : '' }</li>
 					

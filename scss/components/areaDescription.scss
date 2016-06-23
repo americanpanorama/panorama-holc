@@ -1,4 +1,5 @@
-ul.area_description {
+ul.area_description, 
+ul.ad_cat {
     font-family: 'Lato';
     font-size: 16px;
     color: #0c789a;
@@ -108,13 +109,68 @@ ul.area_description {
 
 }
 
-.ad-selection li h4 {
-    color: #BD7171;
-    font-size: 1.3em;
-    font-weight: bolder;
-    text-align: center;
-    padding-right: 34px;
-    margin-right: 10px;
+.ad-selection {
+
+    li {
+        list-style: none;
+    }
+
+    h4 {
+        color: #BD7171;
+        font-size: 1.3em;
+        font-weight: bolder;
+        text-align: center;
+        padding-right: 34px;
+        margin-right: 10px;
+    }
+
+    .ad-left {
+        margin: 8px 0px;
+        float: left;
+        width: 30px;
+        display: inline-block;    
+        background-repeat: no-repeat;
+        cursor: pointer;
+    }
+    
+    .ad-right {
+        margin: 8px 0px -40px;
+        float: right;
+        display: inline-block;   
+        background-repeat: no-repeat;
+        cursor: pointer;
+    }
+    
+    .right-arrow {
+        width: 10px;
+        height: 10px;
+        border-right: 1px solid grey;
+        border-bottom: 1px solid grey;
+        background: transparent;
+        transform: rotate(-45deg);
+        float: right;
+        margin-right: 4px;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+    
+    .left-arrow {
+        width:10px;
+        height:10px;
+        border-left:1px solid grey;
+        border-bottom:1px solid grey;
+        background:transparent;
+        transform:rotate(45deg);
+        float: left;
+        margin-left: 4px;
+        margin-top: 10px;
+        cursor: pointer;
+    
+    }
+}
+
+ul.ad_cat li {
+    list-style: none;
 }
 
 h2 {
@@ -207,49 +263,7 @@ h2 {
     background-color: #dcc1c1;
 }
 
-.ad-left {
-    margin: 8px 0px;
-    float: left;
-    width: 30px;
-    display: inline-block;    
-    background-repeat: no-repeat;
-    cursor: pointer;
-}
 
-.ad-right {
-    margin: 8px 0px -40px;
-    float: right;
-    display: inline-block;   
-    background-repeat: no-repeat;
-    cursor: pointer;
-}
-
-.right-arrow {
-    width: 10px;
-    height: 10px;
-    border-right: 1px solid grey;
-    border-bottom: 1px solid grey;
-    background: transparent;
-    transform: rotate(-45deg);
-    float: right;
-    margin-right: 4px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-.left-arrow {
-    width:10px;
-    height:10px;
-    border-left:1px solid grey;
-    border-bottom:1px solid grey;
-    background:transparent;
-    transform:rotate(45deg);
-    float: left;
-    margin-left: 4px;
-    margin-top: 10px;
-    cursor: pointer;
-
-}
 
 
 
