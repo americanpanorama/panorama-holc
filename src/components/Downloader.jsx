@@ -10,18 +10,8 @@ export default class Downloader extends React.Component {
 	};
 
 	constructor () {
-
 		super();
-
 	}
-
-	componentWillMount () {}
-
-	componentDidMount () {}
-
-	componentWillUnmount () {}
-
-	componentDidUpdate () {}
 
 	render () {
 		return (

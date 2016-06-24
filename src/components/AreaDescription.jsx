@@ -16,32 +16,11 @@ export default class AreaDescription extends React.Component {
 	};
 
 	constructor () {
-
 		super();
-
 	}
 
-	componentWillMount () {
-
-		//
-
-	}
-
-	componentDidMount () {
-
-		// Listen for data changes
-
-	}
-
-	componentWillUnmount () {
-
-
-	}
-
-	componentDidUpdate () {
-
-		//
-
+	shouldComponentUpdate (nextProps) {
+		return (nextProps.areaId !== this.props.areaId || nextProps.cityId !== this.props.cityId);
 	}
 
 	render () {

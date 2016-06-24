@@ -484,6 +484,10 @@ export default class App extends React.Component {
 		}
 	}
 
+	getMapBounds() {
+		return this.refs.the_map.leafletElement.getBounds();
+	}
+
 	searchDisplay () {
 		let citiesOptions = RasterStore.getCityIdsAndNames(),
 			citiesData = RasterStore.getAllRasters();
@@ -529,7 +533,7 @@ export default class App extends React.Component {
 							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-		} else if (this.state.selectedNeighborhood) {
+		} else if (this.state.selectedNeighborhood && ADs[this.state.selectedNeighborhood]) {
 			theClass = 'area';
 			title = 	<h2>
 							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
@@ -540,6 +544,7 @@ export default class App extends React.Component {
 							areaId={ this.state.selectedNeighborhood } 
 							areaData={ ADs[this.state.selectedNeighborhood] } 
 							formId={ CityStore.getFormId() } 
+							cityId={ this.state.selectedCity }
 							onCategoryClick={ this.onCategoryClick } 
 							onNeighborhoodClick={ this.onNeighborhoodClick } 
 							ref={'areadescription' + this.state.selectedNeighborhood } 
@@ -555,6 +560,7 @@ export default class App extends React.Component {
 			content = 	<ADCat 
 							catNum={ catNum } 
 							catLetter = { catLetter } 
+							cityId={ this.state.selectedCity }
 							onNeighborhoodClick={ this.onNeighborhoodClick } 
 							onCategoryClick={ this.onCategoryClick } 
 							onNeighborhoodHover={ this.neighborhoodHighlighted } 
@@ -584,14 +590,16 @@ export default class App extends React.Component {
 		} else if (!this.state.selectedCity) {
 			theClass = 'state';
 			let visibleStates = this.getVisibleMapsByState();
-			content = 	Object.keys(visibleStates).map((theState) => {
-				return <StateStats 
-					stateName={ stateAbbrs[theState] } 
-					cities={ visibleStates[theState] } 
-					onCityClick={ this.onCitySelected }  
-					key={ theState }
-				/>;
-			});
+			if (Object.keys(this.getVisibleMaps(this.getMapBounds())).length >= 2) {
+				content = 	Object.keys(visibleStates).map((theState) => {
+					return <StateStats 
+						stateName={ stateAbbrs[theState] } 
+						cities={ visibleStates[theState] } 
+						onCityClick={ this.onCitySelected }  
+						key={ theState }
+					/>;
+				});
+			}
 		}
 
 

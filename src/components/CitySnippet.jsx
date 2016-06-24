@@ -9,22 +9,21 @@ export default class CitySnippet extends React.Component {
 	};
 
 	constructor () {
-
 		super();
-
 	}
+
+	shouldComponentUpdate (nextProps) {
+		return (nextProps.cityData.city !== this.props.cityData.city);
+	} 
 
 	componentWillMount () {}
 
 	componentDidMount() {
+		console.log(this.props.cityData.city);
 		if (this.props.cityData.hasPolygons) {
 			this.d3Chart.update(this.refs.barchart, this.parsePercents());
 		}
 	}
-
-	componentWillUnmount () {}
-
-	componentDidUpdate () {}
 
 	parsePercents () {
 

@@ -10,18 +10,8 @@ export default class StateStats extends React.Component {
 	};
 
 	constructor () {
-
 		super();
-
 	}
-
-	componentWillMount () {}
-
-	componentDidMount () {}
-
-	componentWillUnmount () {}
-
-	componentDidUpdate () {}
 
 	render () {
 		return (

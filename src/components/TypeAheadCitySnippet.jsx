@@ -10,18 +10,8 @@ export default class TypeAheadCitySnippet extends React.Component {
 	};
 
 	constructor () {
-
 		super();
-
 	}
-
-	componentWillMount () {}
-
-	componentDidMount () {}
-
-	componentWillUnmount () {}
-
-	componentDidUpdate () {}
 
 	render () {
 		return (

@@ -17,22 +17,16 @@ export default class ADCat extends React.Component {
 	};
 
 	constructor () {
-
 		super();
 
 		// bind handlers
 		let handlers = ['render19370826_5c', 'render19370826_5c', 'render19370203_5d', 'render19370826_5d', 'render19370826_5g', 'render19370203_5g','render19370203_8a','render19370826_8a','render19370203_8b','render19370826_8b','render19370203_8c','render19370826_8c'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
-
 	}
 
-	componentWillMount () {}
-
-	componentDidMount () {}
-
-	componentWillUnmount () {}
-
-	componentDidUpdate () {}
+	shouldComponentUpdate (nextProps) {
+		return (nextProps.catNum !== this.props.catNum || nextProps.catLetter !== this.props.catLetter || nextProps.cityId !== this.props.cityId)
+	}
 
 	/* alphanum.js (C) Brian Huisman
 	* Based on the Alphanum Algorithm by David Koelle

@@ -333,8 +333,6 @@ const RasterStore = {
 			}
 		});
 
-		console.log(maps);
-
 		return maps;
 
 	},
