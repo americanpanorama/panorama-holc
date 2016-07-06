@@ -1,0 +1,19 @@
+.panorama.nestedpiechart {
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: auto;
+	text-align: center;
+
+	svg {
+		display: inline-block;
+		shape-rendering: 'crispEdges';
+		margin-top: 20px;
+	}
+
+	#burgessDiagram {
+		position: relative;
+		top: 67px;
+		pointer-events: none;
+		width: 345px;	
+	}
+}

@@ -93,7 +93,7 @@ export default class CityStats extends React.Component {
 					<div className='columns six'>
 						{ (population1930) ?
 							<ul>
-								<li>Population in 1930:</li>
+								<li className='pop-header'>Population in 1930:</li>
 								<li><span className='state-stat'>{ population1930 }</span></li>
 							</ul> :
 							null
@@ -104,7 +104,7 @@ export default class CityStats extends React.Component {
 					<div className='columns six'>
 						{ (population1940) ? 
 							<ul>	
-								<li>Population in 1940:</li>
+								<li className='pop-header'>Population in 1940:</li>
 								<li><span className='state-stat'>{ population1940 }</span></li>
 							</ul>:
 							null

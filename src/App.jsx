@@ -854,6 +854,14 @@ export default class App extends React.Component {
 						</div>
 					</div>
 
+                	 <div className='map-legend-wrapper' onClick={this.onListItemClick}>
+				        <ul>
+				          <li className={"item narratives" + (!this.props.narratives ? " off" : "")} data-item-type="narratives"><span>Narratives</span></li>
+				          <li className={"item cotton" + (!this.props.cotton ? " off" : "")} data-item-type="cotton"><span>Cotton</span></li>
+				          <li className={"item sugar" + (!this.props.sugar ? " off" : "")} data-item-type="sugar"><span>Sugar</span></li>
+				        </ul>
+				      </div>
+
 					<div className='opacitySlider'>
 						<Slider 
 							vertical={ true }
