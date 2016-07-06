@@ -1,6 +1,7 @@
 .cityStats {
 	li {
 		list-style: none;
+		font-weight: bolder;
 	}
 
 		.stats {
@@ -32,11 +33,16 @@
 		    width: 50%;
 		    float: right;
 		}
+
+		.pop-header {
+			font-weight: bold;
+		}
 		
 
 
 	.nestedpiechart {
 		text-align: center;
+		height: 0px;
 		svg {
 			shape-rendering: 'crispEdges';
 		}
@@ -51,5 +57,11 @@
 	.adInstructions {
 		margin-bottom: 20px;
 		text-align: center;
+		color: #adacac;
+		background-color: #ececec;
+	}
+
+	.content {
+		height: 0px;
 	}
 }

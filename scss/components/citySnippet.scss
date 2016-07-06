@@ -8,16 +8,16 @@
 	}
 
 	h3 {
-		border-bottom: 1px solid red;
+		border-bottom: 1px solid #d72e2a;
 		font-size: 1.3em;
 		margin: 0;
 	}
 
     h4 {
         float: right;
-        background-color: green;
+        background-color: #e8e8e8;
         padding: 2px 10px;
-        color: white;
+        color: #676666;
         border-radius: 10px;
     }
 
@@ -71,6 +71,7 @@
 	.barchart {
 		height: 15px;
 		cursor: pointer;
+        opacity: .8;
 	}
 }
 
