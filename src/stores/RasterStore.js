@@ -106,7 +106,7 @@ const RasterStore = {
 	// returns everything or a specified attribute
 	getSelectedCityMetadata: function(key=null) { 
 		if (!this.getSelectedCity()) {
-			return false;
+			return null;
 		}
 		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
 	},

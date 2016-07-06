@@ -1,45 +1,51 @@
 import * as React from 'react';
 //import "babel-polyfill";
-import Modal from 'react-modal';
-import Slider from 'rc-slider';
-import {Typeahead} from 'react-typeahead';
-import { Map, TileLayer, GeoJson, Circle, LayerGroup } from 'react-leaflet';
-import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
 
 // stores
+import AreaDescriptionsStore from './stores/AreaDescriptionsStore';
 import CityStore from './stores/CityStore';
 import RasterStore from './stores/RasterStore';
 
 // components (views)
-import CityStats from './components/CityStats.jsx';
-import CitySnippet from './components/CitySnippet.jsx';
-import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
-import StateStats from './components/StateStats.jsx';
-import AreaDescription from './components/AreaDescription.jsx';
 import ADCat from './components/ADCat.jsx';
-import Downloader from './components/Downloader.jsx';
-import Donut from './components/Donut/Donut.jsx';
+import AreaDescription from './components/AreaDescription.jsx';
 import AreaPolygon from './components/AreaPolygon.jsx';
+import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
+import CitySnippet from './components/CitySnippet.jsx';
+import CityStats from './components/CityStats.jsx';
+import Donut from './components/Donut/Donut.jsx';
+import Downloader from './components/Downloader.jsx';
+import { icon } from 'leaflet';
+import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImagePath } from 'react-leaflet';
+import Modal from 'react-modal';
+import Slider from 'rc-slider';
+import StateStats from './components/StateStats.jsx';
+import { Typeahead } from 'react-typeahead';
+import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 
 // utils
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
 
 // config
 import appConfig from '../data/appConfig.json';
-import tileLayers from '../basemaps/tileLayers.json';
 import cartodbConfig from '../basemaps/cartodb/config.json';
 import cartodbLayers from '../basemaps/cartodb/basemaps.json';
+import tileLayers from '../basemaps/tileLayers.json';
 
 // data
 import panoramaNavData from '../data/panorama_nav.json';
 import stateAbbrs from '../data/state_abbr.json';
 
-// main app container
+
 export default class App extends React.Component {
+
+	static defaultProps = {
+		somethingRequested: Object.keys(HashManager.getState()).reduce((a,b) => (typeof a !== 'undefined' && typeof HashManager.getState()[a] !== 'undefined') || (typeof b !== 'undefined' && typeof HashManager.getState()[b] !== 'undefined'), ''),
+		adZoomThreshold: 9
+	};
 
 	constructor (props) {
 		super(props);
-
 		this.state = this.getDefaultState();
 
 		// bind handlers
@@ -65,6 +71,19 @@ export default class App extends React.Component {
 		initialState.city = this.state.selectedCity;
 		initialState[HashManager.MAP_STATE_KEY] = HashManager.getState(HashManager.MAP_STATE_KEY);
 		HashManager.updateHash(initialState);
+
+		// try to retrieve the users location
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition((position) => {
+				let userLocation = [position.coords.latitude, position.coords.longitude];
+				this.setState({
+					userLocation: [position.coords.latitude, position.coords.longitude]
+				});
+				if (false && !this.props.somethingRequested) {
+					CityStore.cityFromPoint(userLocation)
+				}
+			});
+		}
 	}
 
 	componentWillUnmount () { }
@@ -77,14 +96,18 @@ export default class App extends React.Component {
 		let hashState = HashManager.getState();
 
 		return {
+			selectedCity: (hashState.city) ? parseInt(hashState.city) : null, 
 			selectedNeighborhood: (hashState.area) ? hashState.area : null,
-			selectedCity: (hashState.city) ? parseInt(hashState.city) : (hashState.state) ? null : 168, // Richmond
 			selectedCategory: (hashState.category) ? hashState.category : null,
 			selectedRingGrade: { 
 				ring: null, 
 				grade: null
 			},
 			selectedGrade: null,
+			visibleMapIds: [],
+			raster: {
+				opacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 1
+			},
 			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
 			intro: {
@@ -93,11 +116,8 @@ export default class App extends React.Component {
 			modalSectionOpen: null,
 			downloadOpen: false,
 			map: {
-				zoom: 12,
-				center: [30, 90]
-			},
-			raster: {
-				opacity: 1
+				zoom: 5,
+				center: [39.8333333,-98.585522]
 			},
 			dimensions: {
 				left: {
@@ -108,7 +128,8 @@ export default class App extends React.Component {
 					width: 0,
 					height: 0
 				}
-			}
+			},
+			userLocation: false
 		};
 	}
 
@@ -126,13 +147,14 @@ export default class App extends React.Component {
 		let newState = {
 
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
-			selectedNeighborhood: null,
+			selectedNeighborhood: (options.selectedNeighborhood) ? options.selectedNeighborhood : null,
 			selectedCategory: null,
 			selectedRingGrade: {
 				ring: null,
 				grade: null
 			},
-			highlightedNeighborhood: null
+			highlightedNeighborhood: null,
+			visibleMapIds: AreaDescriptionsStore.getVisibleMapIds()
 		};
 		// only change the map location if that's requested or it's not already visible
 		let mapBounds = this.refs.the_map.leafletElement.getBounds();
@@ -178,12 +200,16 @@ export default class App extends React.Component {
 		});
 	}
 
-	neighborhoodSelected (id) {
-		this.setState({
-			selectedNeighborhood: id,
-			selectedCategory: null,
-			highlightedNeighborhood: null
-		}, this.changeHash );
+	neighborhoodSelected (id, adId = null) {
+		if (adId !== null && adId !== this.state.selectedCity) {
+			AppActions.citySelected(adId, {zoomTo: false, selectedNeighborhood: id});
+		} else {
+			this.setState({
+				selectedNeighborhood: id,
+				selectedCategory: null,
+				highlightedNeighborhood: null
+			}, this.changeHash );
+		}
 	}
 
 	neighborhoodHighlighted (event) {
@@ -242,9 +268,13 @@ export default class App extends React.Component {
 	}
 
 	onNeighborhoodClick (event) {
-		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id;
-		console.log(neighborhoodId);
-		this.neighborhoodSelected((neighborhoodId !== this.state.selectedNeighborhood) ? neighborhoodId : null);
+		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id,
+			adId = (event.target.options) ? event.target.options.adId : event.target.id;
+		if (adId !== this.state.selectedCity || neighborhoodId !== this.state.selectedNeighborhood) {
+			this.neighborhoodSelected(neighborhoodId, adId);
+		} else {
+			this.neighborhoodSelected(null);
+		}
 	}
 
 	onSelectedNeighborhoodClick () {
@@ -269,6 +299,12 @@ export default class App extends React.Component {
 			raster: {
 				opacity: value / 100
 			}
+		}, this.changeHash);
+	}
+
+	onDownloadClicked () {
+		this.setState({
+			downloadOpen: !this.state.downloadOpen
 		});
 	}
 
@@ -279,13 +315,6 @@ export default class App extends React.Component {
 	}
 
 	onMapMoved (event) {
-		/* if (event && event.target) {
-			AppActions.mapMoved({
-				zoom: event.target.getZoom(),
-				center: event.target.getCenter()
-			});
-		} */
-
 		let newState = {},
 			zoom = event.target.getZoom(),
 			center = event.target.getCenter(),
@@ -309,11 +338,13 @@ export default class App extends React.Component {
 			}, AppActions.citySelected(cityId));
 		}
 		// deselect city if the zoom is 9 or below or if the map doesn't overlap
-		else if ((zoom <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds())) {
+		else if (this.state.selectedCity && ((zoom <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds()))) {
 			this.setState({
-				selectedCity: null
+				selectedCity: null,
+				selectedNeighborhood: null
 			});
 			newState.city = null;
+			newState.area = null;
 			if (this.state.map.zoom !== zoom) {
 				this.setState({
 					map: {
@@ -330,46 +361,12 @@ export default class App extends React.Component {
 		}
 
 		HashManager.updateHash(newState);
-	}
 
-	getVisibleMaps(viewBounds) {
-		let rasters = RasterStore.getAllRasters(),
-			visibleMaps = {};
-
-		Object.keys(rasters).forEach((id) => {
-			if (viewBounds.intersects(rasters[id].bounds)) {
-				visibleMaps[id] = rasters[id];
-			}
-		});
-
-		return visibleMaps;
-	}
-
-	getVisibleMapsByState() {
-		if (!this.refs.the_map) {
-			return {}
+		// get visible cities below adZoomTheshhold
+		let visibleMapIds = Object.keys(this.getVisibleMaps(this.getMapBounds()));
+		if (zoom >= this.props.adZoomThreshold) {
+			AppActions.mapMoved(visibleMapIds);
 		}
-
-		let visibleMaps = this.getVisibleMaps(this.refs.the_map.leafletElement.getBounds()),
-			maps = {};
-
-		Object.keys(visibleMaps).forEach((id) => {
-			maps[visibleMaps[id].state] =  (maps[visibleMaps[id].state]) ? maps[visibleMaps[id].state] : [];
-			maps[visibleMaps[id].state].push(visibleMaps[id]);
-		});
-
-		// alphabetize
-		Object.keys(maps).forEach((the_state) => {
-			maps[the_state].sort((a,b) => a.city > b.city);
-		});
-
-		return maps;
-	}
-
-	onDownloadClicked () {
-		this.setState({
-			downloadOpen: !this.state.downloadOpen
-		});
 	}
 
 	// fit to window if necessary
@@ -381,7 +378,8 @@ export default class App extends React.Component {
 		let newState = { 
 			city: this.state.selectedCity,
 			area: this.state.selectedNeighborhood,
-			category: this.state.selectedCategory
+			category: this.state.selectedCategory,
+			opacity: this.state.raster.opacity
 		};
 		newState[HashManager.MAP_STATE_KEY] = {
 			zoom: this.state.map.zoom,
@@ -469,7 +467,7 @@ export default class App extends React.Component {
 		} else if (this.state.selectedCity) {
 			return RasterStore.getCenter();
 		} else {
-			return [30,-90];
+			return [39.8333333,-98.585522];
 		}
 	}
 
@@ -478,14 +476,52 @@ export default class App extends React.Component {
 		if (hashState.loc && hashState.loc.zoom) {
 			return hashState.loc.zoom;
 		} else if (this.state.selectedCity) {
-			return this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBounds());
+			return this.getBoundsZoom(RasterStore.getMapBounds());
 		} else {
-			return 12;
+			return 5;
 		}
 	}
 
 	getMapBounds() {
 		return this.refs.the_map.leafletElement.getBounds();
+	}
+
+	getBoundsZoom(bounds) {
+		return this.refs.the_map.leafletElement.getBoundsZoom(bounds);
+	}
+
+	getVisibleMaps(viewBounds) {
+		let rasters = RasterStore.getAllRasters(),
+			visibleMaps = {};
+
+		Object.keys(rasters).forEach((id) => {
+			if (viewBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
+				visibleMaps[id] = rasters[id];
+			}
+		});
+
+		return visibleMaps;
+	}
+
+	getVisibleMapsByState() {
+		if (!this.refs.the_map) {
+			return {}
+		}
+
+		let visibleMaps = this.getVisibleMaps(this.refs.the_map.leafletElement.getBounds()),
+			maps = {};
+
+		Object.keys(visibleMaps).forEach((id) => {
+			maps[visibleMaps[id].state] =  (maps[visibleMaps[id].state]) ? maps[visibleMaps[id].state] : [];
+			maps[visibleMaps[id].state].push(visibleMaps[id]);
+		});
+
+		// alphabetize
+		Object.keys(maps).forEach((the_state) => {
+			maps[the_state].sort((a,b) => a.city > b.city);
+		});
+
+		return maps;
 	}
 
 	searchDisplay () {
@@ -566,7 +602,7 @@ export default class App extends React.Component {
 							onNeighborhoodHover={ this.neighborhoodHighlighted } 
 							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
 						/>;
-		} else if (this.state.selectedCity) {
+		} else if (this.state.selectedCity && RasterStore.getSelectedCityMetadata()) {
 			theClass = 'city';
 			title = 	<h2>
 							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
@@ -587,7 +623,7 @@ export default class App extends React.Component {
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
 							hasADs={ CityStore.hasADData() }
 						/>;
-		} else if (!this.state.selectedCity) {
+		} else if (!this.state.selectedCity && this.refs.the_map) {
 			theClass = 'state';
 			let visibleStates = this.getVisibleMapsByState();
 			if (Object.keys(this.getVisibleMaps(this.getMapBounds())).length >= 2) {
@@ -629,8 +665,10 @@ export default class App extends React.Component {
 				}
 			},
 			mapConfig = this.state.map || this.state.mapConfig,
-			ADs = CityStore.getAreaDescriptions(),
+			ADs = AreaDescriptionsStore.getVisibleAreaDescriptions(),
 			outerRadius = CityStore.getOuterRingRadius();
+
+		//setIconDefaultImagePath('./static');
 
 		return (
 			<div className='container full-height'>
@@ -705,6 +743,7 @@ export default class App extends React.Component {
 									);
 								}) }
 
+								{/* rings: donut holes */}
 								{ (outerRadius > 0) ?
 									<Circle 
 										center={ CityStore.getLoopLatLng() } 
@@ -718,6 +757,7 @@ export default class App extends React.Component {
 									null
 								}
 							
+								{/* rings: donuts */}
 								{ (outerRadius > 0) ?
 									[2,3,4,5].map((ringNum) => {
 										return (
@@ -737,6 +777,7 @@ export default class App extends React.Component {
 									null
 								}
 
+								{/* rings: selected ring */}
 								{ (this.state.selectedRingGrade.ring > 0) ?
 									<LayerGroup>
 										<GeoJson 
@@ -763,6 +804,7 @@ export default class App extends React.Component {
 									null
 								}
 
+								{/* selected grade */}
 								{ (this.state.selectedGrade) ?
 									<AreaPolygon 
 										data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
@@ -782,37 +824,45 @@ export default class App extends React.Component {
 									null
 								}
 
-								{ (this.state.selectedNeighborhood && ADs[this.state.selectedNeighborhood] && ADs[this.state.selectedNeighborhood].area_geojson_inverted) ?
+								{/* selected neighborhood */}
+								{ (this.state.selectedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.selectedNeighborhood] && ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted) ?
 									<AreaPolygon
-										data={ ADs[this.state.selectedNeighborhood].area_geojson_inverted } 
+										data={ ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted } 
 										clickable={ false }
-										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedNeighborhood].holc_grade } 
+										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedCity][this.state.selectedNeighborhood].holc_grade } 
 										key={ 'neighborhoodPolygonInverted' + this.state.selectedNeighborhood }
 									/> :
 									null
 								}
 
-								{ (RasterStore.selectedHasPolygons()) ?
-									Object.keys(ADs).map((id) => {
+								{/* neighborhood polygons: shown on zoom level 10 and higher */}
+								{ (this.state.map.zoom >= 10) ?
+									Object.keys(ADs).map(adId => {
 										return (
-											<AreaPolygon
-												data={ ADs[id].area_geojson }
-												className={ 'neighborhoodPolygon grade' + ADs[id].holc_grade }
-												key={ 'neighborhoodPolygon' + id } 
-												onClick={ this.onNeighborhoodClick }
-												neighborhoodId={ id } 
-												//fillOpacity={ (id == this.state.selectedNeighborhood) ? 1 : 0 }
-												style={{
-													opacity:(this.state.selectedRingGrade.ring > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
-													fillOpacity: (this.state.selectedRingGrade.ring > 0) ? 0 : (1 - this.state.raster.opacity) / 5
-												}}
-											/>
-										);
+											Object.keys(ADs[adId]).map((areaId) => {
+												return (
+													<AreaPolygon
+														data={ ADs[adId][areaId].area_geojson }
+														className={ 'neighborhoodPolygon grade' + ADs[adId][areaId].holc_grade }
+														key={ 'neighborhoodPolygon' + areaId } 
+														onClick={ this.onNeighborhoodClick }
+														adId={ adId }
+														neighborhoodId={ areaId } 
+														//fillOpacity={ (id == this.state.selectedNeighborhood) ? 1 : 0 }
+														style={{
+															opacity:(this.state.selectedRingGrade.ring > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
+															fillOpacity: (this.state.selectedRingGrade.ring > 0) ? 0 : (1 - this.state.raster.opacity) / 5
+														}}
+													/>
+												);
+											})
+										)
 									}) :
 									null
 								}
 
-								{ (this.state.selectedCity == null && this.state.map.zoom <= 11) ?
+								{/* cartogram marker for city: shown below zoom level 10 */}
+								{ (this.state.map.zoom < 10) ?
 									RasterStore.getMapsList().map((item, i) => {
 										return ((item.radii) ?
 											Object.keys(item.radii).map((grade) => {
@@ -845,6 +895,12 @@ export default class App extends React.Component {
 											/> 
 										);
 									}) :
+									null
+								}
+
+								{/* marker for user's location */}
+								{ (this.state.userLocation) ?
+									<Marker position={ this.state.userLocation } /> :
 									null
 								}
 

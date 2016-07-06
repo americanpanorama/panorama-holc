@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
-import Leaflet from 'leaflet';
 import formsMetadata from '../../data/formsMetadata.json';
 
 
@@ -49,7 +48,9 @@ const CityStore = {
 		polygonsCenter: null,
 		gradedArea: null,
 		gradedAreaOfRings: {},
-		gradedAreaByGrade: {}
+		gradedAreaByGrade: {},
+		usersNeighborhood: null,
+		usersCity: null
 	},
 
 	// TODO: Make a generic DataLoader class to define an interface,
@@ -59,7 +60,7 @@ const CityStore = {
 	// can be used here.
 	dataLoader: CartoDBLoader,
 
-	loadData: function (cityId, options) {
+	loadData: function (cityId, options = {}) {
 		let initial = (typeof(options.initial) !== 'undefined') ? options.initial : false,
 			zoomTo = (typeof(options.zoomTo) !== 'undefined') ? options.zoomTo : false;
 
@@ -73,7 +74,7 @@ const CityStore = {
 				format: 'JSON'
 			},
 			{
-				query: 'SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 3) as the_geojson, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + cityId + ' order by holc_id, cat_id, sub_cat_id, _order',
+				query: 'SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + cityId + ' order by holc_id, cat_id, sub_cat_id, _order',
 				//'SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=' + cityId,
 				format: 'JSON'
 			},
@@ -115,9 +116,9 @@ const CityStore = {
 
 			//console.log('[4b] CityStore updated its data and calls storeChanged');
 			if (initial) {
-				this.emit(AppActionTypes.initialDataLoaded);
+				this.emit(AppActionTypes.initialDataLoaded, options);
 			} else {
-				this.emit(AppActionTypes.storeChanged, {zoomToCity: zoomTo});
+				this.emit(AppActionTypes.storeChanged, options);
 			}
 
 		}, (error) => {
@@ -127,7 +128,42 @@ const CityStore = {
 		});
 	},
 
-	citySelected: function(cityId, options) {
+	getCityIdFromPoint: function(point) {
+		this.dataLoader.query([
+			{
+				query: 'SELECT ad_id, ST_distance(ST_setsrid(ST_MakePoint(looplng, looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id order by distance limit 1',
+				format: 'JSON'
+
+			}
+		]).then((response) => {
+			return response[0][0].ad_id;
+		}, (error) => {
+			// TODO: handle this.
+			console.log('Location received error:', error);
+			throw error;
+		});
+	},
+
+	cityFromPoint: function(point) {
+		this.dataLoader.query([
+			{
+				query: 'SELECT ad_id, ST_distance(ST_setsrid(ST_MakePoint(looplng, looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id order by distance limit 1',
+				//query: 'SELECT ad_id from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id where ST_Contains(holc_maps.the_geom, ST_GeometryFromText(\'POINT(' + point[1] +', ' + point[0] + ')\',4326)) limit 1',
+				format: 'JSON'
+//SELECT * FROM es_zones WHERE ST_Contains(geom, ST_Transform(ST_GeometryFromText('POINT(-73.952545 40.774576)',4326), 26918))
+
+			}
+		]).then((response) => {
+			console.log(response[0][0].ad_id);
+			this.citySelected(response[0][0].ad_id, {zoomTo: true});
+		}, (error) => {
+			// TODO: handle this.
+			console.log('Location received error:', error);
+			throw error;
+		});
+	},
+
+	citySelected: function(cityId, options = {}) {
 		this.loadData(cityId, options);
 	},
 
@@ -438,6 +474,7 @@ const CityStore = {
 			// assign properties    
 			adData[d.holc_id].area_geojson = (!adData[d.holc_id].area_geojson) ? JSON.parse(d.the_geojson) : adData[d.holc_id].area_geojson;
 			adData[d.holc_id].area_geojson_inverted = (!adData[d.holc_id].area_geojson_inverted) ? this.parseInvertedGeoJson(JSON.parse(d.the_geojson)) : adData[d.holc_id].area_geojson_inverted;
+			adData[d.holc_id].boundingBox = [[d.bbxmin,d.bbymin],[d.bbxmax,d.bbymax]];
 			//adData[d.holc_id].name = d.name;
 			adData[d.holc_id].holc_grade = d.holc_grade;
 			adData[d.holc_id].sqmi = d.sqmi;
@@ -489,15 +526,16 @@ const CityStore = {
 			newLatLngs = [ NWHemisphere ],
 			holes =[];
 
-		geojson.coordinates[0].forEach((element, i) => {
-			if (i == 0) {
-				newLatLngs.push(element);
-			} else {
-				holes.push(element);
-			}
+		geojson.coordinates.forEach((polygon, i) => {
+			polygon.forEach((polygonpieces, i2) => {
+				if (i2 == 0) {
+					newLatLngs.push(polygonpieces);
+				} else {
+					holes.push(polygonpieces);
+				}
+			});
 		});
 		geojson.coordinates = (holes.length > 0) ? [newLatLngs.concat(holes)] : [newLatLngs]
-
 		return geojson;
 	},
 

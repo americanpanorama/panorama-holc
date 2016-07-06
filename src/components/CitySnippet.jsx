@@ -19,7 +19,6 @@ export default class CitySnippet extends React.Component {
 	componentWillMount () {}
 
 	componentDidMount() {
-		console.log(this.props.cityData.city);
 		if (this.props.cityData.hasPolygons) {
 			this.d3Chart.update(this.refs.barchart, this.parsePercents());
 		}

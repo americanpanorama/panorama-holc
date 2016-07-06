@@ -786,6 +786,7 @@ td,
 th {
   padding: 0; }
 
+/* #f4f570; */
 body,
 html {
   height: 100%;
@@ -1013,7 +1014,8 @@ body {
 
 .leaflet-container .neighborhoodPolygon,
 .leaflet-container .ringGradedArea {
-  stroke-width: 2; }
+  stroke-width: 2;
+  mix-blend-mode: overlay; }
   .leaflet-container .neighborhoodPolygon.gradeA,
   .leaflet-container .ringGradedArea.gradeA {
     stroke: #418e41;
@@ -1024,8 +1026,8 @@ body {
     fill: #4a4ae4; }
   .leaflet-container .neighborhoodPolygon.gradeC,
   .leaflet-container .ringGradedArea.gradeC {
-    stroke: #f4f570;
-    fill: #f4f570; }
+    stroke: #ffdf00;
+    fill: #ffdf00; }
   .leaflet-container .neighborhoodPolygon.gradeD,
   .leaflet-container .ringGradedArea.gradeD {
     stroke: #eb3f3f;
@@ -1045,7 +1047,7 @@ body {
     stroke: #4a4ae4; }
   .leaflet-container .selectedGradedNeighborhoods.gradeC,
   .leaflet-container .neighborhoodPolygonInverted.gradeC {
-    stroke: #f4f570; }
+    stroke: #ffdf00; }
   .leaflet-container .selectedGradedNeighborhoods.gradeD,
   .leaflet-container .neighborhoodPolygonInverted.gradeD {
     stroke: #eb3f3f; }
@@ -1058,7 +1060,7 @@ body {
   .leaflet-container .simpleDonut.grade_b {
     fill: #4a4ae4; }
   .leaflet-container .simpleDonut.grade_c {
-    fill: #f4f570; }
+    fill: #ffdf00; }
   .leaflet-container .simpleDonut.grade_d {
     fill: #eb3f3f; }
 
