@@ -12,7 +12,8 @@ export const AppActionTypes = {
 	getInitialData: 'getInitialData',
 	citySelected: 'citySelected',
 	ringAreaSelected: 'ringAreaSelected',
-	mapMoved: 'mapMoved'
+	mapMoved: 'mapMoved',
+	userLocated: 'userLocated'
 
 };
 

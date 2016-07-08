@@ -49,8 +49,11 @@ const CityStore = {
 		gradedArea: null,
 		gradedAreaOfRings: {},
 		gradedAreaByGrade: {},
-		usersNeighborhood: null,
-		usersCity: null
+		users: {
+			adId: null,
+			city: null,
+			neighborhood: null
+		}
 	},
 
 	// TODO: Make a generic DataLoader class to define an interface,
@@ -123,39 +126,23 @@ const CityStore = {
 
 		}, (error) => {
 			// TODO: handle this.
-			console.log('Commodity received error:', error);
+			console.log('CityStore received error:', error);
 			throw error;
 		});
 	},
 
-	getCityIdFromPoint: function(point) {
+	getCityFromPoint: function(point) {
+		let adId;
 		this.dataLoader.query([
 			{
-				query: 'SELECT ad_id, ST_distance(ST_setsrid(ST_MakePoint(looplng, looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id order by distance limit 1',
+				query: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_maps.looplng, holc_maps.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.id = holc_maps_ads_join.ad_id order by distance limit 1',
 				format: 'JSON'
-
 			}
 		]).then((response) => {
-			return response[0][0].ad_id;
-		}, (error) => {
-			// TODO: handle this.
-			console.log('Location received error:', error);
-			throw error;
-		});
-	},
+			this.data.users.city = response[0][0].city;
+			this.data.users.adId = response[0][0].ad_id;
 
-	cityFromPoint: function(point) {
-		this.dataLoader.query([
-			{
-				query: 'SELECT ad_id, ST_distance(ST_setsrid(ST_MakePoint(looplng, looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id order by distance limit 1',
-				//query: 'SELECT ad_id from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id where ST_Contains(holc_maps.the_geom, ST_GeometryFromText(\'POINT(' + point[1] +', ' + point[0] + ')\',4326)) limit 1',
-				format: 'JSON'
-//SELECT * FROM es_zones WHERE ST_Contains(geom, ST_Transform(ST_GeometryFromText('POINT(-73.952545 40.774576)',4326), 26918))
-
-			}
-		]).then((response) => {
-			console.log(response[0][0].ad_id);
-			this.citySelected(response[0][0].ad_id, {zoomTo: true});
+			this.emit(AppActionTypes.userLocated);
 		}, (error) => {
 			// TODO: handle this.
 			console.log('Location received error:', error);
@@ -250,6 +237,18 @@ const CityStore = {
 
 	getPolygonsCenter: function() {
 		return this.data.polygonsCenter;
+	},
+
+	getUsersCity: function() {
+		return this.data.users.city;
+	},
+
+	getUsersAdId: function() {
+		return this.data.users.adId;
+	},
+
+	getUsersNeighborhood: function() {
+		return this.data.users.neighborhood;
 	},
 
 	hasADData: function() {

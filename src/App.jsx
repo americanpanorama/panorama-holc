@@ -49,28 +49,15 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange','onSliderChange'];
+		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange','onSliderChange','onUserLocated','onUserCityResponse'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
+
+	/* Lifecycle methods */
 
 	componentWillMount () {
 		this.computeComponentDimensions();
 		AppActions.loadInitialData(this.state);
-	}
-
-	componentDidMount () {
-		window.addEventListener('resize', this.onWindowResize);	
-		RasterStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);
-		CityStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);	
-		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
-		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
-
-		// Prepare object to deliver default application state to HashManager,
-		// with initial values paired with keys to use in the hash.
-		let initialState = {};
-		initialState.city = this.state.selectedCity;
-		initialState[HashManager.MAP_STATE_KEY] = HashManager.getState(HashManager.MAP_STATE_KEY);
-		HashManager.updateHash(initialState);
 
 		// try to retrieve the users location
 		if (navigator.geolocation) {
@@ -79,18 +66,36 @@ export default class App extends React.Component {
 				this.setState({
 					userLocation: [position.coords.latitude, position.coords.longitude]
 				});
-				if (false && !this.props.somethingRequested) {
-					CityStore.cityFromPoint(userLocation)
+				if (!this.props.somethingRequested) {
+					CityStore.getCityFromPoint(userLocation);
 				}
+			}, (error) => {
+				console.log('Geolocation error occurred. Error code: ' + error.code);
 			});
 		}
 	}
 
+	componentDidMount () {
+		window.addEventListener('resize', this.onWindowResize);	
+		RasterStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);
+		CityStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);	
+		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		CityStore.addListener(AppActionTypes.userLocated, this.onUserLocated);
+
+		// Prepare object to deliver default application state to HashManager,
+		// with initial values paired with keys to use in the hash.
+		let initialState = {};
+		initialState.city = this.state.selectedCity;
+		initialState[HashManager.MAP_STATE_KEY] = HashManager.getState(HashManager.MAP_STATE_KEY);
+		HashManager.updateHash(initialState);
+	}
+
 	componentWillUnmount () { }
 
-	componentDidUpdate () {
-		//this.refs.the_map.leafletElement.options.maxZoom = (this.state.selectedCity && RasterStore.hasLoaded()) ? RasterStore.getSelectedCityMetadata('maxZoom') : null;
-	}
+	componentDidUpdate () {}
+
+	/* setState methods */
 
 	getDefaultState () {
 		let hashState = HashManager.getState();
@@ -115,6 +120,7 @@ export default class App extends React.Component {
 			},
 			modalSectionOpen: null,
 			downloadOpen: false,
+			userCityOpen: false,
 			map: {
 				zoom: 5,
 				center: [39.8333333,-98.585522]
@@ -145,7 +151,6 @@ export default class App extends React.Component {
 
 	storeChanged (options) {
 		let newState = {
-
 			selectedCity: RasterStore.getSelectedCityMetadata('id'),
 			selectedNeighborhood: (options.selectedNeighborhood) ? options.selectedNeighborhood : null,
 			selectedCategory: null,
@@ -158,7 +163,7 @@ export default class App extends React.Component {
 		};
 		// only change the map location if that's requested or it's not already visible
 		let mapBounds = this.refs.the_map.leafletElement.getBounds();
-		if ((options && options.zoomToCity) || !mapBounds.intersects(RasterStore.getMapBounds())) {
+		if ((options && options.zoomTo) || !mapBounds.intersects(RasterStore.getMapBounds())) {
 			let center = (CityStore.getPolygonsCenter()) ? CityStore.getPolygonsCenter() : RasterStore.getCenter(),
 				bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.getMapBounds(),
 				zoom = this.refs.the_map.leafletElement.getBoundsZoom(bounds);
@@ -269,11 +274,11 @@ export default class App extends React.Component {
 
 	onNeighborhoodClick (event) {
 		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id,
-			adId = (event.target.options) ? event.target.options.adId : event.target.id;
+			adId = (event.target.options) ? event.target.options.adId : null;
 		if (adId !== this.state.selectedCity || neighborhoodId !== this.state.selectedNeighborhood) {
 			this.neighborhoodSelected(neighborhoodId, adId);
-		} else {
-			this.neighborhoodSelected(null);
+		} else if (!adId) {
+			this.neighborhoodSelected(neighborhoodId);
 		}
 	}
 
@@ -312,6 +317,22 @@ export default class App extends React.Component {
 		this.setState({
 			show_panorama_menu: !this.state.show_panorama_menu
 		});
+	}
+
+	onUserLocated () {
+		this.setState({
+			userCityOpen: true
+		});
+	}
+
+	onUserCityResponse(event) {
+		this.setState ({
+			userCityOpen: false
+		});
+
+		if (event.target.value == 'yes') {
+			AppActions.citySelected(CityStore.getUsersAdId(), {zoomTo: true});
+		}
 	}
 
 	onMapMoved (event) {
@@ -369,55 +390,8 @@ export default class App extends React.Component {
 		}
 	}
 
-	// fit to window if necessary
-	makeRingVisable () {
-
-	}
-
-	changeHash () {
-		let newState = { 
-			city: this.state.selectedCity,
-			area: this.state.selectedNeighborhood,
-			category: this.state.selectedCategory,
-			opacity: this.state.raster.opacity
-		};
-		newState[HashManager.MAP_STATE_KEY] = {
-			zoom: this.state.map.zoom,
-			center: this.state.map.center
-		};
-
-		HashManager.updateHash(newState);
-	}
-
-	hashChanged (event, suppressRender) {
-		this.setState({
-			mapState: HashManager.getState(HashManager.MAP_STATE_KEY)
-		});
-	}
-
-	computeComponentDimensions () {
-		// based off of sizes stored within _variables.scss --
-		// if you change them there, change them here.
-		var containerPadding = 20,
-			headerHeight = 100,
-			bottomRowHeight = 300,
-			dimensions = {};
-
-		dimensions.search = {
-			width: window.innerWidth / 3 - 2 * containerPadding,
-			height: window.innerHeight - 2 * containerPadding
-		};
-
-		dimensions.bottom = {
-			height: window.innerHeight - headerHeight - 2 * containerPadding
-		};
-
-		this.setState({ dimensions: dimensions });
-	}
-
 	openModal (event) {
 		let section = event.target.id;
-		console.log(event.target, section);
 		this.setState({ modalSectionOpen: section });
 	}
 
@@ -457,6 +431,53 @@ export default class App extends React.Component {
 				onExit: this.onIntroExit
 			}
 		});
+	}
+
+	/* manage hash */
+
+	changeHash () {
+		let newState = { 
+			city: this.state.selectedCity,
+			area: this.state.selectedNeighborhood,
+			category: this.state.selectedCategory,
+			opacity: this.state.raster.opacity
+		};
+		newState[HashManager.MAP_STATE_KEY] = {
+			zoom: this.state.map.zoom,
+			center: this.state.map.center
+		};
+
+		console.log(newState);
+
+		HashManager.updateHash(newState);
+	}
+
+	hashChanged (event, suppressRender) {
+		this.setState({
+			mapState: HashManager.getState(HashManager.MAP_STATE_KEY)
+		});
+	}
+
+	/* helper methods */
+
+	computeComponentDimensions () {
+		// based off of sizes stored within _variables.scss --
+		// if you change them there, change them here.
+		var containerPadding = 20,
+			headerHeight = 100,
+			bottomRowHeight = 300,
+			dimensions = {};
+
+		dimensions.search = {
+			width: window.innerWidth / 3 - 2 * containerPadding,
+			height: window.innerHeight - 2 * containerPadding
+		};
+
+		dimensions.bottom = {
+			height: window.innerHeight - headerHeight - 2 * containerPadding
+		};
+
+		this.setState({ dimensions: dimensions });
 	}
 
 	getLoc () {
@@ -540,6 +561,8 @@ export default class App extends React.Component {
 		});
 	}
 
+	/* render and display methods */
+
 	parseModalCopy (subject) {
 		let modalCopy = '';
 
@@ -578,6 +601,8 @@ export default class App extends React.Component {
 						</h2>;
 			content = 	<AreaDescription 
 							areaId={ this.state.selectedNeighborhood } 
+							previousAreaId={ CityStore.getPreviousAreaId(this.state.selectedNeighborhood) }
+							nextAreaId={ CityStore.getNextAreaId(this.state.selectedNeighborhood) }
 							areaData={ ADs[this.state.selectedNeighborhood] } 
 							formId={ CityStore.getFormId() } 
 							cityId={ this.state.selectedCity }
@@ -951,6 +976,16 @@ export default class App extends React.Component {
 						<button className='close' onClick={ this.closeModal }><span>×</span></button>
 						<div dangerouslySetInnerHTML={ this.parseModalCopy(this.state.modalSectionOpen) }></div>
 					</Modal>
+
+					<Modal 
+						isOpen={ this.state.userCityOpen } 
+						style={ modalStyle }
+					>
+						<p>Would you like to zoom to { CityStore.getUsersCity() }?</p>
+						<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
+						<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
+					</Modal>
+
 
 					<IntroManager { ...this.state.intro } />
 				</div>

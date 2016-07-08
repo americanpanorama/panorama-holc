@@ -1,8 +1,6 @@
 
 import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
-import CityStore from '../stores/CityStore';
-
 
 export default class AreaDescription extends React.Component {
 
@@ -34,10 +32,16 @@ export default class AreaDescription extends React.Component {
 
 			<div>
 				<ul className='ad-selection'>
-					<li><span className='left-arrow'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }></span> : '' }</span></li>
-					<li><span className='ad-left'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }>{ CityStore.getPreviousAreaId(this.props.areaId) }</span> : '' }</span></li>
-					<li><span className='right-arrow'>{ (CityStore.getPreviousAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getPreviousAreaId(this.props.areaId) }></span> : '' }</span></li>
-					<li><span className='ad-right'>{ (CityStore.getNextAreaId(this.props.areaId)) ? <span onClick={ this.props.onNeighborhoodClick } id={ CityStore.getNextAreaId(this.props.areaId) }>{ CityStore.getNextAreaId(this.props.areaId) }</span> : '' }</span></li>
+					{ (this.props.previousAreaId) ? 
+						<li onClick={ this.props.onNeighborhoodClick } id={ this.props.previousAreaId } className='ad-left' >{ '<' + this.props.previousAreaId }
+						</li> : 
+						'' 
+					}
+					{ (this.props.nextAreaId) ? 
+						<li onClick={ this.props.onNeighborhoodClick } id={ this.props.nextAreaId } className='ad-right' >{ this.props.nextAreaId + '>' }
+						</li> : 
+						'' 
+					}
 					<li><h4>{ this.props.areaId }</h4></li>
 				</ul>
 		

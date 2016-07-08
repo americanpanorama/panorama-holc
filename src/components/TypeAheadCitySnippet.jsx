@@ -1,13 +1,9 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CitySnippet from './CitySnippet.jsx';
 
 
 export default class TypeAheadCitySnippet extends React.Component {
-	// property validation
-	static propTypes = {
-		stateName: PropTypes.string
-	};
 
 	constructor () {
 		super();
