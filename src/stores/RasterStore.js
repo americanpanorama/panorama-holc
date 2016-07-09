@@ -36,7 +36,8 @@ const RasterStore = {
 		 cityIdsWithADs: [],
 
 		 selectedCity: null,
-		 selectedState: null
+		 selectedState: null,
+		 loaded: false
 
 	},
 
@@ -70,7 +71,9 @@ const RasterStore = {
 			this.data.selectedCity = state.selectedCity;
 			this.data.selectedState = state.selectedState;
 
-			this.emit(AppActionTypes.initialDataLoaded);
+			this.data.loaded = true;
+
+			this.emit(AppActionTypes.storeChanged);
 		},
 		(error) => {
 			// TODO: handle this.
@@ -83,11 +86,7 @@ const RasterStore = {
 	 * The selected city for the whole application to display.
 	 */
 	setSelectedCity: function (cityId) {
-
-		if (typeof(cityId) !== 'undefined' && cityId !== this.data.selectedCity) {
-			this.data.selectedCity = cityId;
-		}
-
+		this.data.selectedCity = cityId;  
 	},
 
 	setSelectedState: function (state) {
@@ -241,6 +240,10 @@ const RasterStore = {
 		}
 	},
 
+	hasLoaded: function() {
+		return this.data.loaded;
+	},
+
 	selectedHasPolygons: function() {
 		return (this.data.maps[this.data.selectedCity]) ? this.data.maps[this.data.selectedCity].hasPolygons : false;
 	},
@@ -378,7 +381,7 @@ const RasterStore = {
 Object.assign(RasterStore, EventEmitter.prototype);
 
 // Register callback to handle all updates
-AppDispatcher.register((action) => {
+RasterStore.dispatchToken = AppDispatcher.register((action) => {
 
 	switch (action.type) {
 

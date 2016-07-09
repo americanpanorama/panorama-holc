@@ -11,7 +11,9 @@ export const AppActionTypes = {
 	initialDataLoaded: 'initialDataLoaded',
 	getInitialData: 'getInitialData',
 	citySelected: 'citySelected',
-	ringAreaSelected: 'ringAreaSelected',
+	gradeSelected: 'gradeSelected',
+	neighborhoodSelected: 'neighborhoodSelected',
+	ringGradeSelected: 'ringGradeSelected',
 	mapMoved: 'mapMoved',
 	userLocated: 'userLocated'
 
@@ -45,6 +47,21 @@ export const AppActions = {
 		});
 	},
 
+	gradeSelected: (grade) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.gradeSelected,
+			value: grade
+		});
+	},
+
+	neighborhoodSelected: (holcId, adId) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.neighborhoodSelected,
+			holcId: holcId,
+			adId: adId
+		})
+	},
+
 	stateSelected: (state) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.stateSelected,
@@ -52,18 +69,18 @@ export const AppActions = {
 		});
 	},
 
-	ringAreaSelected: (ringId, grade) => {
-		console.log(`[1a] A '${ AppActionTypes.ringAreaSelected }' event is broadcast globally from AppActionCreator.loadInitialData().`);
+	ringGradeSelected: (selectedRingGrade) => {
 		AppDispatcher.dispatch({
-			type: AppActionTypes.ringAreaSelected,
-			value: {ringId: ringId, grade: grade}
+			type: AppActionTypes.ringGradeSelected,
+			value: selectedRingGrade
 		});
 	},
 
-	mapMoved: (visibleMaps) => {
+	mapMoved: (visibleAdIds, belowAdThreshold = false) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.mapMoved,
-			value: visibleMaps
+			value: visibleAdIds,
+			belowAdThreshold: belowAdThreshold
 		})
 	}
 

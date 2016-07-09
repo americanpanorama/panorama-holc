@@ -4,9 +4,6 @@ import {GeoJson}  from 'react-leaflet';
 export default class AreaPolygon extends GeoJson {
 
 	componentWillReceiveProps(nextProps) {
-		if (nextProps.fillOpacity == 1) {
-			console.log(this.leafletElement);
-		}
 		if (nextProps.data !== this.props.data) {
 			this.leafletElement.clearLayers();
 		}

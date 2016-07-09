@@ -49,7 +49,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		let handlers = ['onWindowResize','hashChanged','openModal','closeModal','toggleBurgessDiagram','initialDataLoaded','storeChanged','ringAreaSelected','ringAreaUnselected','gradeSelected','gradeUnselected','onStateSelected','onCitySelected','onNeighborhoodClick','onSelectedNeighborhoodClick','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange','onSliderChange','onUserLocated','onUserCityResponse'];
+		const handlers = ['onWindowResize','openModal','closeModal','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange','onSliderChange','onUserLocated','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -60,9 +60,9 @@ export default class App extends React.Component {
 		AppActions.loadInitialData(this.state);
 
 		// try to retrieve the users location
-		if (navigator.geolocation) {
+		/* if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition((position) => {
-				let userLocation = [position.coords.latitude, position.coords.longitude];
+				const userLocation = [position.coords.latitude, position.coords.longitude];
 				this.setState({
 					userLocation: [position.coords.latitude, position.coords.longitude]
 				});
@@ -72,23 +72,25 @@ export default class App extends React.Component {
 			}, (error) => {
 				console.log('Geolocation error occurred. Error code: ' + error.code);
 			});
-		}
+		} */
 	}
 
 	componentDidMount () {
-		window.addEventListener('resize', this.onWindowResize);	
-		RasterStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);
-		CityStore.addListener(AppActionTypes.initialDataLoaded, this.initialDataLoaded);	
-		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		window.addEventListener('resize', this.onWindowResize);
+		AreaDescriptionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.userLocated, this.onUserLocated);
 
-		// Prepare object to deliver default application state to HashManager,
-		// with initial values paired with keys to use in the hash.
-		let initialState = {};
-		initialState.city = this.state.selectedCity;
-		initialState[HashManager.MAP_STATE_KEY] = HashManager.getState(HashManager.MAP_STATE_KEY);
-		HashManager.updateHash(initialState);
+		// you have to wait until there's a map to query to get the visible maps
+		const waitingId = setInterval(() => {
+			if (RasterStore.hasLoaded()) {
+				clearInterval(waitingId);
+
+				// emit mapped moved event
+				AppActions.mapMoved(this.getVisibleAdIds(this.getMapBounds()), this.getZoom() <= this.props.adZoomThreshold);
+			}
+		}, 100);
 	}
 
 	componentWillUnmount () { }
@@ -98,20 +100,19 @@ export default class App extends React.Component {
 	/* setState methods */
 
 	getDefaultState () {
-		let hashState = HashManager.getState();
+		const hashState = HashManager.getState();
 
 		return {
 			selectedCity: (hashState.city) ? parseInt(hashState.city) : null, 
 			selectedNeighborhood: (hashState.area) ? hashState.area : null,
 			selectedCategory: (hashState.category) ? hashState.category : null,
 			selectedRingGrade: { 
-				ring: null, 
+				ringId: null, 
 				grade: null
 			},
 			selectedGrade: null,
-			visibleMapIds: [],
 			raster: {
-				opacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 1
+				opacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 0.8
 			},
 			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
@@ -122,8 +123,8 @@ export default class App extends React.Component {
 			downloadOpen: false,
 			userCityOpen: false,
 			map: {
-				zoom: 5,
-				center: [39.8333333,-98.585522]
+				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
+				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
 			},
 			dimensions: {
 				left: {
@@ -139,82 +140,65 @@ export default class App extends React.Component {
 		};
 	}
 
-	initialDataLoaded () {
-		this.setState({
-			selectedCity: RasterStore.getSelectedCityMetadata('id'),
-			map: {
-				center: this.getLoc(),
-				zoom: this.getZoom()
-			}
-		});
-	}
-
-	storeChanged (options) {
-		let newState = {
-			selectedCity: RasterStore.getSelectedCityMetadata('id'),
-			selectedNeighborhood: (options.selectedNeighborhood) ? options.selectedNeighborhood : null,
+	storeChanged (options = {}) {
+		const newState = {
+			selectedCity: CityStore.getId(),
+			selectedGrade: CityStore.getSelectedGrade(),
+			selectedNeighborhood: CityStore.getSelectedHolcId(),
 			selectedCategory: null,
-			selectedRingGrade: {
-				ring: null,
-				grade: null
-			},
+			selectedRingGrade: CityStore.getSelectedRingGrade(),
 			highlightedNeighborhood: null,
-			visibleMapIds: AreaDescriptionsStore.getVisibleMapIds()
 		};
-		// only change the map location if that's requested or it's not already visible
-		let mapBounds = this.refs.the_map.leafletElement.getBounds();
-		if ((options && options.zoomTo) || !mapBounds.intersects(RasterStore.getMapBounds())) {
-			let center = (CityStore.getPolygonsCenter()) ? CityStore.getPolygonsCenter() : RasterStore.getCenter(),
-				bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.getMapBounds(),
-				zoom = this.refs.the_map.leafletElement.getBoundsZoom(bounds);
+
+		// only change the map location if that's requested
+		const mapBounds = this.refs.the_map.leafletElement.getBounds();
+		if (this.state.selectedCity && ((options && options.zoomTo))) {
+			// || !mapBounds.intersects(RasterStore.getMapBounds())
+			let bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.getMapBounds();
 			newState.map = {
-				center: center,
-				zoom: zoom
+				center: (CityStore.getPolygonsCenter()) ? CityStore.getPolygonsCenter() : RasterStore.getCenter(),
+				zoom: this.refs.the_map.leafletElement.getBoundsZoom(bounds)
 			}
 		}
+
 		this.setState(newState, this.changeHash);
 	}
 
-	ringAreaSelected (ringNum, grade) {
+	onMapMoved (event) {
 		this.setState({
-			selectedRingGrade: { 
-				ring: ringNum, 
-				grade: grade
-			} 
-		});
+			map: {
+				zoom: this.getZoom(),
+				center: this.getCenter()
+			}
+		}, this.changeHash);
+
+		// emit mapped moved event, which might update ADs for visible maps or select a city if only one's visible
+		AppActions.mapMoved(this.getVisibleAdIds(event.target.getBounds()), event.target.getZoom() <= this.props.adZoomThreshold);
 	}
 
-	ringAreaUnselected () {
-		this.setState({
-			selectedRingGrade: { 
-				ring: null, 
-				grade: null
-			} 
-		});
-	}
+	onCitySelected (value, index) {
+		console.log('fired');
+		// for click on state name in sidebar
+		value = (value.target) ? (value.target.options) ? value.target.options : value.target : value;
+		value.zoomTo = (typeof(value.zoomTo) == 'undefined') ? true : value.zoomTo;
 
-	gradeSelected (grade) {
-		this.setState({
-			selectedGrade: grade
-		});
-	}
-
-	gradeUnselected (grade) {
-		this.setState({
-			selectedGrade: null
-		});
-	}
-
-	neighborhoodSelected (id, adId = null) {
-		if (adId !== null && adId !== this.state.selectedCity) {
-			AppActions.citySelected(adId, {zoomTo: false, selectedNeighborhood: id});
-		} else {
-			this.setState({
-				selectedNeighborhood: id,
-				selectedCategory: null,
-				highlightedNeighborhood: null
-			}, this.changeHash );
+		if (value && value.id) {
+			AppActions.citySelected(value.id, {zoomTo: value.zoomTo});
 		}
+	}
+
+	onSearchChange (result, event) {
+		this.onCitySelected({id: result.cityId, zoomTo: true});
+	}
+
+	onNeighborhoodPolygonClick (event) {
+		let neighborhoodId = event.target.options.neighborhoodId,
+			adId = event.target.options.adId;
+
+		// clicking on a selected neighborhood deselects it
+		neighborhoodId = (neighborhoodId == this.state.selectedNeighborhood) ? null : neighborhoodId
+
+		AppActions.neighborhoodSelected(neighborhoodId, adId);
 	}
 
 	neighborhoodHighlighted (event) {
@@ -229,6 +213,26 @@ export default class App extends React.Component {
 		});
 	}
 
+	onCategoryClick (event) {
+		this.categorySelected(event.target.id);
+	}
+
+	onBurgessChartHover (ringId, grade) {
+		AppActions.ringGradeSelected({ringId: ringId, grade: grade});
+	}
+
+	onBurgessChartOff () {
+		AppActions.ringGradeSelected({ringId: -1, grade: null});
+	}
+
+	onAreaChartHover (grade) {
+		AppActions.gradeSelected(grade);
+	}
+
+	onAreaChartOff () {
+		AppActions.gradeSelected(null);
+	}
+
 	categorySelected (id) {
 		this.setState({
 			selectedNeighborhood: null,
@@ -238,20 +242,6 @@ export default class App extends React.Component {
 
 	onWindowResize (event) {
 		this.computeComponentDimensions();
-	}
-
-	onCitySelected (value, index) {
-		// for click on state name in sidebar
-		value = (value.target) ? (value.target.options) ? value.target.options : value.target : value;
-		value.zoomTo = (typeof(value.zoomTo) == 'undefined') ? true : value.zoomTo;
-
-		this.setState({
-			selectedNeighborhood: null
-		});
-
-		if (value && value.id) {
-			AppActions.citySelected(value.id, {zoomTo: value.zoomTo});
-		}
 	}
 
 	onStateSelected (value, index) {
@@ -266,28 +256,6 @@ export default class App extends React.Component {
 				center: RasterStore.getCenterForState(value.id)
 			}
 		}, this.changeHash());
-	}
-
-	onSearchChange (result, event) {
-		this.onCitySelected({id: result.cityId, zoomTo: true});
-	}
-
-	onNeighborhoodClick (event) {
-		let neighborhoodId = (event.target.options) ? event.target.options.neighborhoodId : event.target.id,
-			adId = (event.target.options) ? event.target.options.adId : null;
-		if (adId !== this.state.selectedCity || neighborhoodId !== this.state.selectedNeighborhood) {
-			this.neighborhoodSelected(neighborhoodId, adId);
-		} else if (!adId) {
-			this.neighborhoodSelected(neighborhoodId);
-		}
-	}
-
-	onSelectedNeighborhoodClick () {
-		this.neighborhoodSelected(null);
-	}
-
-	onCategoryClick (event) {
-		this.categorySelected(event.target.id);
 	}
 
 	onIntroExit () {
@@ -332,61 +300,6 @@ export default class App extends React.Component {
 
 		if (event.target.value == 'yes') {
 			AppActions.citySelected(CityStore.getUsersAdId(), {zoomTo: true});
-		}
-	}
-
-	onMapMoved (event) {
-		let newState = {},
-			zoom = event.target.getZoom(),
-			center = event.target.getCenter(),
-			mapBounds = event.target.getBounds(),
-			visibleMaps = this.getVisibleMaps(event.target.getBounds()),
-			visibleMapsIds = Object.keys(visibleMaps);
-
-		newState[HashManager.MAP_STATE_KEY] = {
-			zoom: zoom,
-			center: center
-		};
-
-		// select city if it's the only one visible
-		if (visibleMapsIds.length == 1 && parseInt(visibleMapsIds[0]) !== this.state.selectedCity) {
-			let cityId = parseInt(visibleMapsIds[0]);
-			newState.city = cityId;
-			this.setState({
-				map: {
-					zoom: zoom
-				}
-			}, AppActions.citySelected(cityId));
-		}
-		// deselect city if the zoom is 9 or below or if the map doesn't overlap
-		else if (this.state.selectedCity && ((zoom <= 9 && visibleMapsIds.length > 1) || !mapBounds.intersects(RasterStore.getMapBounds()))) {
-			this.setState({
-				selectedCity: null,
-				selectedNeighborhood: null
-			});
-			newState.city = null;
-			newState.area = null;
-			if (this.state.map.zoom !== zoom) {
-				this.setState({
-					map: {
-						zoom: zoom
-					}
-				});
-			}
-		} else if (this.state.map.zoom !== zoom) {
-			this.setState({
-				map: {
-					zoom: zoom
-				}
-			});
-		}
-
-		HashManager.updateHash(newState);
-
-		// get visible cities below adZoomTheshhold
-		let visibleMapIds = Object.keys(this.getVisibleMaps(this.getMapBounds()));
-		if (zoom >= this.props.adZoomThreshold) {
-			AppActions.mapMoved(visibleMapIds);
 		}
 	}
 
@@ -436,25 +349,15 @@ export default class App extends React.Component {
 	/* manage hash */
 
 	changeHash () {
-		let newState = { 
+		HashManager.updateHash({ 
 			city: this.state.selectedCity,
 			area: this.state.selectedNeighborhood,
 			category: this.state.selectedCategory,
-			opacity: this.state.raster.opacity
-		};
-		newState[HashManager.MAP_STATE_KEY] = {
-			zoom: this.state.map.zoom,
-			center: this.state.map.center
-		};
-
-		console.log(newState);
-
-		HashManager.updateHash(newState);
-	}
-
-	hashChanged (event, suppressRender) {
-		this.setState({
-			mapState: HashManager.getState(HashManager.MAP_STATE_KEY)
+			opacity: this.state.raster.opacity,
+			loc: {
+				zoom: this.state.map.zoom,
+				center: this.state.map.center
+			}
 		});
 	}
 
@@ -480,7 +383,7 @@ export default class App extends React.Component {
 		this.setState({ dimensions: dimensions });
 	}
 
-	getLoc () {
+	initializeCenter () {
 		let hashState = HashManager.getState();
 
 		if (hashState.loc && hashState.loc.center) {
@@ -492,7 +395,7 @@ export default class App extends React.Component {
 		}
 	}
 
-	getZoom() {
+	initializeZoom() {
 		let hashState = HashManager.getState();
 		if (hashState.loc && hashState.loc.zoom) {
 			return hashState.loc.zoom;
@@ -501,6 +404,18 @@ export default class App extends React.Component {
 		} else {
 			return 5;
 		}
+	}
+
+	mapMounted () {
+		return typeof this.refs.the_map !== 'undefined';
+	}
+
+	getZoom() {
+		return this.refs.the_map.leafletElement.getZoom();
+	}
+
+	getCenter() {
+		return this.refs.the_map.leafletElement.getCenter();
 	}
 
 	getMapBounds() {
@@ -522,6 +437,10 @@ export default class App extends React.Component {
 		});
 
 		return visibleMaps;
+	}
+
+	getVisibleAdIds(viewBounds) {
+		return Object.keys(this.getVisibleMaps(viewBounds)).map(adId => parseInt(adId));
 	}
 
 	getVisibleMapsByState() {
@@ -584,7 +503,7 @@ export default class App extends React.Component {
 
 	renderSidebar() {
 		let title, content, theClass;
-		let ADs = CityStore.getAreaDescriptions();
+		const ADs = AreaDescriptionsStore.getADsForNeighborhood(this.state.selectedCity, this.state.selectedNeighborhood);
 
 		if (this.state.downloadOpen) {
 			title = 	<h2>
@@ -592,10 +511,10 @@ export default class App extends React.Component {
 							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-		} else if (this.state.selectedNeighborhood && ADs[this.state.selectedNeighborhood]) {
+		} else if (this.state.selectedNeighborhood && ADs) {
 			theClass = 'area';
 			title = 	<h2>
-							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
+							<span>{ CityStore.getName() + ', '}</span> 
 							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
 							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
@@ -603,11 +522,11 @@ export default class App extends React.Component {
 							areaId={ this.state.selectedNeighborhood } 
 							previousAreaId={ CityStore.getPreviousAreaId(this.state.selectedNeighborhood) }
 							nextAreaId={ CityStore.getNextAreaId(this.state.selectedNeighborhood) }
-							areaData={ ADs[this.state.selectedNeighborhood] } 
+							areaDescriptions={ ADs } 
 							formId={ CityStore.getFormId() } 
 							cityId={ this.state.selectedCity }
 							onCategoryClick={ this.onCategoryClick } 
-							onNeighborhoodClick={ this.onNeighborhoodClick } 
+							//onNeighborhoodClick={ this.onNeighborhoodClick } 
 							ref={'areadescription' + this.state.selectedNeighborhood } 
 						/>;
 		} else if (this.state.selectedCategory && CityStore.getADsByCat(...this.state.selectedCategory.split('-'))) {
@@ -639,10 +558,10 @@ export default class App extends React.Component {
 							area={ CityStore.getArea() } 
 							gradeStats={ CityStore.getGradeStats() } 
 							ringStats={ CityStore.getRingStats() } 
-							areaSelected={ this.ringAreaSelected } 
-							areaUnselected={ this.ringAreaUnselected } 
-							gradeSelected={ this.gradeSelected } 
-							gradeUnselected={ this.gradeUnselected } 
+							areaSelected={ this.onBurgessChartHover } 
+							areaUnselected={ this.onBurgessChartOff } 
+							gradeSelected={ this.onAreaChartHover } 
+							gradeUnselected={ this.onAreaChartOff } 
 							triggerIntro={ this.triggerIntro } 
 							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
@@ -673,6 +592,7 @@ export default class App extends React.Component {
 	}
 
 	render () {
+		//console.log(this.state);
 		let modalStyle = {
 				overlay : {
 					backgroundColor: null
@@ -689,8 +609,8 @@ export default class App extends React.Component {
 					position: null
 				}
 			},
-			mapConfig = this.state.map || this.state.mapConfig,
-			ADs = AreaDescriptionsStore.getVisibleAreaDescriptions(),
+			ADs = AreaDescriptionsStore.getVisible(),
+			aboveThreshold = this.state.map.zoom >= this.props.adZoomThreshold,
 			outerRadius = CityStore.getOuterRingRadius();
 
 		//setIconDefaultImagePath('./static');
@@ -769,11 +689,11 @@ export default class App extends React.Component {
 								}) }
 
 								{/* rings: donut holes */}
-								{ (outerRadius > 0) ?
+								{ (aboveThreshold && outerRadius > 0) ?
 									<Circle 
 										center={ CityStore.getLoopLatLng() } 
 										radius={ outerRadius / 7 } 
-										fillOpacity={ (this.state.selectedRingGrade.ring >= 2) ? 0.75 : 0 } 
+										fillOpacity={ (this.state.selectedRingGrade.ringId >= 2) ? 0.75 : 0 } 
 										fillColor= { '#000' } 
 										clickable={ false } 
 										className={ 'donuthole' } 
@@ -783,7 +703,7 @@ export default class App extends React.Component {
 								}
 							
 								{/* rings: donuts */}
-								{ (outerRadius > 0) ?
+								{ (aboveThreshold && outerRadius > 0) ?
 									[2,3,4,5].map((ringNum) => {
 										return (
 											<Donut 
@@ -791,7 +711,7 @@ export default class App extends React.Component {
 												innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
 												outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
 												clickable={ false } 
-												fillOpacity={ (this.state.selectedRingGrade.ring > 0 && ringNum !== this.state.selectedRingGrade.ring) ? 0.75 : 0 } 
+												fillOpacity={ (this.state.selectedRingGrade.ringId > 0 && ringNum !== this.state.selectedRingGrade.ringId) ? 0.75 : 0 } 
 												fillColor= { '#000' } 
 												weight={ 1 }
 												className={ 'donut' } 
@@ -803,10 +723,10 @@ export default class App extends React.Component {
 								}
 
 								{/* rings: selected ring */}
-								{ (this.state.selectedRingGrade.ring > 0) ?
+								{ (aboveThreshold && this.state.selectedRingGrade.ringId > 0) ?
 									<LayerGroup>
 										<GeoJson 
-											data={ CityStore.getInvertedGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
+											data={ CityStore.getInvertedGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ringId, this.state.selectedRingGrade.grade) }
 											clickable={ false }
 											key={ 'invertedRingStroke'} 
 											fillColor={ '#000'}
@@ -817,7 +737,7 @@ export default class App extends React.Component {
 											className={ 'invertedRingGradedArea' }
 										/>
 										<GeoJson 
-											data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ring, this.state.selectedRingGrade.grade) }
+											data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ringId, this.state.selectedRingGrade.grade) }
 											clickable={ false }
 											key={ 'ringStroke'} 
 											fillOpacity={ (1 - this.state.raster.opacity) / 2 }
@@ -830,7 +750,7 @@ export default class App extends React.Component {
 								}
 
 								{/* selected grade */}
-								{ (this.state.selectedGrade) ?
+								{ (aboveThreshold && this.state.selectedGrade) ?
 									<AreaPolygon 
 										data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
 										key={ 'selectedGradedNeighborhoods' } 
@@ -839,7 +759,7 @@ export default class App extends React.Component {
 									null
 								}
 
-								{ (this.state.highlightedNeighborhood && ADs[this.state.highlightedNeighborhood] && ADs[this.state.highlightedNeighborhood].area_geojson_inverted) ?
+								{ (aboveThreshold && this.state.highlightedNeighborhood && ADs[this.state.highlightedNeighborhood] && ADs[this.state.highlightedNeighborhood].area_geojson_inverted) ?
 									<AreaPolygon
 										data={ ADs[this.state.highlightedNeighborhood].area_geojson_inverted } 
 										clickable={ false }
@@ -850,7 +770,7 @@ export default class App extends React.Component {
 								}
 
 								{/* selected neighborhood */}
-								{ (this.state.selectedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.selectedNeighborhood] && ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted) ?
+								{ (aboveThreshold && this.state.selectedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.selectedNeighborhood] && ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted) ?
 									<AreaPolygon
 										data={ ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted } 
 										clickable={ false }
@@ -861,7 +781,7 @@ export default class App extends React.Component {
 								}
 
 								{/* neighborhood polygons: shown on zoom level 10 and higher */}
-								{ (this.state.map.zoom >= 10) ?
+								{ (aboveThreshold) ?
 									Object.keys(ADs).map(adId => {
 										return (
 											Object.keys(ADs[adId]).map((areaId) => {
@@ -870,13 +790,13 @@ export default class App extends React.Component {
 														data={ ADs[adId][areaId].area_geojson }
 														className={ 'neighborhoodPolygon grade' + ADs[adId][areaId].holc_grade }
 														key={ 'neighborhoodPolygon' + areaId } 
-														onClick={ this.onNeighborhoodClick }
+														onClick={ this.onNeighborhoodPolygonClick }
 														adId={ adId }
 														neighborhoodId={ areaId } 
 														//fillOpacity={ (id == this.state.selectedNeighborhood) ? 1 : 0 }
 														style={{
-															opacity:(this.state.selectedRingGrade.ring > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
-															fillOpacity: (this.state.selectedRingGrade.ring > 0) ? 0 : (1 - this.state.raster.opacity) / 5
+															opacity:(this.state.selectedRingGrade.ringId > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
+															fillOpacity: (this.state.selectedRingGrade.ringId > 0) ? 0 : (1 - this.state.raster.opacity) / 5
 														}}
 													/>
 												);
@@ -887,7 +807,7 @@ export default class App extends React.Component {
 								}
 
 								{/* cartogram marker for city: shown below zoom level 10 */}
-								{ (this.state.map.zoom < 10) ?
+								{ (!aboveThreshold) ?
 									RasterStore.getMapsList().map((item, i) => {
 										return ((item.radii) ?
 											Object.keys(item.radii).map((grade) => {

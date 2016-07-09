@@ -12,16 +12,11 @@ const AreaDescriptionsStore = {
 		areaDescriptions: {}
 	},
 
-	// TODO: Make a generic DataLoader class to define an interface,
-	// and let CartoDBLoader extend and implement that?
-	// Basic idea is that anything with a query method that returns a Promise
-	// that resolves with an array of response data or rejects with an error
-	// can be used here.
 	dataLoader: CartoDBLoader,
 
 	loadData: function (adIds) {
 
-		this.data.adIds = adIds;
+		this.data.adIds = adIds.map(adId => parseInt(adId));
 
 		// create queries for those that aren't already in memory
 		let queries = [];
@@ -37,8 +32,11 @@ const AreaDescriptionsStore = {
 		this.dataLoader.query(queries).then((responses) => {
 			responses.forEach(response => {
 				if (response.length > 0) {
-					let adId = response[0].ad_id;
-					this.data.areaDescriptions[adId] = this.parseAreaDescriptions(response);
+					const adId = response[0].ad_id;
+					this.data.areaDescriptions[adId] = {
+						byNeighborhood: this.parseAreaDescriptions(response)
+					};
+					this.data.areaDescriptions[adId].byCategory = this.parseADsByCat(this.data.areaDescriptions[adId].byNeighborhood);
 				}
 			});
 
@@ -110,6 +108,26 @@ const AreaDescriptionsStore = {
 		return adData;
 	},
 
+	parseADsByCat: function(ADs) {
+		let ADsByCat = {};
+		Object.keys(ADs).forEach(function(neighborhoodId) {
+			Object.keys(ADs[neighborhoodId].areaDesc).forEach(function(cat) {
+				// initialize if necessary
+				ADsByCat[cat] = ADsByCat[cat] || {};
+				if (typeof(ADs[neighborhoodId].areaDesc[cat]) == 'string') {
+					ADsByCat[cat][neighborhoodId] = ADs[neighborhoodId].areaDesc[cat];
+				} else if (typeof(ADs[neighborhoodId].areaDesc[cat]) == 'object') {
+					Object.keys(ADs[neighborhoodId].areaDesc[cat]).forEach(function (subcat) {
+						ADsByCat[cat][subcat] = ADsByCat[cat][subcat] || {};
+						ADsByCat[cat][subcat][neighborhoodId] = ADs[neighborhoodId].areaDesc[cat][subcat];
+					});
+				}
+			});
+		});
+
+		return ADsByCat;
+	},
+
 	parseInvertedGeoJson: function(geojson) {
 		//Create a new set of latlngs, adding our world-sized ring first
 		let NWHemisphere = [[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]],
@@ -133,11 +151,19 @@ const AreaDescriptionsStore = {
 		return this.data.areaDescriptions;
 	},
 
-	getVisibleAreaDescriptions: function() {
+	getADs: function(adId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false;
+	},
+
+	getADsForNeighborhood: function(adId, holcId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].areaDesc : false;
+	},
+
+	getVisible: function() {
 		let ADs = {};
 		this.data.adIds.forEach(adId => {
 			if (this.data.areaDescriptions[adId]) {
-				ADs[adId] = this.data.areaDescriptions[adId];
+				ADs[adId] = this.data.areaDescriptions[adId].byNeighborhood;
 			}
 		});
 		return ADs;
@@ -157,8 +183,13 @@ AppDispatcher.register((action) => {
 
 	switch (action.type) {
 
+		case AppActionTypes.loadInitialData:
+			if (action.state.selectedCity) {
+				AreaDescriptionsStore.loadData([action.state.selectedCity]);
+			}
+			break;
+
 		case AppActionTypes.mapMoved:
-			//console.log(`[2] The '${ AppActionTypes.loadInitialData }' event is handled by CityStore....`);
 			if (action.value) {
 				AreaDescriptionsStore.loadData(action.value);
 			}

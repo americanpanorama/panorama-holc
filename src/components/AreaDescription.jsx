@@ -6,7 +6,7 @@ export default class AreaDescription extends React.Component {
 
 	// property validation
 	static propTypes = {
-		areaData: PropTypes.object
+		areaDescriptions: PropTypes.object
 	};
 
 	// (instead of ES5-style getDefaultProps)
@@ -24,9 +24,11 @@ export default class AreaDescription extends React.Component {
 
 	render () {
 
-		if (typeof(this.props.areaData) == 'undefined' || typeof(this.props.areaData.areaDesc) == 'undefined') {
+		/* if (typeof(this.props.areaData) == 'undefined' || typeof(this.props.areaData.areaDesc) == 'undefined') {
 			return false;
-		}
+		} */
+
+
 
 		return (
 
@@ -267,7 +269,7 @@ export default class AreaDescription extends React.Component {
 	}
 
 	renderNSForm8_19371001() {
-		let AD = this.props.areaData.areaDesc;
+		let AD = this.props.areaDescriptions;
 		return (
 			<ul className='area_description NSForm8'>
 				<li>
@@ -508,10 +510,10 @@ export default class AreaDescription extends React.Component {
 	}
 
 	renderSimpleCategory(catNum, catName) {
-		let AD = this.props.areaData.areaDesc;
-				
+		let AD = this.props.areaDescriptions;
+		
 		return (
-			<li>
+			<li key={'AD-' + catNum}>
 				<span className='catNum catSelectable' onClick={ this.props.onCategoryClick } id={ catNum }>{ catNum }</span>
 				<span className='catName catSelectable' onClick={ this.props.onCategoryClick } id={ catNum }>{ catName }</span>
 				<span className='catData'>{ (AD[catNum] ) ? AD[catNum] : <span className='empty'>empty</span>}</span>
@@ -520,18 +522,22 @@ export default class AreaDescription extends React.Component {
 	}
 
 	renderSimpleSubcategory(catNum, catLetter, subcatName) {
-		let AD = this.props.areaData.areaDesc;
+		let AD = this.props.areaDescriptions; 
+
+		if (typeof AD[catNum][catLetter] == 'object') {
+			console.warn(catNum + catLetter + ' is an object when a string was expected');
+		}
 		return (
 			<li>
 				<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id={ catNum + '-' + catLetter }>{ catLetter }</span>
 				<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id={ catNum + '-' + catLetter }>{ subcatName }</span>
-				<span className='subcatData'>{ (AD[catNum] && AD[catNum][catLetter] ) ? AD[catNum][catLetter] : <span className='empty'>empty</span>}</span>
+				<span className='subcatData'>{ (AD[catNum] && AD[catNum][catLetter] && typeof AD[catNum][catLetter] !== 'object' ) ? AD[catNum][catLetter] : <span className='empty'>empty</span>}</span>
 			</li>
 		);
 	}
 
 	renderSimpleData(catNum, subcatLetter = '', order = null) {
-		let AD = this.props.areaData.areaDesc;
+		let AD = this.props.areaDescriptions;
 		if (order == null) {
 			return (
 				<span>{ (AD[catNum] && AD[catNum][subcatLetter] ) ? AD[catNum][subcatLetter] : <span className='empty'>empty</span> }</span>
