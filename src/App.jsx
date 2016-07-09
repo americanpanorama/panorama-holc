@@ -857,9 +857,14 @@ export default class App extends React.Component {
 
                 	 <div className='map-legend-wrapper' onClick={this.onListItemClick}>
 				        <ul>
-				          <li className={"item narratives" + (!this.props.narratives ? " off" : "")} data-item-type="narratives"><span>Narratives</span></li>
-				          <li className={"item cotton" + (!this.props.cotton ? " off" : "")} data-item-type="cotton"><span>Cotton</span></li>
-				          <li className={"item sugar" + (!this.props.sugar ? " off" : "")} data-item-type="sugar"><span>Sugar</span></li>
+				          <li className={"item narratives"} data-item-type="narratives"><span>Grading and Density</span></li>
+				          <li className={"item user"} data-item-type="user"><span>User Location</span></li>
+				          <li className={"item first"} data-item-type="first"><span>First Grade</span></li>
+				          <li className={"item second"} data-item-type="second"><span>Second Grade</span></li>
+				          <li className={"item third"} data-item-type="third"><span>Third Grade</span></li>
+				          <li className={"item fourth"} data-item-type="fourth"><span>Fourth Grade</span></li>
+				          <li className={"item sparse"} data-item-type="sparse"><span>Sparsley Settled</span></li>
+				          <li className={"item industrial"} data-item-type="industrial"><span>Industrial and Commercial</span></li>
 				        </ul>
 				      </div>
 
@@ -888,6 +893,7 @@ export default class App extends React.Component {
 
 						</div>
 					</div>
+					
 					<Modal 
 						isOpen={ this.state.modalSectionOpen !== null } 
 						onRequestClose={ this.closeModal} 
@@ -905,6 +911,7 @@ export default class App extends React.Component {
 						<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
 						<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
 					</Modal>
+
 
 
 					<IntroManager { ...this.state.intro } />
