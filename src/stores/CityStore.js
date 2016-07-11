@@ -3,6 +3,7 @@ import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
 import formsMetadata from '../../data/formsMetadata.json';
+import MapStateStore from '../stores/MapStateStore';
 
 /* City Store is responsible for maintaining most of the important state
 variables: e.g. selected city, neighborhood, category, ring, grade, etc. */
@@ -18,7 +19,9 @@ const CityStore = {
 			grade: null
 		},
 		selectedHolcId: null,
+		selectedCategory: null,
 		selectedGrade: null,
+		highlightedHolcId: null,
 		areas: {},
 		ringAreasGeometry: [], // not the rings themselves but the intersection of rings and areas
 		loopLatLng: [],
@@ -44,7 +47,7 @@ const CityStore = {
 		 */
 		ringStats: [],
 		gradeStats: [],
-		areaDescriptions: {},
+
 		ADsByCat: {},
 		polygonBoundingBox: null,
 		polygonsCenter: null,
@@ -52,10 +55,14 @@ const CityStore = {
 		gradedAreaOfRings: {},
 		gradedAreaByGrade: {},
 		users: {
+			latLng: null,
 			adId: null,
 			city: null,
-			neighborhood: null
-		}
+			neighborhood: null,
+			offerZoomTo: false
+		},
+		selectedByUser: false,
+		hasLoaded: false
 	},
 
 	// TODO: Make a generic DataLoader class to define an interface,
@@ -65,14 +72,20 @@ const CityStore = {
 	// can be used here.
 	dataLoader: CartoDBLoader,
 
-	loadData: function (cityId, options = {}) {
+	loadData: function (cityId, selectedByUser) {
 		if (cityId == null) {
 			this.data.id = null;
+			this.data.selectedNeighborhood = null;
+			this.data.selectedCategory = null;
 			this.emit(AppActionTypes.storeChanged);
 			return;
 		}
 
-		let zoomTo = (typeof(options.zoomTo) !== 'undefined') ? options.zoomTo : false;
+		if (cityId == this.data.id) {
+			// already loaded;
+			this.emit(AppActionTypes.storeChanged);
+			return;
+		}
 
 		this.dataLoader.query([
 			{
@@ -94,7 +107,8 @@ const CityStore = {
 				format: 'JSON'
 			}
 		]).then((response) => {
-			this.data.id = cityId;
+			this.data.id = parseInt(cityId);
+			this.data.selectedByUser = selectedByUser;
 
 			let cityData = response[0][0];
 			this.data.name = cityData.city;
@@ -112,20 +126,22 @@ const CityStore = {
 			this.data.outerRingRadius = (response[1][0]) ? response[1][0].outerringradius : false;
 			this.data.loopLatLng = (cityData) ? [cityData.looplat, cityData.looplng] : false;
 			this.data.gradeStats = this.parseGradeStats(this.data.ringAreasGeometry);
-
-
-			//this.data.areaDescriptions = this.parseAreaDescriptions(response[2]);
-			//this.data.ADsByCat = this.parseADsByCat();
 			
 			let polygonLatLngs = response[2][0];
 			if (polygonLatLngs.minlat) {
 				this.data.polygonBoundingBox = [ [polygonLatLngs.minlat, polygonLatLngs.minlng], [polygonLatLngs.maxlat, polygonLatLngs.maxlng] ];
 				this.data.polygonsCenter = [ polygonLatLngs.centerlat, polygonLatLngs.centerlng ];
+			} else {
+				this.data.polygonBoundingBox = null;
+				this.data.polygonsCenter = null;
 			}
 
-			this.data.selectedHolcId = (options.selectedHolcId) ? options.selectedHolcId : null;
+			this.data.hasLoaded = true;
 
-			this.emit(AppActionTypes.storeChanged, options);
+			console.log('CityStore finished loading');
+			console.log(this.data);
+
+			this.emit(AppActionTypes.storeChanged);
 
 		}, (error) => {
 			// TODO: handle this.
@@ -155,6 +171,16 @@ const CityStore = {
 
 	/* setter functions for state variable */
 
+	setHighlightedHolcId: function (holcId) {
+		this.data.highlightedHolcId = holcId;
+		this.emit(AppActionTypes.storeChanged);
+	},
+
+	setSelectedCategory: function (id) {
+		this.data.selectedCategory = id;
+		this.emit(AppActionTypes.storeChanged);
+	},
+
 	setSelectedHolcId: function (holcId) {
 		this.data.selectedHolcId = holcId;
 		this.emit(AppActionTypes.storeChanged);
@@ -172,8 +198,16 @@ const CityStore = {
 
 	/* getter functions */
 
+	getHighlightedHolcId: function() {
+		return this.data.highlightedHolcId;
+	},
+
 	getId: function() {
 		return this.data.id;
+	},
+
+	getSelectedCategory: function() {
+		return this.data.selectedCategory;
 	},
 
 	getSelectedHolcId: function() {
@@ -190,6 +224,10 @@ const CityStore = {
 
 	getName: function() {
 		return this.data.name;
+	},
+
+	getState: function() {
+		return this.data.state;
 	},
 
 	getFormId: function() {
@@ -224,35 +262,6 @@ const CityStore = {
 		return this.data.ringAreasGeometry[ring][grade].inverted_geojson;
 	},
 
-	getGeoJsonForGrade: function(grade) {
-		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],
-			holes = [];
-		Object.keys(this.data.areaDescriptions).forEach((id, i) => {
-			if (this.data.areaDescriptions[id].holc_grade == grade) {
-				this.data.areaDescriptions[id].area_geojson.coordinates[0].forEach((coords, i2) => {
-					if (i2 == 0) {
-						polygons.push(coords);
-					} else {
-						holes.push(coords);
-					}
-				});
-			}
-		});
-
-		polygons = (holes.length > 0) ? [polygons.concat(holes)] : [polygons]
-
-		let geojson = {
-			'type': 'Feature',
-			'geometry': {
-				'type': 'MultiPolygon',
-				'coordinates': polygons
-			},
-			'properties': {}
-		};
-
-		return geojson;
-	},
-
 	getOuterRingRadius: function() {
 		return this.data.outerRingRadius;
 	},
@@ -261,16 +270,16 @@ const CityStore = {
 		return this.data.loopLatLng;
 	},
 
-	getAreaDescriptions: function() {
-		return this.data.areaDescriptions;
-	},
-
 	getPolygonsBounds: function() {
 		return this.data.polygonBoundingBox;
 	},
 
 	getPolygonsCenter: function() {
 		return this.data.polygonsCenter;
+	},
+
+	getSelectedByUser: function() {
+		return this.data.selectedByUser;
 	},
 
 	getUsersCity: function() {
@@ -283,11 +292,6 @@ const CityStore = {
 
 	getUsersNeighborhood: function() {
 		return this.data.users.neighborhood;
-	},
-
-	hasADData: function() {
-		let ADValues = Object.keys(this.data.areaDescriptions).map((holc_id) => this.data.areaDescriptions[holc_id].areaDesc);
-		return ADValues.reduce((a, b) => a || typeof b === 'object', false);
 	},
 
 	getADsByCat: function(cat, subcat) {
@@ -304,16 +308,6 @@ const CityStore = {
 		return false;
 	},
 
-	getPreviousAreaId: function(areaId) {
-		let formIds = Object.keys(this.data.areaDescriptions).sort(this.alphanumCase);
-		return formIds[formIds.indexOf(areaId) - 1];
-	},
-
-	getNextAreaId: function(areaId) {
-		let formIds = Object.keys(this.data.areaDescriptions).sort(this.alphanumCase);
-		return formIds[formIds.indexOf(areaId) + 1];
-	},
-
 	getCategoryString: function(catNum, catLetter) {
 		return catNum + ((catLetter) ? '-' + catLetter : '');
 	},
@@ -327,40 +321,6 @@ const CityStore = {
 		} else {
 			return false;
 		}
-	},
-
-	getPreviousCatIds: function(catNum, catLetter) {
-		let formId = this.getFormId();
-		for (let checkCatNum = (!catLetter) ? parseInt(catNum) - 1 : parseInt(catNum); checkCatNum >= 1; checkCatNum--) {
-			for (let checkCatLetter = (!catLetter || catLetter == 'a') ? 'z' : String.fromCharCode(catLetter.charCodeAt()-1); checkCatLetter >= 'a'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()-1), catLetter = undefined) {
-				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
-					return [checkCatNum, undefined];
-				} else if (formsMetadata[formId][checkCatNum] && formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
-					return [checkCatNum, checkCatLetter];
-				}
-			}
-		}
-
-		return false;
-	},
-
-	getNextCatIds: function(catNum, catLetter) {
-		let formId = this.getFormId();
-		for (let checkCatNum = (!catLetter) ? parseInt(catNum) + 1 : parseInt(catNum); checkCatNum < 30; checkCatNum++) {
-			for (let checkCatLetter = (!catLetter || catLetter == 'z') ? 'a' : String.fromCharCode(catLetter.charCodeAt()+1); checkCatLetter <= 'z'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()+1), catLetter = undefined) {
-				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
-					return [checkCatNum, undefined];
-				} else if (formsMetadata[formId][checkCatNum] && formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
-					return [checkCatNum, checkCatLetter];
-				}
-			}
-		}
-
-		return false;
-	},
-
-	getArea: function () {
-		return Object.keys(this.data.areaDescriptions).map((id, i) => this.data.areaDescriptions[id].sqmi ).reduce((a,b) => a+b, 0);
 	},
 
 	queryCategory: function(catNum, catLetter) {
@@ -482,6 +442,10 @@ const CityStore = {
 		return formattedStats;
 	},
 
+	hasLoaded: function() {
+		return this.data.hasLoaded;
+	},
+
 	parseGradeStats: function(ringAreasGeometry) {
 		let grades = ['A','B','C','D'];
 
@@ -512,27 +476,6 @@ const CityStore = {
 		geojson.coordinates = (holes.length > 0) ? [newLatLngs.concat(holes)] : [newLatLngs]
 		return geojson;
 	},
-
-/* 	parseADsByCat: function() {
-		let ADsByCat = {},
-			  ADs = this.data.areaDescriptions;
-		Object.keys(ADs).forEach(function(neighborhoodId) {
-			Object.keys(ADs[neighborhoodId].areaDesc).forEach(function(cat) {
-				// initialize if necessary
-				ADsByCat[cat] = ADsByCat[cat] || {};
-				if (typeof(ADs[neighborhoodId].areaDesc[cat]) == 'string') {
-					ADsByCat[cat][neighborhoodId] = ADs[neighborhoodId].areaDesc[cat];
-				} else if (typeof(ADs[neighborhoodId].areaDesc[cat]) == 'object') {
-					Object.keys(ADs[neighborhoodId].areaDesc[cat]).forEach(function (subcat) {
-						ADsByCat[cat][subcat] = ADsByCat[cat][subcat] || {};
-						ADsByCat[cat][subcat][neighborhoodId] = ADs[neighborhoodId].areaDesc[cat][subcat];
-					});
-				}
-			});
-		});
-
-		return ADsByCat;
-	}, */
 
 	/* alphanum.js (C) Brian Huisman
 	* Based on the Alphanum Algorithm by David Koelle
@@ -587,32 +530,46 @@ const CityStore = {
 Object.assign(CityStore, EventEmitter.prototype);
 
 // Register callback to handle all updates
-AppDispatcher.register((action) => {
+CityStore.dispatchToken = AppDispatcher.register((action) => {
 
 	switch (action.type) {
 
+		case AppActionTypes.ADCategorySelected:
+			CityStore.setSelectedCategory(action.value);
+			CityStore.setSelectedHolcId(null);
+			break;
+
 		case AppActionTypes.loadInitialData:
 			if (action.state.selectedCity) {
-				CityStore.loadData(action.state.selectedCity, { selectedHolcId: action.state.selectedNeighborhood });
+				CityStore.loadData(action.state.selectedCity, true);
+			}
+			if (action.state.selectedNeighborhood) {
+				CityStore.setSelectedHolcId(action.state.selectedNeighborhood);
+			}
+			if (action.state.selectedCategory) {
+				CityStore.setSelectedCategory(action.state.selectedCategory);
 			}
 			break;
 
 		case AppActionTypes.citySelected:
-			CityStore.loadData(action.value, action.options);
+			CityStore.loadData(action.value, action.selectedByUser);
+			CityStore.setSelectedHolcId(null);
+			CityStore.setSelectedCategory(null);
 			break;
 
 		case AppActionTypes.gradeSelected:
 			CityStore.setSelectedGrade(action.value);
 			break;
 
+		case AppActionTypes.neighborhoodHighlighted:
+			CityStore.setHighlightedHolcId(action.holcId);
+			break;
+
 		case AppActionTypes.neighborhoodSelected:
-			// if the city's already selected, just set the neighborhood
-			if (action.adId == CityStore.getId()) {
-				CityStore.setSelectedHolcId(action.holcId);
-			}
-			// otherwise, load the city 
-			else {
-				CityStore.loadData(action.adId, { selectedHolcId: action.holcId });
+			CityStore.setSelectedCategory(null);
+			CityStore.setSelectedHolcId(action.holcId);
+			if (action.adId !== CityStore.getId()) {
+				CityStore.loadData(action.adId, false);
 			}
 			break;
 
@@ -620,26 +577,23 @@ AppDispatcher.register((action) => {
 			CityStore.setSelectedRingGrade(action.value);
 			break;
 
-		case AppActionTypes.ringAreaSelected:
-			CityStore.ringAreaSelected(action.value);
-			break;
-
 		case AppActionTypes.mapMoved:
+			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
+
+			let visibleHOLCMapsIds = MapStateStore.getVisibleHOLCMapsIds();
 			// unload city if nothing's visible 
-			if (action.value.length == 0 && CityStore.getId() !== null) {
+			if (visibleHOLCMapsIds.length == 0) {
 				CityStore.loadData(null);
 			}
 			// load a city if there's only one visible and it's different
-			else if (action.value.length == 1 && action.value[0] !== CityStore.getId()) {
-				console.log('fired', action.value[0], CityStore.getId());
-				CityStore.loadData(action.value[0], { zoomTo: false });
+			else if (visibleHOLCMapsIds.length == 1 && visibleHOLCMapsIds[0] !== CityStore.getId()) {
+				CityStore.loadData(visibleHOLCMapsIds[0], { zoomTo: false });
 			} 
 			// unload city if more than one are visible and it's below the zoom threshold
-			else if (CityStore.getId() !== null && action.belowAdThreshold && action.value.length > 1) {
+			else if (visibleHOLCMapsIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
 				CityStore.loadData(null);
 			} 
 			break;
-
 	}
 
 

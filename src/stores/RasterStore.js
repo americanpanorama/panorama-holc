@@ -73,6 +73,8 @@ const RasterStore = {
 
 			this.data.loaded = true;
 
+			console.log('RasterStore finished loading');
+
 			this.emit(AppActionTypes.storeChanged);
 		},
 		(error) => {
@@ -118,6 +120,13 @@ const RasterStore = {
 		return [ 
 			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
 			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
+		];
+	},
+
+	getMapBoundsForAdId: function(adId) {
+		return [ 
+			[ this.data.maps[adId].minLat, this.data.maps[adId].minLng ], 
+			[ this.data.maps[adId].maxLat, this.data.maps[adId].maxLng ] 
 		];
 	},
 
@@ -387,6 +396,9 @@ RasterStore.dispatchToken = AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			RasterStore.loadInitialData(action.state);
+			if (action.state.selectedCity) {
+				RasterStore.setSelectedCity(action.state.selectedCity);
+			}
 			break;
 
 		case AppActionTypes.citySelected:

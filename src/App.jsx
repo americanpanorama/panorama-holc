@@ -4,7 +4,10 @@ import * as React from 'react';
 // stores
 import AreaDescriptionsStore from './stores/AreaDescriptionsStore';
 import CityStore from './stores/CityStore';
+import MapStateStore from './stores/MapStateStore';
 import RasterStore from './stores/RasterStore';
+import UserLocationStore from './stores/UserLocationStore';
+import TextsStore from './stores/TextsStore';
 
 // components (views)
 import ADCat from './components/ADCat.jsx';
@@ -27,7 +30,6 @@ import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
 
 // config
-import appConfig from '../data/appConfig.json';
 import cartodbConfig from '../basemaps/cartodb/config.json';
 import cartodbLayers from '../basemaps/cartodb/basemaps.json';
 import tileLayers from '../basemaps/tileLayers.json';
@@ -40,8 +42,7 @@ import stateAbbrs from '../data/state_abbr.json';
 export default class App extends React.Component {
 
 	static defaultProps = {
-		somethingRequested: Object.keys(HashManager.getState()).reduce((a,b) => (typeof a !== 'undefined' && typeof HashManager.getState()[a] !== 'undefined') || (typeof b !== 'undefined' && typeof HashManager.getState()[b] !== 'undefined'), ''),
-		adZoomThreshold: 9
+		somethingRequested: Object.keys(HashManager.getState()).reduce((a,b) => (typeof a !== 'undefined' && typeof HashManager.getState()[a] !== 'undefined') || (typeof b !== 'undefined' && typeof HashManager.getState()[b] !== 'undefined'), '')
 	};
 
 	constructor (props) {
@@ -49,7 +50,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','openModal','closeModal','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSearchChange','onSliderChange','onUserLocated','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -57,38 +58,34 @@ export default class App extends React.Component {
 
 	componentWillMount () {
 		this.computeComponentDimensions();
-		AppActions.loadInitialData(this.state);
+		AppActions.loadInitialData(this.state, HashManager.getState());
 
 		// try to retrieve the users location
-		/* if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition((position) => {
-				const userLocation = [position.coords.latitude, position.coords.longitude];
-				this.setState({
-					userLocation: [position.coords.latitude, position.coords.longitude]
-				});
-				if (!this.props.somethingRequested) {
-					CityStore.getCityFromPoint(userLocation);
-				}
-			}, (error) => {
-				console.log('Geolocation error occurred. Error code: ' + error.code);
-			});
-		} */
+		// if (navigator.geolocation) {
+		// 	navigator.geolocation.getCurrentPosition((position) => {
+		// 		AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
+		// 	}, (error) => {
+		// 		console.warn('Geolocation error occurred. Error code: ' + error.code);
+		// 	});
+		// }
 	}
 
 	componentDidMount () {
 		window.addEventListener('resize', this.onWindowResize);
 		AreaDescriptionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		MapStateStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
-		CityStore.addListener(AppActionTypes.userLocated, this.onUserLocated);
+		UserLocationStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		TextsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 
 		// you have to wait until there's a map to query to get the visible maps
 		const waitingId = setInterval(() => {
 			if (RasterStore.hasLoaded()) {
 				clearInterval(waitingId);
 
-				// emit mapped moved event
-				AppActions.mapMoved(this.getVisibleAdIds(this.getMapBounds()), this.getZoom() <= this.props.adZoomThreshold);
+				// emit mapped moved event to initialize map state
+				AppActions.mapInitialized(this.refs.the_map.leafletElement);
 			}
 		}, 100);
 	}
@@ -116,12 +113,7 @@ export default class App extends React.Component {
 			},
 			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
-			intro: {
-				open: false
-			},
-			modalSectionOpen: null,
 			downloadOpen: false,
-			userCityOpen: false,
 			map: {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
 				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
@@ -135,60 +127,36 @@ export default class App extends React.Component {
 					width: 0,
 					height: 0
 				}
-			},
-			userLocation: false
+			}
 		};
 	}
 
 	storeChanged (options = {}) {
-		const newState = {
+		this.setState({
 			selectedCity: CityStore.getId(),
 			selectedGrade: CityStore.getSelectedGrade(),
 			selectedNeighborhood: CityStore.getSelectedHolcId(),
-			selectedCategory: null,
+			selectedCategory: CityStore.getSelectedCategory(),
 			selectedRingGrade: CityStore.getSelectedRingGrade(),
-			highlightedNeighborhood: null,
-		};
-
-		// only change the map location if that's requested
-		const mapBounds = this.refs.the_map.leafletElement.getBounds();
-		if (this.state.selectedCity && ((options && options.zoomTo))) {
-			// || !mapBounds.intersects(RasterStore.getMapBounds())
-			let bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.getMapBounds();
-			newState.map = {
-				center: (CityStore.getPolygonsCenter()) ? CityStore.getPolygonsCenter() : RasterStore.getCenter(),
-				zoom: this.refs.the_map.leafletElement.getBoundsZoom(bounds)
+			highlightedNeighborhood: CityStore.getHighlightedHolcId(),
+			map: {
+				center: MapStateStore.getCenter(),
+				zoom: MapStateStore.getZoom()
 			}
-		}
-
-		this.setState(newState, this.changeHash);
+		}, this.changeHash); 
 	}
 
 	onMapMoved (event) {
-		this.setState({
-			map: {
-				zoom: this.getZoom(),
-				center: this.getCenter()
-			}
-		}, this.changeHash);
-
-		// emit mapped moved event, which might update ADs for visible maps or select a city if only one's visible
-		AppActions.mapMoved(this.getVisibleAdIds(event.target.getBounds()), event.target.getZoom() <= this.props.adZoomThreshold);
+		console.log('mapmoved fired');
+		AppActions.mapMoved(this.refs.the_map.leafletElement);
 	}
 
-	onCitySelected (value, index) {
-		console.log('fired');
-		// for click on state name in sidebar
-		value = (value.target) ? (value.target.options) ? value.target.options : value.target : value;
-		value.zoomTo = (typeof(value.zoomTo) == 'undefined') ? true : value.zoomTo;
-
-		if (value && value.id) {
-			AppActions.citySelected(value.id, {zoomTo: value.zoomTo});
-		}
+	onCitySelected (event) {
+		AppActions.citySelected(event.target.id, true);
 	}
 
-	onSearchChange (result, event) {
-		this.onCitySelected({id: result.cityId, zoomTo: true});
+	onCityMarkerSelected (event) {
+		AppActions.citySelected(event.target.options.id, true);
 	}
 
 	onNeighborhoodPolygonClick (event) {
@@ -201,20 +169,21 @@ export default class App extends React.Component {
 		AppActions.neighborhoodSelected(neighborhoodId, adId);
 	}
 
-	neighborhoodHighlighted (event) {
-		this.setState({
-			highlightedNeighborhood: event.target.id
-		});
+	onHOLCIDClick (event) {
+		console.log(event);
+		AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity);
 	}
 
-	neighborhoodsUnhighlighted (event) {
-		this.setState({
-			highlightedNeighborhood: null
-		});
+	neighborhoodHighlighted (event) {
+		AppActions.neighborhoodHighlighted(event.target.id);
+	}
+
+	neighborhoodsUnhighlighted () {
+		AppActions.neighborhoodHighlighted(null);
 	}
 
 	onCategoryClick (event) {
-		this.categorySelected(event.target.id);
+		AppActions.ADCategorySelected(event.target.id);
 	}
 
 	onBurgessChartHover (ringId, grade) {
@@ -230,6 +199,15 @@ export default class App extends React.Component {
 	}
 
 	onAreaChartOff () {
+		AppActions.gradeSelected(null);
+	}
+
+	onGradeHover (event) {
+		console.log(event.target);
+		AppActions.gradeSelected(event.target.grade);
+	}
+
+	onGradeUnhover () {
 		AppActions.gradeSelected(null);
 	}
 
@@ -287,35 +265,22 @@ export default class App extends React.Component {
 		});
 	}
 
-	onUserLocated () {
-		this.setState({
-			userCityOpen: true
-		});
-	}
-
 	onUserCityResponse(event) {
-		this.setState ({
-			userCityOpen: false
-		});
-
 		if (event.target.value == 'yes') {
-			AppActions.citySelected(CityStore.getUsersAdId(), {zoomTo: true});
+			AppActions.citySelected(UserLocationStore.getAdId(), true);
 		}
-	}
-
-	openModal (event) {
-		let section = event.target.id;
-		this.setState({ modalSectionOpen: section });
-	}
-
-	closeModal() {
-		this.setState({ modalSectionOpen: null});
+		AppActions.userRespondedToZoomOffer();
 	}
 
 	toggleBurgessDiagram () {
 		this.setState({
 			burgessDiagramVisible: !this.state.burgessDiagramVisible
 		});
+	}
+
+	onModalClick (event) {
+		const subject = (event.target.id) ? (event.target.id) : null;
+		AppActions.onModalClick(subject);
 	}
 
 	triggerIntro (event) {
@@ -383,87 +348,6 @@ export default class App extends React.Component {
 		this.setState({ dimensions: dimensions });
 	}
 
-	initializeCenter () {
-		let hashState = HashManager.getState();
-
-		if (hashState.loc && hashState.loc.center) {
-			return [ hashState.loc.center[0], hashState.loc.center[1] ];
-		} else if (this.state.selectedCity) {
-			return RasterStore.getCenter();
-		} else {
-			return [39.8333333,-98.585522];
-		}
-	}
-
-	initializeZoom() {
-		let hashState = HashManager.getState();
-		if (hashState.loc && hashState.loc.zoom) {
-			return hashState.loc.zoom;
-		} else if (this.state.selectedCity) {
-			return this.getBoundsZoom(RasterStore.getMapBounds());
-		} else {
-			return 5;
-		}
-	}
-
-	mapMounted () {
-		return typeof this.refs.the_map !== 'undefined';
-	}
-
-	getZoom() {
-		return this.refs.the_map.leafletElement.getZoom();
-	}
-
-	getCenter() {
-		return this.refs.the_map.leafletElement.getCenter();
-	}
-
-	getMapBounds() {
-		return this.refs.the_map.leafletElement.getBounds();
-	}
-
-	getBoundsZoom(bounds) {
-		return this.refs.the_map.leafletElement.getBoundsZoom(bounds);
-	}
-
-	getVisibleMaps(viewBounds) {
-		let rasters = RasterStore.getAllRasters(),
-			visibleMaps = {};
-
-		Object.keys(rasters).forEach((id) => {
-			if (viewBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
-				visibleMaps[id] = rasters[id];
-			}
-		});
-
-		return visibleMaps;
-	}
-
-	getVisibleAdIds(viewBounds) {
-		return Object.keys(this.getVisibleMaps(viewBounds)).map(adId => parseInt(adId));
-	}
-
-	getVisibleMapsByState() {
-		if (!this.refs.the_map) {
-			return {}
-		}
-
-		let visibleMaps = this.getVisibleMaps(this.refs.the_map.leafletElement.getBounds()),
-			maps = {};
-
-		Object.keys(visibleMaps).forEach((id) => {
-			maps[visibleMaps[id].state] =  (maps[visibleMaps[id].state]) ? maps[visibleMaps[id].state] : [];
-			maps[visibleMaps[id].state].push(visibleMaps[id]);
-		});
-
-		// alphabetize
-		Object.keys(maps).forEach((the_state) => {
-			maps[the_state].sort((a,b) => a.city > b.city);
-		});
-
-		return maps;
-	}
-
 	searchDisplay () {
 		let citiesOptions = RasterStore.getCityIdsAndNames(),
 			citiesData = RasterStore.getAllRasters();
@@ -482,28 +366,18 @@ export default class App extends React.Component {
 
 	/* render and display methods */
 
-	parseModalCopy (subject) {
-		let modalCopy = '';
-
-		if (subject) {
-			try {
-				modalCopy = appConfig.modalContent[subject].join('\n');
-			} catch (error) {
-				console.warn('Error parsing modal copy: ', subject);
-				modalCopy = 'Error parsing modal copy.';
+	renderSidebar() {
+		let title, content, theClass, ADs, ADsByCat;
+		// if (AreaDescriptionsStore.data.areaDescriptions && AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity]) {
+		// 	console.log(AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity].byCategory);
+		// }
+		if (this.state.selectedCity) {
+			if (this.state.selectedNeighborhood) {
+				ADs = AreaDescriptionsStore.getADsForNeighborhood(this.state.selectedCity, this.state.selectedNeighborhood)
+			} else if (this.state.selectedCategory) {
+				ADsByCat = AreaDescriptionsStore.getADsForCategory(this.state.selectedCity, this.state.selectedCategory);
 			}
 		}
-
-		// React requires this format to render a string as HTML,
-		// via dangerouslySetInnerHTML.
-		return {
-			__html: modalCopy
-		};
-	}
-
-	renderSidebar() {
-		let title, content, theClass;
-		const ADs = AreaDescriptionsStore.getADsForNeighborhood(this.state.selectedCity, this.state.selectedNeighborhood);
 
 		if (this.state.downloadOpen) {
 			title = 	<h2>
@@ -515,47 +389,67 @@ export default class App extends React.Component {
 			theClass = 'area';
 			title = 	<h2>
 							<span>{ CityStore.getName() + ', '}</span> 
-							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
+							<span 
+								onClick={ this.onStateSelected } 
+								id={ CityStore.getState() }
+							>
+								{ CityStore.getState() }
+							</span>
 							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = 	<AreaDescription 
 							areaId={ this.state.selectedNeighborhood } 
-							previousAreaId={ CityStore.getPreviousAreaId(this.state.selectedNeighborhood) }
-							nextAreaId={ CityStore.getNextAreaId(this.state.selectedNeighborhood) }
+							previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+							nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
 							areaDescriptions={ ADs } 
 							formId={ CityStore.getFormId() } 
 							cityId={ this.state.selectedCity }
 							onCategoryClick={ this.onCategoryClick } 
-							//onNeighborhoodClick={ this.onNeighborhoodClick } 
+							onHOLCIDClick={ this.onHOLCIDClick } 
 							ref={'areadescription' + this.state.selectedNeighborhood } 
 						/>;
-		} else if (this.state.selectedCategory && CityStore.getADsByCat(...this.state.selectedCategory.split('-'))) {
+		} else if (this.state.selectedCategory && ADsByCat) {
 			let [catNum, catLetter] = this.state.selectedCategory.split('-');
 			theClass = 'category';
 			title = 	<h2>
-							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
-							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
+							<span>{ CityStore.getName() + ', '}</span> 
+							<span 
+								onClick={ this.onStateSelected } 
+								id={ CityStore.getState() }
+							>
+								{ CityStore.getState() }
+							</span>
 							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = 	<ADCat 
+							ADsByCat={ ADsByCat }
+							formId = { AreaDescriptionsStore.getFormId(this.state.selectedCity) }
+							title={ AreaDescriptionsStore.getCatTitle(this.state.selectedCity, catNum, catLetter) }
 							catNum={ catNum } 
 							catLetter = { catLetter } 
+							previousCatIds = { AreaDescriptionsStore.getPreviousCatIds(this.state.selectedCity, catNum, catLetter) }
+							nextCatIds = { AreaDescriptionsStore.getNextCatIds(this.state.selectedCity, catNum, catLetter) }
 							cityId={ this.state.selectedCity }
-							onNeighborhoodClick={ this.onNeighborhoodClick } 
+							onNeighborhoodClick={ this.onHOLCIDClick } 
 							onCategoryClick={ this.onCategoryClick } 
 							onNeighborhoodHover={ this.neighborhoodHighlighted } 
 							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
 						/>;
-		} else if (this.state.selectedCity && RasterStore.getSelectedCityMetadata()) {
+		} else if (this.state.selectedCity) {
 			theClass = 'city';
 			title = 	<h2>
-							<span>{ RasterStore.getSelectedCityMetadata().name + ', '}</span> 
-							<span onClick={ this.onStateSelected } id={ RasterStore.getSelectedCityMetadata().state }>{ RasterStore.getSelectedCityMetadata().state }</span>
+							<span>{ CityStore.getName() + ', '}</span> 
+							<span 
+								onClick={ this.onStateSelected } 
+								id={ CityStore.getState() }
+							>
+								{ CityStore.getState() }
+							</span>
 							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
 						</h2>;
 			content = 	<CityStats 
 							cityData={ CityStore.getCityData() } 
-							area={ CityStore.getArea() } 
+							area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
 							gradeStats={ CityStore.getGradeStats() } 
 							ringStats={ CityStore.getRingStats() } 
 							areaSelected={ this.onBurgessChartHover } 
@@ -565,12 +459,12 @@ export default class App extends React.Component {
 							triggerIntro={ this.triggerIntro } 
 							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
-							hasADs={ CityStore.hasADData() }
+							hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
 						/>;
-		} else if (!this.state.selectedCity && this.refs.the_map) {
+		} else if (!this.state.selectedCity) {
 			theClass = 'state';
-			let visibleStates = this.getVisibleMapsByState();
-			if (Object.keys(this.getVisibleMaps(this.getMapBounds())).length >= 2) {
+			let visibleStates = MapStateStore.getVisibleHOLCMapsByState();
+			if (MapStateStore.getVisibleHOLCMapsIds().length >= 2) {
 				content = 	Object.keys(visibleStates).map((theState) => {
 					return <StateStats 
 						stateName={ stateAbbrs[theState] } 
@@ -610,7 +504,7 @@ export default class App extends React.Component {
 				}
 			},
 			ADs = AreaDescriptionsStore.getVisible(),
-			aboveThreshold = this.state.map.zoom >= this.props.adZoomThreshold,
+			aboveThreshold = MapStateStore.isAboveZoomThreshold(),
 			outerRadius = CityStore.getOuterRingRadius();
 
 		//setIconDefaultImagePath('./static');
@@ -629,9 +523,9 @@ export default class App extends React.Component {
 								<span className='header-main'>Mapping Inequality</span>
 								<span className='header-sub'>Redlining in New Deal America</span>
 							</h1>
-							<h4 onClick={ this.openModal } id={ 'about' }>Introduction</h4>
-							<h4 onClick={ this.openModal } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
-							<h4 onClick={ this.openModal } id={ 'credits' }>Credits</h4>
+							<h4 onClick={ this.onModalClick } id={ 'about' }>Introduction</h4>
+							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
+							<h4 onClick={ this.openModalClick } id={ 'credits' }>Credits</h4>
 							<hr className='style-eight'>
 							</hr>
 							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }>
@@ -752,18 +646,18 @@ export default class App extends React.Component {
 								{/* selected grade */}
 								{ (aboveThreshold && this.state.selectedGrade) ?
 									<AreaPolygon 
-										data={ CityStore.getGeoJsonForGrade(this.state.selectedGrade) }
+										data={ AreaDescriptionsStore.getGeoJsonForGrade(this.state.selectedCity, this.state.selectedGrade) }
 										key={ 'selectedGradedNeighborhoods' } 
 										className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
 									/> :
 									null
 								}
 
-								{ (aboveThreshold && this.state.highlightedNeighborhood && ADs[this.state.highlightedNeighborhood] && ADs[this.state.highlightedNeighborhood].area_geojson_inverted) ?
+								{ (aboveThreshold && this.state.highlightedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.highlightedNeighborhood] && ADs[this.state.selectedCity][this.state.highlightedNeighborhood].area_geojson_inverted) ?
 									<AreaPolygon
-										data={ ADs[this.state.highlightedNeighborhood].area_geojson_inverted } 
+										data={ ADs[this.state.selectedCity][this.state.highlightedNeighborhood].area_geojson_inverted } 
 										clickable={ false }
-										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.highlightedNeighborhood].holc_grade } 
+										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedCity][this.state.highlightedNeighborhood].holc_grade } 
 										key={ 'neighborhoodPolygonInverted' + this.state.highlightedNeighborhood }
 									/> :
 									null
@@ -816,7 +710,7 @@ export default class App extends React.Component {
 														center={ [item.centerLat, item.centerLng] }
 														radius={ item.radii[grade].outer }
 														id={ item.cityId }
-														onClick={ this.onCitySelected }
+														onClick={ this.onCityMarkerSelected }
 														key={ 'clickableDonut' + item.cityId + grade }
 														className={ 'simpleDonut grade_' + grade }
 													/> :
@@ -825,7 +719,7 @@ export default class App extends React.Component {
 														innerRadius={ item.radii[grade].inner }
 														outerRadius={ item.radii[grade].outer }
 														id={ item.cityId }
-														onClick={ this.onCitySelected }
+														onClick={ this.onCityMarkerSelected }
 														key={ 'clickableDonut' + item.cityId + grade }
 														className={ 'simpleDonut grade_' + grade }
 													/>
@@ -834,7 +728,7 @@ export default class App extends React.Component {
 												center={ [item.centerLat, item.centerLng] }
 												radius={ 25000 }
 												id={ item.cityId }
-												onClick={ this.onCitySelected }
+												onClick={ this.onCityMarkerSelected }
 												key={ 'clickableMap' + item.cityId }
 												className={ 'cityCircle '}
 											/> 
@@ -858,13 +752,20 @@ export default class App extends React.Component {
                 	 <div className='map-legend-wrapper' onClick={this.onListItemClick}>
 				        <ul>
 				          <li className={"item narratives"} data-item-type="narratives"><span>Grading and Density</span></li>
-				          <li className={"item user"} data-item-type="user"><span>User Location</span></li>
-				          <li className={"item first"} data-item-type="first"><span>First Grade</span></li>
-				          <li className={"item second"} data-item-type="second"><span>Second Grade</span></li>
-				          <li className={"item third"} data-item-type="third"><span>Third Grade</span></li>
-				          <li className={"item fourth"} data-item-type="fourth"><span>Fourth Grade</span></li>
-				          <li className={"item sparse"} data-item-type="sparse"><span>Sparsley Settled</span></li>
-				          <li className={"item industrial"} data-item-type="industrial"><span>Industrial and Commercial</span></li>
+				          <li 
+				          	className={"item first"} 
+				          	data-item-type="first">
+				          	<span 
+				          		onMouseOver={ this.onGradeHover }
+				          		onMouseOut={ this.onGradeUnhover }
+				          		grade='A'
+				          	>
+				          		A First Grade
+				          	</span>
+				          </li>
+				          <li className={"item second"} data-item-type="second"><span>B Second Grade</span></li>
+				          <li className={"item third"} data-item-type="third"><span>C Third Grade</span></li>
+				          <li className={"item fourth"} data-item-type="fourth"><span>D Fourth Grade</span></li>
 				        </ul>
 				      </div>
 
@@ -895,19 +796,18 @@ export default class App extends React.Component {
 					</div>
 					
 					<Modal 
-						isOpen={ this.state.modalSectionOpen !== null } 
-						onRequestClose={ this.closeModal} 
+						isOpen={ TextsStore.mainModalIsOpen() } 
 						style={ modalStyle }
 					>
-						<button className='close' onClick={ this.closeModal }><span>×</span></button>
-						<div dangerouslySetInnerHTML={ this.parseModalCopy(this.state.modalSectionOpen) }></div>
+						<button className='close' onClick={ this.onModalClick }><span>×</span></button>
+						<div dangerouslySetInnerHTML={ TextsStore.getModalContent() }></div>
 					</Modal>
 
 					<Modal 
-						isOpen={ this.state.userCityOpen } 
+						isOpen={ UserLocationStore.getOfferZoomTo() } 
 						style={ modalStyle }
 					>
-						<p>Would you like to zoom to { CityStore.getUsersCity() }?</p>
+						<p>Would you like to zoom to { UserLocationStore.getCity() }?</p>
 						<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
 						<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
 					</Modal>

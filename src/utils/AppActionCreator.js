@@ -1,4 +1,5 @@
 import AppDispatcher from './AppDispatcher';
+import RasterStore from '../stores/RasterStore';
 
 export const AppActionTypes = {
 
@@ -7,28 +8,41 @@ export const AppActionTypes = {
 	// it's enumerated here for ease of access.
 	storeChanged: 'storeChanged',
 
+	ADCategorySelected: 'ADCategorySelected',
 	loadInitialData: 'loadInitialData',
 	initialDataLoaded: 'initialDataLoaded',
 	getInitialData: 'getInitialData',
 	citySelected: 'citySelected',
 	gradeSelected: 'gradeSelected',
+	neighborhoodHighlighted: 'neighborhoodHighlighted',
 	neighborhoodSelected: 'neighborhoodSelected',
 	ringGradeSelected: 'ringGradeSelected',
+	mapInitialized: 'mapInitialized',
 	mapMoved: 'mapMoved',
-	userLocated: 'userLocated'
+	userLocated: 'userLocated',
+	userRespondedToZoomOffer: 'userRespondedToZoomOffer',
+	onModalClick: 'onModalClick'
 
 };
 
 export const AppActions = {
 
+	ADCategorySelected: (value) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.ADCategorySelected,
+			value: value
+		});
+	},
+
 	/**
 	 * Load data needed by the application on init.
 	 */
-	loadInitialData: (state) => {
+	loadInitialData: (state, hashState) => {
 		//console.log(`[1a] A '${ AppActionTypes.loadInitialData }' event is broadcast globally from AppActionCreator.loadInitialData().`);
 		AppDispatcher.dispatch({
 			type: AppActionTypes.loadInitialData,
-			state: state
+			state: state,
+			hashState: hashState
 		});
 	},
 
@@ -39,11 +53,11 @@ export const AppActions = {
 		});
 	},
 
-	citySelected: (city, options={}) => {
+	citySelected: (city, selectedByUser = false) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.citySelected,
 			value: city,
-			options: options
+			selectedByUser: true
 		});
 	},
 
@@ -52,6 +66,13 @@ export const AppActions = {
 			type: AppActionTypes.gradeSelected,
 			value: grade
 		});
+	},
+
+	neighborhoodHighlighted: (holcId, adId) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.neighborhoodHighlighted,
+			holcId: holcId
+		})
 	},
 
 	neighborhoodSelected: (holcId, adId) => {
@@ -76,24 +97,53 @@ export const AppActions = {
 		});
 	},
 
-	mapMoved: (visibleAdIds, belowAdThreshold = false) => {
+	// mapMoved: (visibleAdIds, belowAdThreshold = false) => {
+	// 	AppDispatcher.dispatch({
+	// 		type: AppActionTypes.mapMoved,
+	// 		value: visibleAdIds,
+	// 		belowAdThreshold: belowAdThreshold
+	// 	})
+	// },
+
+	onModalClick: (subject) => {
 		AppDispatcher.dispatch({
-			type: AppActionTypes.mapMoved,
-			value: visibleAdIds,
-			belowAdThreshold: belowAdThreshold
+			type: AppActionTypes.onModalClick,
+			subject: subject
 		})
-	}
+	},
 
-	/**
-	 * Dispatch action when map is zoomed or panned.
-	 * @param {Object} mapState 	{ zoom, center: { lat, lng } }
-	 */
-	/* mapMoved: (mapState) => {
+	userLocated: (point) => {
 		AppDispatcher.dispatch({
-			type: AppActionTypes.mapMoved,
-			value: mapState
+			type: AppActionTypes.userLocated,
+			point: point
 		});
-	} */
+	},
 
+	userRespondedToZoomOffer: () => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.userRespondedToZoomOffer
+		});
+	},
+
+	mapInitialized: (theMap) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.mapInitialized,
+			theMap: theMap,
+			rasters: RasterStore.getAllRasters() 
+		});
+	},
+
+	mapMoved: (theMap) => {
+		// this has fired repeatedly when it should fire only once.
+		// I think this might be related to re-rendering happening 
+		// during leaflet animation.
+		if (!AppDispatcher.isDispatching()) {
+			AppDispatcher.dispatch({
+				type: AppActionTypes.mapMoved,
+				theMap: theMap,
+				rasters: RasterStore.getAllRasters()
+			});
+		}
+	}
 };
 

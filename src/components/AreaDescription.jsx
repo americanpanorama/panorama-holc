@@ -35,12 +35,12 @@ export default class AreaDescription extends React.Component {
 			<div>
 				<ul className='ad-selection'>
 					{ (this.props.previousAreaId) ? 
-						<li onClick={ this.props.onNeighborhoodClick } id={ this.props.previousAreaId } className='ad-left' >{ '<' + this.props.previousAreaId }
+						<li onClick={ this.props.onHOLCIDClick } id={ this.props.previousAreaId } className='ad-left' >{ '<' + this.props.previousAreaId }
 						</li> : 
 						'' 
 					}
 					{ (this.props.nextAreaId) ? 
-						<li onClick={ this.props.onNeighborhoodClick } id={ this.props.nextAreaId } className='ad-right' >{ this.props.nextAreaId + '>' }
+						<li onClick={ this.props.onHOLCIDClick } id={ this.props.nextAreaId } className='ad-right' >{ this.props.nextAreaId + '>' }
 						</li> : 
 						'' 
 					}
@@ -60,7 +60,7 @@ export default class AreaDescription extends React.Component {
 
 
 	renderNSForm8_19370203() {
-		let AD = this.props.areaData.areaDesc;
+		let AD = this.props.areaDescriptions;
 
 		return (
 
