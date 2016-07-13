@@ -25,7 +25,7 @@ const MapStateStore = {
 		Object.keys(rasters).forEach((id) => {
 			if (theBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
 				visibleHOLCMaps[id] = rasters[id];
-				visibleHOLCMapsIds.push(id);
+				visibleHOLCMapsIds.push(parseInt(id));
 			}
 		});
 

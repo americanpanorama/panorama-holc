@@ -79,7 +79,7 @@ const RasterStore = {
 		},
 		(error) => {
 			// TODO: handle this.
-			console.log('RasterStore received error:', log);
+			console.log('RasterStore received error:', error);
 			throw error;
 		});
 	},
@@ -257,7 +257,7 @@ const RasterStore = {
 		return (this.data.maps[this.data.selectedCity]) ? this.data.maps[this.data.selectedCity].hasPolygons : false;
 	},
 
-	calculateSimpleRingsRadii (areaData) {
+	calculateSimpleRingsRadii: function (areaData) {
 		let furthestRadius = 25000,
 			fullArea = Math.PI * furthestRadius * furthestRadius,
 			outerRadius,
@@ -279,6 +279,26 @@ const RasterStore = {
 
 		return radii;
 	},
+
+	getSelectedMaps: function (requestedMapIds, selectedAd = null) {
+		let selectedMaps = [];
+		const allMaps = this.getMapsList();
+
+		allMaps.forEach(map => {
+			if (requestedMapIds.indexOf(map.ad_id) !== -1 && map.ad_id !== selectedAd) {
+				selectedMaps.push(map);
+			}
+		});
+
+		allMaps.forEach(map => {
+			if (requestedMapIds.indexOf(map.ad_id) !== -1 && map.ad_id == selectedAd) {
+				selectedMaps.push(map);
+			}
+		});
+
+
+		return selectedMaps;
+	},
 	
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
@@ -290,7 +310,7 @@ const RasterStore = {
 			maps[mapData.map_id] = {
 				cityId : mapData.ad_id,
 				id: mapData.ad_id,
-				ad_id: mapData.ad_id,
+				ad_id: parseInt(mapData.ad_id),
 				parent_id: mapData.parent_id,
 				city: mapData.name,
 				state: mapData.state,

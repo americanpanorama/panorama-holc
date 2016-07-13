@@ -589,6 +589,10 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 			else if (visibleHOLCMapsIds.length == 1 && visibleHOLCMapsIds[0] !== CityStore.getId()) {
 				CityStore.loadData(visibleHOLCMapsIds[0], { zoomTo: false });
 			} 
+			// unload the city if there are more than one but it's not among them
+			else if (visibleHOLCMapsIds.length > 1 && visibleHOLCMapsIds.indexOf(CityStore.getId()) == -1) {
+				CityStore.loadData(null);
+			}
 			// unload city if more than one are visible and it's below the zoom threshold
 			else if (visibleHOLCMapsIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
 				CityStore.loadData(null);

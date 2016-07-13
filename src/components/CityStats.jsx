@@ -172,30 +172,37 @@ export default class CityStats extends React.Component {
 				}
 
 				<table>
-					<tr>
-						<th></th>
-						<th>1930</th>
-						<th>1940</th>
-					</tr>
-					<tr>
-						<td>Population</td>
-						<td className='total'>{ population1930 }</td>
-						<td className='total'>{ population1940 }</td>
-					</tr>
-					{ orderedKeys.map(popkey => {
-						return ((popStats[1930][popkey] > 0.01 || popStats[1930][popkey] > 0.01) ?
-							<tr>
-								<td>{ this.getPopLabel(popkey) }</td>
-								<td>{ (Math.round(popStats[1930][popkey] * 1000) / 10) + '%' }</td>
-								<td>{ (Math.round(popStats[1940][popkey] * 1000) / 10) + '%' }</td>
-							</tr> :
-							null
-						)
-					})}
+					<tbody>
+						<tr>
+							<th></th>
+							<th>1930</th>
+							<th>1940</th>
+						</tr>
+						<tr>
+							<td>Population</td>
+							<td className='total' key='total1930'>{ population1930 }</td>
+							<td className='total' key='total1940'>{ population1940 }</td>
+						</tr>
+						{ orderedKeys.map(popkey => {
+							return ((popStats[1930][popkey] > 0.01 || popStats[1930][popkey] > 0.01) ?
+								<tr>
+									<td key={ popkey + 'label' }>{ this.getPopLabel(popkey) }</td>
+									<td key={ popkey + '1930' }>{ (Math.round(popStats[1930][popkey] * 1000) / 10) + '%' }</td>
+									<td key={ popkey + '1940' }>{ (Math.round(popStats[1940][popkey] * 1000) / 10) + '%' }</td>
+								</tr> :
+								null
+							)
+						})}
+					</tbody>
 				</table>
 
 				<div className='nestedpiechart'>
-					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
+					<button 
+						className='intro-button' 
+						 
+					>
+						<span className='icon info' id='burgess' onClick={ this.props.openBurgess } />
+					</button>
 					{ (this.props.ringStats) ?
 						<div className='content' ref='content'></div> :
 						<p>Area descriptions are not yet available but will be eventually.</p>
@@ -370,10 +377,10 @@ export default class CityStats extends React.Component {
 			}
 
 			let scope = this;	
-			var color = function(i) { return ['#418e41', '#4a4ae4', '#f4f570', '#eb3f3f'][i]; };
-			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#A3A34B', '#eb3f3f'][i]; };
+			var color = function(i) { return ['#418e41', '#4a4ae4', '#ffdf00', '#eb3f3f'][i]; };
+			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#ffdf00', '#eb3f3f'][i]; };
 			var colorGrade = function(grade) {
-				let gradeColors = {'A':'#418e41','B':'#4a4ae4','C':'#f4f570','D':'#eb3f3f'};
+				let gradeColors = {'A':'#418e41','B':'#4a4ae4','C':'#ffdf00','D':'#eb3f3f'};
 				return gradeColors[grade];
 			};
 
@@ -400,7 +407,7 @@ export default class CityStats extends React.Component {
 				//.attr('transform', 'translate(' + (scope.WIDTH / 2) + ',' + (scope.HEIGHT / 2 + 50) + ')');
 	
 			// path for each pie piece
-			ringNodes
+			let burgess = ringNodes
 			  .selectAll('path')
 			  .data((d) => pie(d.percents))
 			  .enter().append('path')
@@ -638,6 +645,27 @@ export default class CityStats extends React.Component {
 			  .attr('y', scope.HEADER * 2 + scope.MARGIN * 4 + scope.STATSHEIGHT)
 			  .attr('text-anchor', 'middle')
 			  .text('from City Center');
+
+			d3.xml('static/burgess.svg').get((error, xml) => {
+				if (error) throw error;
+
+				let burgessDiagram = ringNodes.node().appendChild(xml.documentElement);
+
+				var innerSVG = ringNodes.select("svg");
+				console.log(innerSVG);
+
+				innerSVG
+					.attr('x', -5)
+					.attr('y', 102);
+					//.attr('height', 500);
+
+
+				innerSVG.transition().duration(10000)
+					.attr('opacity', .35);
+					// .select('#diagram')
+
+					// .attr('transform', 'translate(0,100)');
+			});
 
 		},
 

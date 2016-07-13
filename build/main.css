@@ -1326,7 +1326,7 @@ body {
 
 .cityStats .nestedpiechart {
   text-align: center;
-  height: 0px; }
+  height: 400px; }
   .cityStats .nestedpiechart svg {
     shape-rendering: 'crispEdges'; }
   .cityStats .nestedpiechart #burgessDiagram {

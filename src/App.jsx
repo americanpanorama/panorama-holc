@@ -283,6 +283,7 @@ export default class App extends React.Component {
 	}
 
 	onModalClick (event) {
+		console.log(event.target);
 		const subject = (event.target.id) ? (event.target.id) : null;
 		AppActions.onModalClick(subject);
 	}
@@ -375,7 +376,7 @@ export default class App extends React.Component {
 	/* render and display methods */
 
 	renderSidebar() {
-		let title, content, theClass, ADs, ADsByCat;
+		let title, content, content2, theClass, ADs, ADsByCat;
 		// if (AreaDescriptionsStore.data.areaDescriptions && AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity]) {
 		// 	console.log(AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity].byCategory);
 		// }
@@ -444,6 +445,8 @@ export default class App extends React.Component {
 							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
 						/>;
 		} else if (this.state.selectedCity) {
+			const visibleMaps = MapStateStore.getVisibleHOLCMaps();
+
 			theClass = 'city';
 			title = 	<h2>
 							<span>{ CityStore.getName() + ', '}</span> 
@@ -465,10 +468,27 @@ export default class App extends React.Component {
 							gradeSelected={ this.onAreaChartHover } 
 							gradeUnselected={ this.onAreaChartOff } 
 							triggerIntro={ this.triggerIntro } 
+							openBurgess={ this.onModalClick }
 							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
 							hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
 						/>;
+			if (Object.keys(visibleMaps).length >= 2) {
+				content2 = <div>
+								<h4>Other Visible Maps</h4>
+								{ Object.keys(visibleMaps).map((mapId) => {
+									if (visibleMaps[mapId].cityId !== this.state.selectedCity) {
+										return <CitySnippet 
+											cityData={ visibleMaps[mapId] } 
+											onCityClick={ this.onCitySelected } 
+											key={ 'city' + mapId } 
+											recenter={ false }
+										/>
+									} 
+								})}
+							</div>;
+			}
+
 		} else if (!this.state.selectedCity) {
 			theClass = 'state';
 			let visibleStates = MapStateStore.getVisibleHOLCMapsByState();
@@ -477,7 +497,7 @@ export default class App extends React.Component {
 					return <StateStats 
 						stateName={ stateAbbrs[theState] } 
 						cities={ visibleStates[theState] } 
-						onCityClick={ this.onCitySelected }  
+						onCityClick={ this.onCitySelected }
 						key={ theState }
 						areaChartWidth={ this.state.dimensions.areaChart.width }
 					/>;
@@ -490,6 +510,7 @@ export default class App extends React.Component {
 			<div className={ theClass } key={ theClass }>
 				{ title }
 				{ content }
+				{ content2 }
 			</div>
 		);
 	}
@@ -546,12 +567,8 @@ export default class App extends React.Component {
 							</h1>
 							<h4 onClick={ this.onModalClick } id={ 'about' }>Introduction</h4>
 							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
-							<h4 onClick={ this.openModalClick } id={ 'credits' }>Credits</h4>
-							<hr className='style-eight'>
-							</hr>
-							<button className='intro-button' data-step='1' onClick={ this.triggerIntro }>
-								<span className='icon info'/>
-							</button>
+							<h4 onClick={ this.onModalClick } id={ 'credits' }>Credits</h4>
+							<hr className='style-eight' />
 						</header>
 						<div className='row template-tile leaflet-container main-pane' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 							<Map 
@@ -587,6 +604,7 @@ export default class App extends React.Component {
 												minZoom={ item.minZoom }
 												bounds= { item.bounds }
 												opacity={ this.state.raster.opacity }
+												zIndex={ (item.cityId == this.state.selectedCity) ? 1 : null }
 											/>
 										);
 									}
@@ -746,14 +764,17 @@ export default class App extends React.Component {
 														className={ 'simpleDonut grade_' + grade }
 													/>
 											}) :
-											<Circle
-												center={ [item.centerLat, item.centerLng] }
-												radius={ 25000 }
-												id={ item.cityId }
-												onClick={ this.onCityMarkerSelected }
-												key={ 'clickableMap' + item.cityId }
-												className={ 'cityCircle '}
-											/> 
+											(!item.parent_id) ?
+												<Circle
+													center={ [item.centerLat, item.centerLng] }
+													radius={ 25000 }
+													id={ item.cityId }
+													onClick={ this.onCityMarkerSelected }
+													key={ 'clickableMap' + item.cityId }
+													className={ 'cityCircle '}
+												/> :
+												null
+											
 										);
 									}) :
 									null
