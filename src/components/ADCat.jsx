@@ -88,7 +88,13 @@ export default class ADCat extends React.Component {
 					{ Object.keys(categoryData).sort(this.alphanumCase).map(neighborhoodId => {
 						if (grade == neighborhoodId.charAt(0)) {
 							return (
-								<li key={ 'cat' + grade + neighborhoodId } onClick={ this.props.onNeighborhoodClick } onMouseEnter={ this.props.onNeighborhoodHover } onMouseLeave={ this.props.onNeighborhoodOut } id={ neighborhoodId }>
+								<li 
+									key={ 'cat' + grade + neighborhoodId } 
+									onClick={ this.props.onNeighborhoodClick } 
+									onMouseEnter={ this.props.onNeighborhoodHover } 
+									onMouseLeave={ this.props.onNeighborhoodOut } 
+									id={ neighborhoodId }
+								>
 									<span className='subcatName' id={ neighborhoodId }>{ neighborhoodId }</span>: 
 									{ (typeof(idiosyncraticDisplay) === 'function') ? idiosyncraticDisplay(categoryData[neighborhoodId]) : this.renderDatum(categoryData[neighborhoodId]) }
 								</li>

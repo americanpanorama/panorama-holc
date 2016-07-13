@@ -18,7 +18,12 @@ export default class StateStats extends React.Component {
 			<div>
 				<h2>{ this.props.stateName }</h2>
 				{ this.props.cities.map((cityData) => {
-					return <CitySnippet cityData={ cityData } onCityClick={ this.props.onCityClick } key={ 'city' + cityData.cityId } />
+					return <CitySnippet 
+						cityData={ cityData } 
+						onCityClick={ this.props.onCityClick } 
+						key={ 'city' + cityData.cityId } 
+						areaChartWidth={ this.props.areaChartWidth }
+					/>
 				}) }
 			</div>
 		);

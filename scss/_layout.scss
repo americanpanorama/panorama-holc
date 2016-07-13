@@ -426,6 +426,157 @@ header {
 	height: 40px;
 }
 
+.main-pane {
+	position: relative;
+}
+
+.longishform {
+	position: absolute;
+
+	bottom: 20px;
+	top: 20px;
+	left: 20px;
+	right: 20px;
+	z-index: 10000;
+	overflow-y: scroll;
+	background: rgba(243, 243, 243, 0.92);
+	text-align: center;
+
+	.content {
+		margin: 10px auto;
+		width: 600px;
+		/*padding: 10px 30px;
+		border: 1px solid black;
+*/
+
+	}
+
+	p, ul {
+		@extend %lato-light;
+		font-size: 1.5em;
+		text-align: initial;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		@extend %merriweather-light !optional;
+		text-transform: uppercase;
+	}
+
+	button {
+		border: none;
+		margin-left: 580px;
+		font-size: 2em;
+
+
+	}
+
+}
+
+$bulletSize: 10px;
+$bulletBorder: 1px;
+$colorLightGrey: #b3b3b3;
+
+.panorama.legend {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	z-index: 100;
+
+	ul {
+		margin: 0;
+		padding: 0;
+
+		li {
+			position: relative;
+			opacity: 1;
+			margin: 5px 0;
+			margin-bottom: 0;
+
+			cursor: pointer;
+			list-style-type: none;
+			background-color: $colorLightGrey;
+			border-radius: 4px;
+			border: 1px solid grey;
+			border-bottom: 0;
+			padding: 5px;
+			padding-left: 22px;
+
+			&:last-child {
+				border-bottom: 1px solid $colorLightGrey;
+			}
+
+			&.selected {
+				opacity: 1.0;
+			}
+
+			span {
+				&:before {
+					display: inline-block;
+					position: absolute;
+					left: calc(0.5 * #{$bulletSize});
+					content: "";
+					border: solid #{$bulletBorder} black;
+					width: $bulletSize;
+					height: $bulletSize;
+					top: calc(50% - 0.5 * #{$bulletSize + 2*$bulletBorder});
+				}
+			}
+
+			&:nth-child(1) {
+				span {
+					&:before {
+						border-radius: 0;
+						border-color: $gradeA;
+						background-color: rgba($gradeA, 0.7);
+					}
+				}
+			}
+
+			&:nth-child(2) {
+				span {
+					&:before {
+						border-color: $gradeB;
+						background-color: rgba($gradeB, 0.7);
+					}
+				}
+			}
+
+			&:nth-child(3) {
+				span {
+					&:before {
+						border-color: $gradeCDark;
+						background-color: rgba($gradeCDark, 0.7);
+					}
+				}
+			}
+
+			&:nth-child(4) {
+				span {
+					&:before {
+						border-color: $gradeD;
+						background-color: rgba($gradeD, 0.7);
+					}
+				}
+			}
+
+			&:nth-child(5) {
+				span {
+					&:before {
+						background-color: transparent;
+						border-color: transparent;
+						top: 0px;
+						left: 0px;
+						width: 20px;
+						height: 20px;
+						background-image: url('static/area-desc-2.svg');
+
+					}
+				}
+			}
+
+		}
+	}
+}
 
 
 

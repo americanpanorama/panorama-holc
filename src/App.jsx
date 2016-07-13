@@ -60,14 +60,14 @@ export default class App extends React.Component {
 		this.computeComponentDimensions();
 		AppActions.loadInitialData(this.state, HashManager.getState());
 
-		// try to retrieve the users location
-		// if (navigator.geolocation) {
-		// 	navigator.geolocation.getCurrentPosition((position) => {
-		// 		AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
-		// 	}, (error) => {
-		// 		console.warn('Geolocation error occurred. Error code: ' + error.code);
-		// 	});
-		// }
+		//try to retrieve the users location
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition((position) => {
+				AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
+			}, (error) => {
+				console.warn('Geolocation error occurred. Error code: ' + error.code);
+			});
+		}
 	}
 
 	componentDidMount () {
@@ -202,8 +202,12 @@ export default class App extends React.Component {
 		AppActions.gradeSelected(null);
 	}
 
+	onLegendSelect (legendText) {
+
+	}
+
 	onGradeHover (event) {
-		console.log(event.target);
+		console.log(event);
 		AppActions.gradeSelected(event.target.grade);
 	}
 
@@ -341,6 +345,10 @@ export default class App extends React.Component {
 			height: window.innerHeight - 2 * containerPadding
 		};
 
+		dimensions.areaChart = {
+			width: window.innerWidth / 3 - 4 * containerPadding,
+		};
+
 		dimensions.bottom = {
 			height: window.innerHeight - headerHeight - 2 * containerPadding
 		};
@@ -471,6 +479,7 @@ export default class App extends React.Component {
 						cities={ visibleStates[theState] } 
 						onCityClick={ this.onCitySelected }  
 						key={ theState }
+						areaChartWidth={ this.state.dimensions.areaChart.width }
 					/>;
 				});
 			}
@@ -507,6 +516,18 @@ export default class App extends React.Component {
 			aboveThreshold = MapStateStore.isAboveZoomThreshold(),
 			outerRadius = CityStore.getOuterRingRadius();
 
+		let legendData = {
+			items: [
+				'A First Grade',
+				'B Second Grade',
+				'C Third Grade',
+				'D Third Grade',
+			]
+		};
+		if (!MapStateStore.isAboveZoomThreshold()) {
+			legendData.items.push('Proportion of Each Grade');
+		}
+
 		//setIconDefaultImagePath('./static');
 
 		return (
@@ -532,12 +553,13 @@ export default class App extends React.Component {
 								<span className='icon info'/>
 							</button>
 						</header>
-						<div className='row template-tile leaflet-container' style={{height: this.state.dimensions.bottom.height + 'px'}}>
+						<div className='row template-tile leaflet-container main-pane' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 							<Map 
 								ref='the_map' 
 								center={ this.state.map.center } 
 								zoom={ this.state.map.zoom }  
 								onMoveend={ this.onMapMoved } 
+								className='the_map'
 							>
 
 								{ tileLayers.layers.map((item, i) => {
@@ -743,31 +765,21 @@ export default class App extends React.Component {
 									null
 								}
 
+								<Legend { ...legendData } onItemSelected={ this.onGradeHover } />
 
 
 							</Map>
+
+							{ TextsStore.mainModalIsOpen() ?
+								<div className='longishform'>
+									<button className='close' onClick={ this.onModalClick }><span>×</span></button>
+									<div className='content' dangerouslySetInnerHTML={ TextsStore.getModalContent() } />
+								</div> :
+								null
+							}
+
 						</div>
 					</div>
-
-                	 <div className='map-legend-wrapper' onClick={this.onListItemClick}>
-				        <ul>
-				          <li className={"item narratives"} data-item-type="narratives"><span>Grading and Density</span></li>
-				          <li 
-				          	className={"item first"} 
-				          	data-item-type="first">
-				          	<span 
-				          		onMouseOver={ this.onGradeHover }
-				          		onMouseOut={ this.onGradeUnhover }
-				          		grade='A'
-				          	>
-				          		A First Grade
-				          	</span>
-				          </li>
-				          <li className={"item second"} data-item-type="second"><span>B Second Grade</span></li>
-				          <li className={"item third"} data-item-type="third"><span>C Third Grade</span></li>
-				          <li className={"item fourth"} data-item-type="fourth"><span>D Fourth Grade</span></li>
-				        </ul>
-				      </div>
 
 					<div className='opacitySlider'>
 						<Slider 
@@ -796,7 +808,8 @@ export default class App extends React.Component {
 					</div>
 					
 					<Modal 
-						isOpen={ TextsStore.mainModalIsOpen() } 
+						isOpen={ false }
+						// isOpen={ TextsStore.mainModalIsOpen() } 
 						style={ modalStyle }
 					>
 						<button className='close' onClick={ this.onModalClick }><span>×</span></button>

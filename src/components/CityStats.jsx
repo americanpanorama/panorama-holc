@@ -55,15 +55,18 @@ export default class CityStats extends React.Component {
 		this.triggerIntro = this.triggerIntro.bind(this);
 		if (this.props.ringStats) {
 			this.d3NestedPieChart.update(this.refs.content, this.props.ringStats, this.props.gradeStats);
+			//this.d3SlopeChart.update(this.refs.slopeChart, this.getSlopeChartData());
 		}
 	}
 
 	componentDidUpdate () {
 		this.d3NestedPieChart.destroy(this.refs.content);
+		//this.d3NestedPieChart.destroy(this.refs.slopeChart);
 		this.d3NestedPieChart.onHover = this.props.areaSelected.bind(this);
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
 		if (this.props.ringStats) {
 			this.d3NestedPieChart.update(this.refs.content, this.props.ringStats, this.props.gradeStats);
+			this.d3SlopeChart.update(this.refs.slopeChart, this.getSlopeChartData());
 		}
 	}
 
@@ -76,6 +79,53 @@ export default class CityStats extends React.Component {
 		this.props.triggerIntro(event);
 	}
 
+	getPopLabel (key) {
+		const labels = {
+			white: 'white',
+			black: 'African American',
+			asianAmerican: 'Asian American',
+			nativeAmerican: 'Native American'
+		}
+
+		return labels[key];
+	}
+
+	getSlopeChartData () {
+		let CD = this.props.cityData,
+			aggregated_pop_1930 = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930,
+			aggregated_pop_1940 = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940,
+			popStats = {
+				1930: {
+					total: (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930 : null,
+					white: CD.white_pop_1930 / aggregated_pop_1930,
+					black: CD.black_pop_1930 / aggregated_pop_1930,
+					asianAmerican: CD.asian_pacific_ilslander_1930 / aggregated_pop_1930,
+					nativeAmerican: CD.american_indian_eskimo_1930 / aggregated_pop_1930
+				},
+				1940: {
+					total: (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940 : null,
+					white: CD.white_pop_1940 / aggregated_pop_1940,
+					black: CD.black_pop_1940 / aggregated_pop_1940,
+					asianAmerican: CD.asian_pacific_ilslander_1940 / aggregated_pop_1940,
+					nativeAmerican: CD.american_indian_eskimo_1940 / aggregated_pop_1940
+				}
+			},
+			slopeChartData = [
+				{ label: 'white', v30: popStats[1930].white, v40: popStats[1940].white },
+				{ label: 'black', v30: popStats[1930].black, v40: popStats[1940].black },
+				{ label: 'asianAmerican', v30: popStats[1930].asianAmerican, v40: popStats[1940].asianAmerican },
+				{ label: 'nativeAmerican', v30: popStats[1930].nativeAmerican, v40: popStats[1940].nativeAmerican }
+				// data: [
+				// 	[popStats[1930].white, popStats[1930].black, popStats[1930].asianAmerican, popStats[1930].nativeAmerican], 
+				// 	[popStats[1940].white, popStats[1940].black, popStats[1940].asianAmerican, popStats[1940].nativeAmerican],
+				// ],
+				// label: [['white', 'African American', 'Asian American', 'Native American']]
+
+			];
+
+		return slopeChartData;
+	}
+
 	render () {
 
 		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
@@ -83,35 +133,66 @@ export default class CityStats extends React.Component {
 			population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
 			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
 
+		let CD = this.props.cityData,
+			aggregated_pop_1930 = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930,
+			aggregated_pop_1940 = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940,
+			popStats = {
+				1930: {
+					//total: (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930 : null,
+					white: CD.white_pop_1930 / aggregated_pop_1930,
+					black: CD.black_pop_1930 / aggregated_pop_1930,
+					asianAmerican: CD.asian_pacific_ilslander_1930 / aggregated_pop_1930,
+					nativeAmerican: CD.american_indian_eskimo_1930 / aggregated_pop_1930
+				},
+				1940: {
+					//total: (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940 : null,
+					white: CD.white_pop_1940 / aggregated_pop_1940,
+					black: CD.black_pop_1940 / aggregated_pop_1940,
+					asianAmerican: CD.asian_pacific_ilslander_1940 / aggregated_pop_1940,
+					nativeAmerican: CD.american_indian_eskimo_1940 / aggregated_pop_1940
+				}
+			},
+			slopeChartData = {
+				data: [
+					[popStats[1930].white, popStats[1930].black, popStats[1930].asianAmerican, popStats[1930].nativeAmerican], 
+					[popStats[1940].white, popStats[1940].black, popStats[1940].asianAmerican, popStats[1940].nativeAmerican],
+				],
+				label: [['white', 'African American', 'Asian American', 'Native American']]
+			};
+
+		let orderedKeys = Object.keys(popStats[1940]).sort((a,b) => (popStats[1940][a] < popStats[1940][b]));
+
+
+			
 		return (
 			<div className='cityStats'>
 				{ (this.props.hasADs) ?
 					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 
 					<div className='adInstructions'>area descriptions aren't yet but will eventually be available for this city</div>
 				}
-				<div className='row'>
-					<div className='columns six'>
-						{ (population1930) ?
-							<ul>
-								<li className='pop-header'>Population in 1930:</li>
-								<li><span className='state-stat'>{ population1930 }</span></li>
-							</ul> :
-							null
-						}
-						{ this.render_population_1930() }
-					</div>
 
-					<div className='columns six'>
-						{ (population1940) ? 
-							<ul>	
-								<li className='pop-header'>Population in 1940:</li>
-								<li><span className='state-stat'>{ population1940 }</span></li>
-							</ul>:
+				<table>
+					<tr>
+						<th></th>
+						<th>1930</th>
+						<th>1940</th>
+					</tr>
+					<tr>
+						<td>Population</td>
+						<td className='total'>{ population1930 }</td>
+						<td className='total'>{ population1940 }</td>
+					</tr>
+					{ orderedKeys.map(popkey => {
+						return ((popStats[1930][popkey] > 0.01 || popStats[1930][popkey] > 0.01) ?
+							<tr>
+								<td>{ this.getPopLabel(popkey) }</td>
+								<td>{ (Math.round(popStats[1930][popkey] * 1000) / 10) + '%' }</td>
+								<td>{ (Math.round(popStats[1940][popkey] * 1000) / 10) + '%' }</td>
+							</tr> :
 							null
-						}
-						{ this.render_population_1940() }
-					</div>
-				</div>
+						)
+					})}
+				</table>
 
 				<div className='nestedpiechart'>
 					<button className='intro-button' data-step='3' onClick={ this.triggerIntro }><span className='icon info'/></button>
@@ -153,7 +234,7 @@ export default class CityStats extends React.Component {
 			return <ul>
 				{ proportions.map((pop) => {
 					if (Math.round(pop.proportion * 100) !== 0) {
-						return <li key={ 'pop1930' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
+						return <li key={ 'pop1930' + pop.label.replace(/ /g,'') }>{ (Math.round(pop.proportion * 10) * 10) + '% ' + pop.label }</li>;
 					}
 				})}
 				</ul>;
@@ -188,10 +269,88 @@ export default class CityStats extends React.Component {
 			return <ul>
 				{ proportions.map((pop) => {
 					if (Math.round(pop.proportion * 100) !== 0) {
-						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
+						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ (Math.round(pop.proportion * 10) * 10) + '% ' + pop.label }</li>;
 					}
 				})}
 				</ul>;
+		}
+	}
+
+	d3SlopeChart = {
+		width: 400,
+		height: 125,
+		gutterPercent: 40,
+		gutterLabel: 50,
+		margin: 20,
+
+		update: function(node, slopeChartData) {
+			if (isNaN(slopeChartData[0].v30)) { 
+				this.destroy();
+				return; 
+			}
+
+			let scope = this;
+
+			const max = d3.max(slopeChartData, d => (d.v30 > d.v40) ? d.v30 : d.v40 ),
+				min = d3.min(slopeChartData, d => (d.v30 < 0.01 && d.v40 < 0.01) ? 100 : (d.v30 < d.v40) ? d.v30 : d.v40 );
+
+			var scale = d3.scale.linear()
+				.domain([min, max])
+				.range([scope.height - scope.margin, scope.margin]);
+
+			var percent = d3.format(',%');
+
+			let slopeChart = d3.select(node)
+				.append('svg')
+				.attr('width', scope.width)
+				.attr('height', scope.height)
+				.selectAll('g')
+				.data(slopeChartData)
+				.enter().append('g');
+
+			slopeChart.selectAll('line')
+				.data(slopeChartData)
+				.enter().append('line')
+				.filter(d => d.v30 > 0.01 || d.v40 > 0.01)
+				.attr('y1', (d,i) => scale(d.v30))
+				.attr('y2', (d,i) => scale(d.v40))
+				.attr('x1', scope.gutterPercent + scope.gutterLabel)
+				.attr('x2', scope.width - (scope.gutterPercent + scope.gutterLabel))
+				.attr('stroke', 'green');
+
+			var labels30 = slopeChart.selectAll('text.labels30')
+				.data(slopeChartData)
+				.enter().append('text')
+				.filter(d => d.v30 > 0.01 || d.v40 > 0.01)
+				.attr('x', scope.gutterPercent + scope.gutterLabel)
+				.attr('y', d => scale(d.v30))
+				.style("text-anchor", "end")
+				.classed('labels30', true)
+				.text((d) => percent(d.v30));
+
+			var labels40 = slopeChart.selectAll('text.labels40')
+				.data(slopeChartData)
+				.enter().append('text')
+				.filter(d => d.v30 > 0.01 || d.v40 > 0.01)
+				.attr('x', scope.width - (scope.gutterPercent + scope.gutterLabel))
+				.attr('y', d => scale(d.v40))
+				.style("text-anchor", "start")
+				.classed('labels40', true)
+				.text((d) => percent(d.v40));
+
+			var labels = slopeChart.selectAll('text.labels')
+				.data(slopeChartData)
+				.enter().append('text')
+				.filter(d => d.v30 > 0.01 || d.v40 > 0.01)
+				.attr('x', scope.width - scope.gutterLabel)
+				.attr('y', d => scale(d.v40))
+				.style("text-anchor", "start")
+				.classed('labels', true)
+				.text((d) => d.label);
+		},
+
+		destroy: function (node) {
+			d3.select(node).html('');
 		}
 	}
 

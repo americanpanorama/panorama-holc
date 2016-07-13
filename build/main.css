@@ -1058,12 +1058,97 @@ header {
 .city-choice {
   height: 40px; }
 
+.main-pane {
+  position: relative; }
+
+.longishform {
+  position: absolute;
+  bottom: 20px;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  z-index: 10000;
+  overflow-y: scroll;
+  background: rgba(243, 243, 243, 0.92);
+  text-align: center; }
+  .longishform .content {
+    margin: 10px auto;
+    width: 600px;
+    /*padding: 10px 30px;
+		border: 1px solid black;
+*/ }
+  .longishform p, .longishform ul {
+    font-size: 1.5em;
+    text-align: initial; }
+  .longishform h1, .longishform h2, .longishform h3, .longishform h4, .longishform h5, .longishform h6 {
+    text-transform: uppercase; }
+  .longishform button {
+    border: none;
+    margin-left: 580px;
+    font-size: 2em; }
+
+.panorama.legend {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 100; }
+  .panorama.legend ul {
+    margin: 0;
+    padding: 0; }
+    .panorama.legend ul li {
+      position: relative;
+      opacity: 1;
+      margin: 5px 0;
+      margin-bottom: 0;
+      cursor: pointer;
+      list-style-type: none;
+      background-color: #b3b3b3;
+      border-radius: 4px;
+      border: 1px solid grey;
+      border-bottom: 0;
+      padding: 5px;
+      padding-left: 22px; }
+      .panorama.legend ul li:last-child {
+        border-bottom: 1px solid #b3b3b3; }
+      .panorama.legend ul li.selected {
+        opacity: 1.0; }
+      .panorama.legend ul li span:before {
+        display: inline-block;
+        position: absolute;
+        left: calc(0.5 * 10px);
+        content: "";
+        border: solid 1px black;
+        width: 10px;
+        height: 10px;
+        top: calc(50% - 0.5 * 12px); }
+      .panorama.legend ul li:nth-child(1) span:before {
+        border-radius: 0;
+        border-color: #418e41;
+        background-color: rgba(65, 142, 65, 0.7); }
+      .panorama.legend ul li:nth-child(2) span:before {
+        border-color: #4a4ae4;
+        background-color: rgba(74, 74, 228, 0.7); }
+      .panorama.legend ul li:nth-child(3) span:before {
+        border-color: #ffdf00;
+        background-color: rgba(255, 223, 0, 0.7); }
+      .panorama.legend ul li:nth-child(4) span:before {
+        border-color: #eb3f3f;
+        background-color: rgba(235, 63, 63, 0.7); }
+      .panorama.legend ul li:nth-child(5) span:before {
+        background-color: transparent;
+        border-color: transparent;
+        top: 0px;
+        left: 0px;
+        width: 20px;
+        height: 20px;
+        background-image: url("static/area-desc-2.svg"); }
+
 header .header-main, header .header-sub {
   font-family: 'Lora', serif;
   font-weight: 100;
   color: #454545; }
 
-body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__Content ul {
+body, .ReactModalPortal .ReactModal__Content p, .ReactModalPortal .ReactModal__Content ul, .longishform p, .longishform ul {
   font-family: 'Lato', sans-serif;
   font-weight: 300;
   color: #454545; }
@@ -1161,26 +1246,29 @@ body {
 
 .city-snippet {
   background-color: #f3f3f3;
-  padding: 0 0 20px 0;
+  padding: 0 0 0px 0;
   margin: 0; }
   .city-snippet * {
     pointer-events: none; }
   .city-snippet h3 {
     border-bottom: 1px solid #d72e2a;
     font-size: 1.3em;
-    margin: 0; }
+    margin: 0 0 0 100px; }
   .city-snippet h4 {
     float: right;
     background-color: #e8e8e8;
     padding: 2px 10px;
     color: #676666;
     border-radius: 10px; }
+  .city-snippet .populationStats {
+    margin: 0 0 0 100px; }
   .city-snippet ul {
     font-family: 'Lato';
     font-size: 16px;
     color: #0c789a;
     list-style: none;
-    padding: 0 0 10px 20px; }
+    padding: 0 0 0px 20px;
+    margin: 0 0 0 100px; }
     .city-snippet ul li {
       font-size: smaller;
       list-style: none;
@@ -1205,6 +1293,8 @@ body {
     height: 15px;
     cursor: pointer;
     opacity: .8; }
+  .city-snippet .piechart {
+    float: left; }
 
 .cityStats li {
   list-style: none;
@@ -1252,6 +1342,20 @@ body {
 
 .cityStats .content {
   height: 0px; }
+
+.cityStats table {
+  border: none;
+  margin: 0 auto; }
+
+.cityStats th {
+  text-align: right;
+  padding: 2px 10px; }
+
+.cityStats td {
+  text-align: right;
+  padding: 2px 10px; }
+  .cityStats td .total {
+    color: #0c789a; }
 
 ul.area_description,
 ul.ad_cat {

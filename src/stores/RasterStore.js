@@ -123,7 +123,7 @@ const RasterStore = {
 		];
 	},
 
-	getMapBoundsForAdId: function(adId) {
+	getMapBoundsByAdId: function(adId) {
 		return [ 
 			[ this.data.maps[adId].minLat, this.data.maps[adId].minLng ], 
 			[ this.data.maps[adId].maxLat, this.data.maps[adId].maxLng ] 
