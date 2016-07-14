@@ -57,7 +57,7 @@ const RasterStore = {
 				format: 'JSON'
 			},
 			{
-				query: 'SELECT distinct(holc_ads.id), state, city FROM holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_polygons.ad_id = holc_ads.id order by state, city',
+				query: 'SELECT distinct(holc_ads.city_id), state, city FROM holc_ad_data join digitalscholarshiplab.holc_polygons on polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_polygons.ad_id = holc_ads.city_id order by state, city',
 				format: 'JSON'
 			},
 			{
@@ -73,7 +73,7 @@ const RasterStore = {
 
 			this.data.loaded = true;
 
-			console.log('RasterStore finished loading');
+			// console.log('RasterStore finished loading');
 
 			this.emit(AppActionTypes.storeChanged);
 		},
@@ -325,8 +325,6 @@ const RasterStore = {
 				maxLng: mapData.maxlng,
 				centerLat: mapData.centerlat,
 				centerLng: mapData.centerlng,
-				loopLat: mapData.looplat,
-				loopLng: mapData.looplng,
 				population_1930: mapData.population_1930,
 				population_1940: mapData.population_1940,
 				american_indian_eskimo_1930: mapData.american_indian_eskimo_1930,
@@ -385,8 +383,6 @@ const RasterStore = {
 				maxLng: citiesData.maxlng,
 				centerLat: citiesData.centerlat,
 				centerLng: citiesData.centerlng,
-				loopLat: citiesData.looplat,
-				loopLng: citiesData.looplng,
 				hasPolygons: true,
 				hasADs: (this.data.cityIdsWithADs.indexOf(citiesData.id ) != -1)
 			};

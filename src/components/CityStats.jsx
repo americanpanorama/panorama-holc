@@ -13,7 +13,6 @@ export default class CityStats extends React.Component {
 		areaUnselected: PropTypes.func,
 		gradeSelected: PropTypes.func,
 		gradeUnselected: PropTypes.func,
-		triggerIntro: PropTypes.func,
 		toggleBurgessDiagram: PropTypes.func,
 		burgessDiagramVisible: PropTypes.bool,
 		cityData: PropTypes.object
@@ -52,7 +51,6 @@ export default class CityStats extends React.Component {
 		this.d3NestedPieChart.onHoverOut = this.props.areaUnselected.bind(this);
 		this.d3NestedPieChart.onGradeHover = this.props.gradeSelected.bind(this);
 		this.d3NestedPieChart.onGradeHoverOut = this.props.gradeUnselected.bind(this);
-		this.triggerIntro = this.triggerIntro.bind(this);
 		if (this.props.ringStats) {
 			this.d3NestedPieChart.update(this.refs.content, this.props.ringStats, this.props.gradeStats);
 			//this.d3SlopeChart.update(this.refs.slopeChart, this.getSlopeChartData());
@@ -72,11 +70,6 @@ export default class CityStats extends React.Component {
 
 	areaHover (selectedRingId, selectedGrade) {
 		AppActions.ringAreaSelected(selectedRingId, selectedGrade);
-	}
-
-	triggerIntro (event) {
-		this.props.toggleBurgessDiagram();
-		this.props.triggerIntro(event);
 	}
 
 	getPopLabel (key) {
@@ -652,19 +645,13 @@ export default class CityStats extends React.Component {
 				let burgessDiagram = ringNodes.node().appendChild(xml.documentElement);
 
 				var innerSVG = ringNodes.select("svg");
-				console.log(innerSVG);
 
 				innerSVG
 					.attr('x', -5)
 					.attr('y', 102);
-					//.attr('height', 500);
-
 
 				innerSVG.transition().duration(10000)
 					.attr('opacity', .35);
-					// .select('#diagram')
-
-					// .attr('transform', 'translate(0,100)');
 			});
 
 		},

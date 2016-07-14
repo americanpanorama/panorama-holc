@@ -13,6 +13,7 @@ const MapStateStore = {
 		bounds: null,
 		visibleHOLCMaps: {},
 		visibleHOLCMapsIds: [],
+		visibleAdIds: [],
 		adZoomThreshold: 9
 	},
 
@@ -20,12 +21,16 @@ const MapStateStore = {
 		const theBounds = theMap.getBounds();
 		let visibleHOLCMaps = {},
 			visibleHOLCMapsIds = [],
-			visibleHOLCMapsByState = {};
+			visibleHOLCMapsByState = {},
+			visibleAdIds = [];
 
 		Object.keys(rasters).forEach((id) => {
 			if (theBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
 				visibleHOLCMaps[id] = rasters[id];
 				visibleHOLCMapsIds.push(parseInt(id));
+				if (visibleAdIds.indexOf(rasters[id].ad_id) == -1) {
+					visibleAdIds.push(parseInt(rasters[id].ad_id));
+				}
 			}
 		});
 
@@ -45,9 +50,10 @@ const MapStateStore = {
 		this.data.bounds = theBounds;
 		this.data.visibleHOLCMaps = visibleHOLCMaps;
 		this.data.visibleHOLCMapsIds = visibleHOLCMapsIds;
-		this.data.getVisibleHOLCMapsByState = visibleHOLCMapsByState;
+		this.data.visibleHOLCMapsByState = visibleHOLCMapsByState;
+		this.data.visibleAdIds = visibleAdIds;
 
-		console.log('MapStateStore finished loading');
+		// console.log('MapStateStore finished loading');
 
 		this.emit(AppActionTypes.storeChanged);
 	},
@@ -79,7 +85,11 @@ const MapStateStore = {
 	},
 
 	getVisibleHOLCMapsByState() {
-		return this.data.getVisibleHOLCMapsByState;
+		return this.data.visibleHOLCMapsByState;
+	},
+
+	getVisibleAdIds: function() {
+		return this.data.visibleAdIds;
 	},
 
 	isAboveZoomThreshold() {

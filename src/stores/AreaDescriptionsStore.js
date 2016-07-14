@@ -24,7 +24,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.id as ad_id, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
+					query: 'SELECT holc_ads.city_id as ad_id, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
 					format: 'JSON'
 				});
 			}

@@ -89,19 +89,14 @@ const CityStore = {
 
 		this.dataLoader.query([
 			{
-				query: 'SELECT * from holc_ads where id = ' + cityId,
+				query: 'SELECT * from holc_ads where city_id = ' + cityId,
 				format: 'JSON'
 			},
 			// get ring polygons
 			{
-				query: 'WITH the_hull as (select ST_Collect(digitalscholarshiplab.holc_polygons.the_geom_webmercator) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id), maxdist as (SELECT st_distance_sphere(st_transform(st_endpoint(st_longestline(st_transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857), hull)), 4326), ST_SetSRID(ST_MakePoint(looplng,looplat), 4326)) as outerringradius, st_length(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat),4326),3857), hull)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.id and holc_ads.id = ' + cityId + ' Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,\'quad_segs=32\')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,\'quad_segs=32\')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,\'quad_segs=32\')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,\'quad_segs=32\')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, ST_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_AsGeoJSON(ST_Transform(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as the_geojson, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as inverted_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area, outerringradius FROM city_rings, combined_grades, maxdist',
+				query: 'WITH the_hull as (select ST_Collect(digitalscholarshiplab.holc_polygons.the_geom_webmercator) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id), maxdist as (SELECT st_distance_sphere(st_transform(st_endpoint(st_longestline(st_transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857), hull)), 4326), ST_SetSRID(ST_MakePoint(looplng,looplat), 4326)) as outerringradius, st_length(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat),4326),3857), hull)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.city_id and holc_ads.city_id = ' + cityId + ' Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,\'quad_segs=32\')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,\'quad_segs=32\')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,\'quad_segs=32\')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,\'quad_segs=32\')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, ST_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_AsGeoJSON(ST_Transform(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as the_geojson, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as inverted_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area, outerringradius FROM city_rings, combined_grades, maxdist',
 				format: 'JSON'
 			},
-			/* {
-				query: 'SELECT holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.id = holc_polygons.ad_id where holc_ads.id = ' + cityId + ' order by holc_id, cat_id, sub_cat_id, _order',
-				//'SELECT q.category_id, q.label, q.question, q.question_id, c.category, c.cat_label, ad.answer, ad.neighborhood_id, hp.ad_id, hp.holc_grade, hp.holc_id, hp.holc_lette, hp.id, ST_asgeojson (hp.the_geom) as the_geojson FROM questions as q JOIN category as c ON c.category_id = q.category_id JOIN area_descriptions as ad ON ad.question_id = q.question_id JOIN holc_polygons as hp ON hp.id = ad.neighborhood_id WHERE ad_id=' + cityId,
-				format: 'JSON'
-			}, */
 			{
 				query: 'Select st_x(st_centroid(ST_SetSRID(st_extent(the_geom),4326))) as centerLng, st_y(st_centroid(ST_SetSRID(st_extent(the_geom),4326))) as centerLat, st_xmin(ST_SetSRID(st_extent(the_geom),4326)) as minlng, st_ymin(ST_SetSRID(st_extent(the_geom),4326)) as minlat, st_xmax(ST_SetSRID(st_extent(the_geom),4326)) as maxlng, st_ymax(ST_SetSRID(st_extent(the_geom),4326)) as maxlat from digitalscholarshiplab.holc_polygons where ad_id = ' + cityId,
 				format: 'JSON'
@@ -138,8 +133,8 @@ const CityStore = {
 
 			this.data.hasLoaded = true;
 
-			console.log('CityStore finished loading');
-			console.log(this.data);
+			// console.log('CityStore finished loading');
+			// console.log(this.data);
 
 			this.emit(AppActionTypes.storeChanged);
 
@@ -154,7 +149,7 @@ const CityStore = {
 		let adId;
 		this.dataLoader.query([
 			{
-				query: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_maps.looplng, holc_maps.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.id = holc_maps_ads_join.ad_id order by distance limit 1',
+				query: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_maps.looplng, holc_maps.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.city_id = holc_maps_ads_join.ad_id order by distance limit 1',
 				format: 'JSON'
 			}
 		]).then((response) => {
@@ -580,21 +575,21 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 		case AppActionTypes.mapMoved:
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
 
-			let visibleHOLCMapsIds = MapStateStore.getVisibleHOLCMapsIds();
+			let visibleAdIds = MapStateStore.getVisibleAdIds();
 			// unload city if nothing's visible 
-			if (visibleHOLCMapsIds.length == 0) {
+			if (visibleAdIds.length == 0) {
 				CityStore.loadData(null);
 			}
 			// load a city if there's only one visible and it's different
-			else if (visibleHOLCMapsIds.length == 1 && visibleHOLCMapsIds[0] !== CityStore.getId()) {
-				CityStore.loadData(visibleHOLCMapsIds[0], { zoomTo: false });
+			else if (visibleAdIds.length == 1 && visibleAdIds[0] !== CityStore.getId()) {
+				CityStore.loadData(visibleAdIds[0], { zoomTo: false });
 			} 
 			// unload the city if there are more than one but it's not among them
-			else if (visibleHOLCMapsIds.length > 1 && visibleHOLCMapsIds.indexOf(CityStore.getId()) == -1) {
+			else if (visibleAdIds.length > 1 && visibleAdIds.indexOf(CityStore.getId()) == -1) {
 				CityStore.loadData(null);
 			}
 			// unload city if more than one are visible and it's below the zoom threshold
-			else if (visibleHOLCMapsIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
+			else if (visibleAdIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
 				CityStore.loadData(null);
 			} 
 			break;

@@ -13,7 +13,7 @@ import TextsStore from './stores/TextsStore';
 import ADCat from './components/ADCat.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
 import AreaPolygon from './components/AreaPolygon.jsx';
-import { CartoDBTileLayer, HashManager, Legend, IntroManager, Navigation } from '@panorama/toolkit';
+import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
 import Donut from './components/Donut/Donut.jsx';
@@ -50,7 +50,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','triggerIntro','onIntroExit','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -147,7 +147,6 @@ export default class App extends React.Component {
 	}
 
 	onMapMoved (event) {
-		console.log('mapmoved fired');
 		AppActions.mapMoved(this.refs.the_map.leafletElement);
 	}
 
@@ -240,15 +239,6 @@ export default class App extends React.Component {
 		}, this.changeHash());
 	}
 
-	onIntroExit () {
-		this.setState({
-			intro: {
-				open: false
-			},
-			burgessDiagramVisible: false
-		});
-	}
-
 	onSliderChange (value) {
 		this.setState({
 			raster: {
@@ -286,34 +276,6 @@ export default class App extends React.Component {
 		console.log(event.target);
 		const subject = (event.target.id) ? (event.target.id) : null;
 		AppActions.onModalClick(subject);
-	}
-
-	triggerIntro (event) {
-		if (this.state.modalSectionOpen) {
-			this.closeModal();
-		}
-
-		// toggle off if the selected intro box is clicked
-		if (this.state.intro.open && event && event.currentTarget && this.state.intro.step == parseInt(event.currentTarget.dataset.step)) {
-			this.setState({intro: {open: false}});
-			return;
-		}
-
-		this.setState({
-			intro: {
-				open: true,
-				step: (event && event.currentTarget) ? parseInt(event.currentTarget.dataset.step) : null,
-				config: {
-					showStepNumbers: false,
-					skipLabel: '×',
-					nextLabel: '⟩',
-					prevLabel: '⟨',
-					doneLabel: '×'
-				},
-				steps: appConfig.introSteps,
-				onExit: this.onIntroExit
-			}
-		});
 	}
 
 	/* manage hash */
@@ -374,7 +336,7 @@ export default class App extends React.Component {
 	}
 
 	/* render and display methods */
-
+     
 	renderSidebar() {
 		let title, content, content2, theClass, ADs, ADsByCat;
 		// if (AreaDescriptionsStore.data.areaDescriptions && AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity]) {
@@ -467,7 +429,6 @@ export default class App extends React.Component {
 							areaUnselected={ this.onBurgessChartOff } 
 							gradeSelected={ this.onAreaChartHover } 
 							gradeUnselected={ this.onAreaChartOff } 
-							triggerIntro={ this.triggerIntro } 
 							openBurgess={ this.onModalClick }
 							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
@@ -610,17 +571,20 @@ export default class App extends React.Component {
 									}
 								}) }
 
-								{ cartodbLayers.layergroup.layers.map((item, i) => {
-									return (
-										<CartoDBTileLayer
-											key={ 'cartodb-tile-layer-' + i }
-											userId={ cartodbConfig.userId }
-											sql={ item.options.sql }
-											cartocss={ item.options.cartocss }
-											zIndex={1000}
-										/>
-									);
-								}) }
+								{ (!aboveThreshold) ?
+									cartodbLayers.layergroup.layers.map((item, i) => {
+										return (
+											<CartoDBTileLayer
+												key={ 'cartodb-tile-layer-' + i }
+												userId={ cartodbConfig.userId }
+												sql={ item.options.sql }
+												cartocss={ item.options.cartocss }
+												zIndex={1000}
+											/>
+										);
+									}) :
+									null
+								}
 
 								{/* rings: donut holes */}
 								{ (aboveThreshold && outerRadius > 0) ?
@@ -845,10 +809,6 @@ export default class App extends React.Component {
 						<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
 						<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
 					</Modal>
-
-
-
-					<IntroManager { ...this.state.intro } />
 				</div>
 			</div> 
 		);
