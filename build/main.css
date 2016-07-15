@@ -1111,7 +1111,7 @@ header {
       .panorama.legend ul li:last-child {
         border-bottom: 1px solid #b3b3b3; }
       .panorama.legend ul li.selected {
-        opacity: 1.0; }
+        opacity: .95; }
       .panorama.legend ul li span:before {
         display: inline-block;
         position: absolute;
@@ -1301,6 +1301,10 @@ body {
   list-style: none;
   font-weight: bolder; }
 
+.cityStats h2 {
+  text-align: center;
+  background-color: #d3e0df; }
+
 .cityStats .stats {
   /* height: 415px; */ }
 
@@ -1408,21 +1412,22 @@ body {
     }
 
     .neighborhood, .area_desc {
-        margin-bottom: 1.5em;
+        padding-bottom: 1.5em;
     } */ }
   .areaDescription h2,
   .ADCategory h2 {
-    margin: 0 20px; }
+    margin: 10px 10px; }
   .areaDescription .adNav,
   .ADCategory .adNav {
     position: fixed;
     background-color: #d3e0df;
     height: 20px;
     text-align: center;
-    transform: rotate(90deg); }
+    transform: rotate(90deg);
+    cursor: pointer; }
     .areaDescription .adNav:hover,
     .ADCategory .adNav:hover {
-      background-color: pink; }
+      background-color: #e1ebea; }
   .areaDescription .prev3,
   .ADCategory .prev3 {
     transform: rotate(90deg); }
@@ -1440,7 +1445,9 @@ body {
     .areaDescription ul.ad_cat li,
     .ADCategory ul.area_description li,
     .ADCategory ul.ad_cat li {
-      list-style: none; }
+      list-style: none;
+      margin-bottom: 0px;
+      padding-bottom: 3px; }
     .areaDescription ul.area_description .catNum, .areaDescription ul.area_description .catLetter,
     .areaDescription ul.ad_cat .catNum,
     .areaDescription ul.ad_cat .catLetter,

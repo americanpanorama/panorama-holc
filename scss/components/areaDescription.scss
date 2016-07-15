@@ -2,7 +2,7 @@
 .ADCategory {
 
     h2 {
-        margin: 0 20px;
+        margin: 10px 10px;
     }
     
     .adNav {
@@ -11,9 +11,10 @@
         height: 20px;
         text-align: center;
         transform: rotate(90deg);
+        cursor: pointer;
 
         &:hover {
-            background-color: pink;
+            background-color: #e1ebea;
         }
 
     }
@@ -38,6 +39,8 @@
 
         li {
             list-style: none;
+            margin-bottom: 0px;
+            padding-bottom: 3px;
         }
 
         .catNum, .catLetter {
@@ -273,7 +276,7 @@
     }
 
     .neighborhood, .area_desc {
-        margin-bottom: 1.5em;
+        padding-bottom: 1.5em;
     } */
 
 
