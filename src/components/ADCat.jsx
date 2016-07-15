@@ -81,6 +81,12 @@ export default class ADCat extends React.Component {
 	renderGrade(grade) {
 		let idiosyncraticDisplay = this['render' + this.props.formId + '_' + this.props.catNum + ((this.props.catLetter) ? this.props.catLetter : '')],
 			categoryData = this.props.ADsByCat;
+
+		if (!categoryData) {
+			return;
+		}
+
+
 		return (
 			<div>
 				<div className={'grade-header' + grade}><h2>{ grade }</h2></div>
@@ -95,7 +101,12 @@ export default class ADCat extends React.Component {
 									onMouseLeave={ this.props.onNeighborhoodOut } 
 									id={ neighborhoodId }
 								>
-									<span className='subcatName' id={ neighborhoodId }>{ neighborhoodId }</span>: 
+									<span className='subcatName' id={ neighborhoodId }>{ neighborhoodId }</span>
+									{ (this.props.neighborhoodNames[neighborhoodId]) ?
+										<span className='subcatName' id={ neighborhoodId }>{ ' ' + this.props.neighborhoodNames[neighborhoodId]}</span>:
+										''
+									}
+										: 
 									{ (typeof(idiosyncraticDisplay) === 'function') ? idiosyncraticDisplay(categoryData[neighborhoodId]) : this.renderDatum(categoryData[neighborhoodId]) }
 								</li>
 
@@ -153,21 +164,45 @@ export default class ADCat extends React.Component {
 		let previousCat = this.props.previousCatIds,
 			nextCat = this.props.nextCatIds;
 
+		const nextStyle = {
+			top: this.props.positioning.next.top + 'px',
+			right: this.props.positioning.next.right + 'px',
+			width: this.props.positioning.width + 'px'
+		};
+		const previousStyle = {
+			top: this.props.positioning.previous.top + 'px',
+			right: this.props.positioning.previous.right + 'px',
+			width: this.props.positioning.width + 'px'
+		};
+
 		return (
-			<div className='ad-selection'>
-				
-				
-				<ul className='ad_cat'>
-					<li>{ (previousCat) ?<span className='left-arrow' onClick={ this.props.onCategoryClick } id={ this.getCategoryString(...previousCat) }></span> : '' }</li>
-					<li>{ (previousCat) ? <span className='ad-left' onClick={ this.props.onCategoryClick } id={ this.getCategoryString(...previousCat) }>{ (previousCat[1]) ? previousCat[0] + previousCat[1] : previousCat[0] }</span> : '' }</li>
-					
-					<li>{ (nextCat) ?<span className='right-arrow' onClick={ this.props.onCategoryClick } id={ this.getCategoryString(...nextCat) }></span> : '' }</li>
-					<li>{ (nextCat) ?  <span className='ad-right' onClick={ this.props.onCategoryClick } id={ this.getCategoryString(...nextCat) }>{ (nextCat[1]) ? nextCat[0] + nextCat[1] : nextCat[0] }</span> : '' }</li>
-					<li><h4>{ this.props.title }</h4></li>
-					
-					
-					
-				</ul>
+			<div className='ADCategory'>
+
+				<h2>{this.props.title}</h2>
+
+				{ (this.props.previousCatIds) ?
+					<div 
+						className='adNav' 
+						style={ previousStyle }
+						onClick={ this.props.onCategoryClick } 
+						id={ this.getCategoryString(...previousCat) } 
+					>
+						{ (previousCat[1]) ? previousCat[0] + previousCat[1] : previousCat[0] }
+					</div> :
+					''
+				}
+
+				{ (this.props.nextCatIds) ?
+					<div 
+						className='adNav' 
+						style={ nextStyle }
+						onClick={ this.props.onCategoryClick } 
+						id={ this.getCategoryString(...nextCat) } 
+					>
+						{ (nextCat[1]) ? nextCat[0] + nextCat[1] : nextCat[0] }
+					</div> :
+					''
+				}
 
 				{ this.renderGrade('A') }
 				{ this.renderGrade('B') }

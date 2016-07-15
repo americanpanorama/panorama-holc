@@ -71,6 +71,8 @@ export default class App extends React.Component {
 	}
 
 	componentDidMount () {
+		this.computeComponentDimensions();
+
 		window.addEventListener('resize', this.onWindowResize);
 		AreaDescriptionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
@@ -169,7 +171,6 @@ export default class App extends React.Component {
 	}
 
 	onHOLCIDClick (event) {
-		console.log(event);
 		AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity);
 	}
 
@@ -206,7 +207,6 @@ export default class App extends React.Component {
 	}
 
 	onGradeHover (event) {
-		console.log(event);
 		AppActions.gradeSelected(event.target.grade);
 	}
 
@@ -301,6 +301,9 @@ export default class App extends React.Component {
 		var containerPadding = 20,
 			headerHeight = 100,
 			bottomRowHeight = 300,
+			sidebarWidth = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : 0,
+			sidebarHeight = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetHeight : 0,
+			adNavHeight = 20,
 			dimensions = {};
 
 		dimensions.search = {
@@ -314,6 +317,19 @@ export default class App extends React.Component {
 
 		dimensions.bottom = {
 			height: window.innerHeight - headerHeight - 2 * containerPadding
+		};
+
+		dimensions.adNav = {
+			width: sidebarHeight,
+			next: {
+				top: (sidebarHeight + containerPadding) / 2 + headerHeight,
+				right: containerPadding * 1.5 - sidebarHeight / 2
+			},
+			previous: {
+				top: (sidebarHeight + containerPadding) / 2 + headerHeight,
+				right: containerPadding * 1.5 - sidebarHeight / 2 + sidebarWidth - adNavHeight
+				
+			}
 		};
 
 		this.setState({ dimensions: dimensions });
@@ -337,147 +353,19 @@ export default class App extends React.Component {
 
 	/* render and display methods */
      
-	renderSidebar() {
-		let title, content, content2, theClass, ADs, ADsByCat;
-		// if (AreaDescriptionsStore.data.areaDescriptions && AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity]) {
-		// 	console.log(AreaDescriptionsStore.data.areaDescriptions[this.state.selectedCity].byCategory);
-		// }
-		if (this.state.selectedCity) {
-			if (this.state.selectedNeighborhood) {
-				ADs = AreaDescriptionsStore.getADsForNeighborhood(this.state.selectedCity, this.state.selectedNeighborhood)
-			} else if (this.state.selectedCategory) {
-				ADsByCat = AreaDescriptionsStore.getADsForCategory(this.state.selectedCity, this.state.selectedCategory);
-			}
-		}
-
-		if (this.state.downloadOpen) {
-			title = 	<h2>
-							{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-		} else if (this.state.selectedNeighborhood && ADs) {
-			theClass = 'area';
-			title = 	<h2>
-							<span>{ CityStore.getName() + ', '}</span> 
-							<span 
-								onClick={ this.onStateSelected } 
-								id={ CityStore.getState() }
-							>
-								{ CityStore.getState() }
-							</span>
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = 	<AreaDescription 
-							areaId={ this.state.selectedNeighborhood } 
-							previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
-							nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
-							areaDescriptions={ ADs } 
-							formId={ CityStore.getFormId() } 
-							cityId={ this.state.selectedCity }
-							onCategoryClick={ this.onCategoryClick } 
-							onHOLCIDClick={ this.onHOLCIDClick } 
-							ref={'areadescription' + this.state.selectedNeighborhood } 
-						/>;
-		} else if (this.state.selectedCategory && ADsByCat) {
-			let [catNum, catLetter] = this.state.selectedCategory.split('-');
-			theClass = 'category';
-			title = 	<h2>
-							<span>{ CityStore.getName() + ', '}</span> 
-							<span 
-								onClick={ this.onStateSelected } 
-								id={ CityStore.getState() }
-							>
-								{ CityStore.getState() }
-							</span>
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = 	<ADCat 
-							ADsByCat={ ADsByCat }
-							formId = { AreaDescriptionsStore.getFormId(this.state.selectedCity) }
-							title={ AreaDescriptionsStore.getCatTitle(this.state.selectedCity, catNum, catLetter) }
-							catNum={ catNum } 
-							catLetter = { catLetter } 
-							previousCatIds = { AreaDescriptionsStore.getPreviousCatIds(this.state.selectedCity, catNum, catLetter) }
-							nextCatIds = { AreaDescriptionsStore.getNextCatIds(this.state.selectedCity, catNum, catLetter) }
-							cityId={ this.state.selectedCity }
-							onNeighborhoodClick={ this.onHOLCIDClick } 
-							onCategoryClick={ this.onCategoryClick } 
-							onNeighborhoodHover={ this.neighborhoodHighlighted } 
-							onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
-						/>;
-		} else if (this.state.selectedCity) {
-			const visibleMaps = MapStateStore.getVisibleHOLCMaps();
-
-			theClass = 'city';
-			title = 	<h2>
-							<span>{ CityStore.getName() + ', '}</span> 
-							<span 
-								onClick={ this.onStateSelected } 
-								id={ CityStore.getState() }
-							>
-								{ CityStore.getState() }
-							</span>
-							<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-						</h2>;
-			content = 	<CityStats 
-							cityData={ CityStore.getCityData() } 
-							area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
-							gradeStats={ CityStore.getGradeStats() } 
-							ringStats={ CityStore.getRingStats() } 
-							areaSelected={ this.onBurgessChartHover } 
-							areaUnselected={ this.onBurgessChartOff } 
-							gradeSelected={ this.onAreaChartHover } 
-							gradeUnselected={ this.onAreaChartOff } 
-							openBurgess={ this.onModalClick }
-							burgessDiagramVisible={ this.state.burgessDiagramVisible } 
-							toggleBurgessDiagram={ this.toggleBurgessDiagram } 
-							hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
-						/>;
-			if (Object.keys(visibleMaps).length >= 2) {
-				content2 = <div>
-								<h4>Other Visible Maps</h4>
-								{ Object.keys(visibleMaps).map((mapId) => {
-									if (visibleMaps[mapId].cityId !== this.state.selectedCity) {
-										return <CitySnippet 
-											cityData={ visibleMaps[mapId] } 
-											onCityClick={ this.onCitySelected } 
-											key={ 'city' + mapId } 
-											recenter={ false }
-										/>
-									} 
-								})}
-							</div>;
-			}
-
-		} else if (!this.state.selectedCity) {
-			theClass = 'state';
-			let visibleStates = MapStateStore.getVisibleHOLCMapsByState();
-			if (MapStateStore.getVisibleHOLCMapsIds().length >= 2) {
-				content = 	Object.keys(visibleStates).map((theState) => {
-					return <StateStats 
-						stateName={ stateAbbrs[theState] } 
-						cities={ visibleStates[theState] } 
-						onCityClick={ this.onCitySelected }
-						key={ theState }
-						areaChartWidth={ this.state.dimensions.areaChart.width }
-					/>;
-				});
-			}
-		}
-
-
-		return (
-			<div className={ theClass } key={ theClass }>
-				{ title }
-				{ content }
-				{ content2 }
-			</div>
-		);
-	}
+	// renderSidebar() {
+	// 	if (this.state.downloadOpen) {
+	// 		title = 	<h2>
+	// 						{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
+	// 						<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
+	// 					</h2>;
+	// 		content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
+	// 	} 
+	// }
 
 	render () {
 		//console.log(this.state);
+
 		let modalStyle = {
 				overlay : {
 					backgroundColor: null
@@ -497,6 +385,15 @@ export default class App extends React.Component {
 			ADs = AreaDescriptionsStore.getVisible(),
 			aboveThreshold = MapStateStore.isAboveZoomThreshold(),
 			outerRadius = CityStore.getOuterRingRadius();
+
+		const selectedADs = AreaDescriptionsStore.getADsForNeighborhood(this.state.selectedCity, this.state.selectedNeighborhood),
+			neighborhoodNames = AreaDescriptionsStore.getNeighborhoodNames(this.state.selectedCity),
+			ADsByCat = AreaDescriptionsStore.getADsForCategory(this.state.selectedCity, this.state.selectedCategory),
+			catNum = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[0] : null,
+			catLetter = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[1] : null,
+			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
+			visibleStates = MapStateStore.getVisibleHOLCMapsByState();
+
 
 		let legendData = {
 			items: [
@@ -786,8 +683,101 @@ export default class App extends React.Component {
 								maxVisible={ 8 }
 							/>
 						</div>
+
+
+
+
+
 						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
-							{ this.renderSidebar() }
+
+							{ (this.state.selectedCity) ?
+								<CityStats 
+									name={ CityStore.getName() }
+									state={ CityStore.getState() }
+									cityData={ CityStore.getCityData() } 
+									area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
+									gradeStats={ CityStore.getGradeStats() } 
+									ringStats={ CityStore.getRingStats() } 
+									areaSelected={ this.onBurgessChartHover } 
+									areaUnselected={ this.onBurgessChartOff } 
+									gradeSelected={ this.onAreaChartHover } 
+									gradeUnselected={ this.onAreaChartOff } 
+									openBurgess={ this.onModalClick }
+									burgessDiagramVisible={ this.state.burgessDiagramVisible } 
+									toggleBurgessDiagram={ this.toggleBurgessDiagram } 
+									hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
+								/> :
+								''
+							}
+
+							{ (this.state.selectedCity && Object.keys(ADs).length >= 2) ?
+								<div>
+									<h4>Other Visible Maps</h4>
+									{ Object.keys(visibleMaps).map(mapId => {
+										return ((visibleMaps[mapId].cityId !== this.state.selectedCity) ?
+											<CitySnippet 
+												cityData={ visibleMaps[mapId] } 
+												onCityClick={ this.onCitySelected } 
+												key={ 'city' + mapId } 
+												recenter={ false }
+											/> :
+											''
+										)
+									})} 
+								</div> :
+								''
+							}
+							
+
+							{ (this.state.selectedNeighborhood) ? 
+								<AreaDescription 
+									areaId={ this.state.selectedNeighborhood } 
+									previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+									nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+									neighborhoodNames={ neighborhoodNames }
+									areaDescriptions={ selectedADs } 
+									formId={ CityStore.getFormId() } 
+									cityId={ this.state.selectedCity }
+									onCategoryClick={ this.onCategoryClick } 
+									onHOLCIDClick={ this.onHOLCIDClick } 
+									ref={'areadescription' + this.state.selectedNeighborhood } 
+									positioning={ this.state.dimensions.adNav }
+								/> : 
+								''
+							}
+
+							{ (this.state.selectedCategory) ?
+								<ADCat 
+									ADsByCat={ ADsByCat }
+									neighborhoodNames={ neighborhoodNames }
+									formId = { AreaDescriptionsStore.getFormId(this.state.selectedCity) }
+									title={ AreaDescriptionsStore.getCatTitle(this.state.selectedCity, catNum, catLetter) }
+									catNum={ catNum } 
+									catLetter = { catLetter } 
+									previousCatIds = { AreaDescriptionsStore.getPreviousCatIds(this.state.selectedCity, catNum, catLetter) }
+									nextCatIds = { AreaDescriptionsStore.getNextCatIds(this.state.selectedCity, catNum, catLetter) }
+									cityId={ this.state.selectedCity }
+									onNeighborhoodClick={ this.onHOLCIDClick } 
+									onCategoryClick={ this.onCategoryClick } 
+									onNeighborhoodHover={ this.neighborhoodHighlighted } 
+									onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
+									positioning={ this.state.dimensions.adNav }
+								/> :
+								''
+							}
+
+							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory) ?
+								Object.keys(visibleStates).map((theState) => {
+									return <StateStats 
+										stateName={ stateAbbrs[theState] } 
+										cities={ visibleStates[theState] } 
+										onCityClick={ this.onCitySelected }
+										key={ theState }
+										areaChartWidth={ this.state.dimensions.areaChart.width }
+									/>;
+								}) :
+								''
+							}
 
 						</div>
 					</div>

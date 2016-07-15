@@ -40,6 +40,9 @@ export default class CityStats extends React.Component {
 	};
 
 	shouldComponentUpdate(nextProps, nextState) {
+		if (nextProps.hasADs !== this.props.hasADs) {
+			return true;
+		}
 		// don't know why this is necessary, but the component is updating on mouseover--this prevents that.
 		return (nextProps.burgessDiagramVisible !== this.props.burgessDiagramVisible || nextProps.ringStats !== this.props.ringStats);
 	};
@@ -159,6 +162,16 @@ export default class CityStats extends React.Component {
 			
 		return (
 			<div className='cityStats'>
+				<h2>
+					{ this.props.name + ', '}
+					<span 
+						//onClick={ this.onStateSelected } 
+						id={ this.props.state }
+					>
+						{ this.props.state }
+					</span>
+				</h2>
+
 				{ (this.props.hasADs) ?
 					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 
 					<div className='adInstructions'>area descriptions aren't yet but will eventually be available for this city</div>

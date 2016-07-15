@@ -6,7 +6,10 @@ export default class AreaDescription extends React.Component {
 
 	// property validation
 	static propTypes = {
-		areaDescriptions: PropTypes.object
+		areaDescriptions: React.PropTypes.oneOfType([
+			PropTypes.object,
+			PropTypes.bool
+		])
 	};
 
 	// (instead of ES5-style getDefaultProps)
@@ -19,34 +22,67 @@ export default class AreaDescription extends React.Component {
 	}
 
 	shouldComponentUpdate (nextProps) {
-		return (nextProps.areaId !== this.props.areaId || nextProps.cityId !== this.props.cityId);
+		return true;
+		return (nextProps.areaId !== this.props.areaId || nextProps.cityId !== this.props.cityId || nextProps.previousStyle !== this.props.previousStyle);
 	}
 
 	render () {
 
-		/* if (typeof(this.props.areaData) == 'undefined' || typeof(this.props.areaData.areaDesc) == 'undefined') {
-			return false;
-		} */
-
-
+		const nextStyle = {
+			top: this.props.positioning.next.top + 'px',
+			right: this.props.positioning.next.right + 'px',
+			width: this.props.positioning.width + 'px'
+		};
+		const previousStyle = {
+			top: this.props.positioning.previous.top + 'px',
+			right: this.props.positioning.previous.right + 'px',
+			width: this.props.positioning.width + 'px'
+		};
 
 		return (
+			<div className='areaDescription'>
 
-			<div>
-				<ul className='ad-selection'>
-					{ (this.props.previousAreaId) ? 
-						<li onClick={ this.props.onHOLCIDClick } id={ this.props.previousAreaId } className='ad-left' >{ '<' + this.props.previousAreaId }
-						</li> : 
-						'' 
+				<h2>
+					<span>{ this.props.areaId}</span>
+					{ (this.props.neighborhoodNames[this.props.areaId]) ?
+						<span>{ ' ' + this.props.neighborhoodNames[this.props.areaId] }</span> :
+					''
 					}
-					{ (this.props.nextAreaId) ? 
-						<li onClick={ this.props.onHOLCIDClick } id={ this.props.nextAreaId } className='ad-right' >{ this.props.nextAreaId + '>' }
-						</li> : 
-						'' 
-					}
-					<li><h4>{ this.props.areaId }</h4></li>
-				</ul>
-		
+				</h2> 
+
+				{ (this.props.previousAreaId) ?
+					<div 
+						className='adNav' 
+						style={ previousStyle }
+						onClick={ this.props.onHOLCIDClick } 
+						id={ this.props.previousAreaId } 
+					>
+						{ this.props.previousAreaId }
+						{ (this.props.neighborhoodNames[this.props.previousAreaId]) ?
+							' ' + this.props.neighborhoodNames[this.props.previousAreaId] :
+							''
+						} 
+					</div> :
+					''
+				}
+
+
+				{ (this.props.nextAreaId && this.props.nextAreaId !== 'null') ?
+					<div 
+						className='adNav' 
+						style={ nextStyle }
+						onClick={ this.props.onHOLCIDClick } 
+						id={ this.props.nextAreaId } 
+					>
+						{ this.props.nextAreaId }
+						{ (this.props.neighborhoodNames[this.props.nextAreaId]) ?
+							' ' + this.props.neighborhoodNames[this.props.nextAreaId] :
+							''
+						} 
+					</div> :
+					''
+				}
+	
 				{ ([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :
 				  (parseInt(this.props.formId) == 19371001) ? this.renderNSForm8_19371001() :
 				  null
@@ -61,6 +97,10 @@ export default class AreaDescription extends React.Component {
 
 	renderNSForm8_19370203() {
 		let AD = this.props.areaDescriptions;
+
+		if (AD === false) {
+			return;
+		}
 
 		return (
 
@@ -270,6 +310,11 @@ export default class AreaDescription extends React.Component {
 
 	renderNSForm8_19371001() {
 		let AD = this.props.areaDescriptions;
+
+		if (AD === false) {
+			return;
+		}
+
 		return (
 			<ul className='area_description NSForm8'>
 				<li>
@@ -523,6 +568,15 @@ export default class AreaDescription extends React.Component {
 
 	renderSimpleSubcategory(catNum, catLetter, subcatName) {
 		let AD = this.props.areaDescriptions; 
+
+		if (AD === false) {
+			return;
+		}
+
+		if (!AD[catNum]) {
+			console.warn(catNum + catLetter + ' is not defined', AD);
+			return;
+		}
 
 		if (typeof AD[catNum][catLetter] == 'object') {
 			console.warn(catNum + catLetter + ' is an object when a string was expected');

@@ -24,7 +24,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.city_id as ad_id, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
+					query: 'SELECT holc_ads.city_id as ad_id, holc_polygons.name, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
 					format: 'JSON'
 				});
 			}
@@ -66,7 +66,7 @@ const AreaDescriptionsStore = {
 			adData[d.holc_id].area_geojson = (!adData[d.holc_id].area_geojson) ? JSON.parse(d.the_geojson) : adData[d.holc_id].area_geojson;
 			adData[d.holc_id].area_geojson_inverted = (!adData[d.holc_id].area_geojson_inverted) ? this.parseInvertedGeoJson(JSON.parse(d.the_geojson)) : adData[d.holc_id].area_geojson_inverted;
 			adData[d.holc_id].boundingBox = [[d.bbxmin,d.bbymin],[d.bbxmax,d.bbymax]];
-			//adData[d.holc_id].name = d.name;
+			adData[d.holc_id].name = d.name;
 			adData[d.holc_id].holc_grade = d.holc_grade;
 			adData[d.holc_id].sqmi = d.sqmi;
 			
@@ -150,6 +150,20 @@ const AreaDescriptionsStore = {
 		return geojson;
 	},
 
+	getName: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null;
+	},
+
+	getNeighborhoodNames: function (adId) {
+		let names = {};
+		if (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood) {
+			Object.keys(this.data.areaDescriptions[adId].byNeighborhood).forEach(holcId => {
+				names[holcId] = this.getName(adId, holcId);
+			});
+		}
+		return names;
+	},
+
 	getAreaDescriptions: function() {
 		return this.data.areaDescriptions;
 	},
@@ -192,7 +206,7 @@ const AreaDescriptionsStore = {
 	},
 
 	getADsForCategory: function(adId, category) {
-		if (!this.data.areaDescriptions[adId]) {
+		if (!this.data.areaDescriptions[adId] || !category) {
 			return null;
 		}
 
@@ -231,13 +245,21 @@ const AreaDescriptionsStore = {
 	},
 
 	getPreviousHOLCId: function(adId, HOLCId) {
-		let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
-		return formIds[formIds.indexOf(HOLCId) - 1];
+		if (this.data.areaDescriptions[adId]) {
+			let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
+			return formIds[formIds.indexOf(HOLCId) - 1];
+		} else {
+			return false;
+		}
 	},
 
 	getNextHOLCId: function(adId, HOLCId) {
-		let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
-		return formIds[formIds.indexOf(HOLCId) + 1];
+		if (this.data.areaDescriptions[adId]) {
+			let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
+			return formIds[formIds.indexOf(HOLCId) + 1];
+		} else {
+			return false;
+		}
 	},
 
 	getFormId: function(adId) {
@@ -298,7 +320,7 @@ const AreaDescriptionsStore = {
 	},
 
 	hasADData: function(adId) {
-		return (this.data.areaDescriptions[adId]);
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood['C1']);
 	},
 
 	/* alphanum.js (C) Brian Huisman
