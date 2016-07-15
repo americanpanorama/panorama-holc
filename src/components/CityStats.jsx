@@ -55,7 +55,7 @@ export default class CityStats extends React.Component {
 		this.d3NestedPieChart.onGradeHover = this.props.gradeSelected.bind(this);
 		this.d3NestedPieChart.onGradeHoverOut = this.props.gradeUnselected.bind(this);
 		if (this.props.ringStats) {
-			//this.d3NestedPieChart.update(this.refs.content, this.props.ringStats, this.props.gradeStats);
+			this.d3NestedPieChart.update(this.refs.content, this.props.ringStats, this.props.gradeStats);
 		}
 	}
 
@@ -133,7 +133,30 @@ export default class CityStats extends React.Component {
 					<div className='adInstructions'>area descriptions aren't available for this city, but will be soon</div>
 				}
 
-
+				<table className='population-stats'>
+					<tbody>
+						<tr>
+							<th></th>
+							<th>1930</th>
+							<th>1940</th>
+						</tr>
+						<tr>
+							<td>Population</td>
+							<td className='total' key='total1930'>{ population1930 }</td>
+							<td className='total' key='total1940'>{ population1940 }</td>
+						</tr>
+						{ orderedKeys.map(popkey => {
+							return ((popStats[1930][popkey] > 0.01 || popStats[1930][popkey] > 0.01) ?
+								<tr key={ popkey }>
+									<td>{ this.getPopLabel(popkey) }</td>
+									<td>{ (Math.round(popStats[1930][popkey] * 1000) / 10) + '%' }</td>
+									<td>{ (Math.round(popStats[1940][popkey] * 1000) / 10) + '%' }</td>
+								</tr> :
+								null
+							)
+						})}
+					</tbody>
+				</table>
 
 				<div className='nestedpiechart'>
 					<button 

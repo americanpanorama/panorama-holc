@@ -372,12 +372,18 @@ const CityStore = {
 			return false;
 		}
 
-		let ringAreasGeometry  = {
-			1: {'A':{},'B':{},'C':{},'D':{}},
-			2: {'A':{},'B':{},'C':{},'D':{}},
-			3: {'A':{},'B':{},'C':{},'D':{}},
-			4: {'A':{},'B':{},'C':{},'D':{}}
-		};
+		let defaultProps = {
+				the_geojson: {},
+				inverted_geojson: {},
+				percent: 0,
+				overallPercent: 0
+			},
+			ringAreasGeometry  = {
+				1: {A: defaultProps, B: defaultProps, C: defaultProps, D: defaultProps},
+				2: {A: defaultProps, B: defaultProps, C: defaultProps, D: defaultProps},
+				3: {A: defaultProps, B: defaultProps, C: defaultProps, D: defaultProps},
+				4: {A: defaultProps, B: defaultProps, C: defaultProps, D: defaultProps}
+			};
 
 		geometries.forEach((d) => {
 			ringAreasGeometry[d.ring].density = this.data.gradedAreaOfRings[d.ring] / d.ring_area;
@@ -576,8 +582,8 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
 
 			let visibleAdIds = MapStateStore.getVisibleAdIds();
-			// unload city if nothing's visible 
-			if (visibleAdIds.length == 0) {
+			// unload city if nothing's visible or below zoom threshold
+			if (visibleAdIds.length == 0 || !MapStateStore.isAboveZoomThreshold()) {
 				CityStore.loadData(null);
 			}
 			// load a city if there's only one visible and it's different

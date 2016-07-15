@@ -364,7 +364,6 @@ export default class App extends React.Component {
 	// }
 
 	render () {
-		//console.log(this.state);
 
 		let modalStyle = {
 				overlay : {
@@ -781,15 +780,6 @@ export default class App extends React.Component {
 
 						</div>
 					</div>
-					
-					<Modal 
-						isOpen={ false }
-						// isOpen={ TextsStore.mainModalIsOpen() } 
-						style={ modalStyle }
-					>
-						<button className='close' onClick={ this.onModalClick }><span>×</span></button>
-						<div dangerouslySetInnerHTML={ TextsStore.getModalContent() }></div>
-					</Modal>
 
 					<Modal 
 						isOpen={ UserLocationStore.getOfferZoomTo() } 
