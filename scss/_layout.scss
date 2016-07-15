@@ -319,7 +319,7 @@ header {
             left: 1px;
             width: 26px;
             height: 26px;
-            background-image: url('static/area-desc.svg');
+            background-image: url('static/area-desc-3.svg');
           }
         }
       }
@@ -481,6 +481,7 @@ $colorLightGrey: #b3b3b3;
 	bottom: 10px;
 	left: 10px;
 	z-index: 100;
+	width: 180px;
 
 	ul {
 		margin: 0;
@@ -488,18 +489,17 @@ $colorLightGrey: #b3b3b3;
 
 		li {
 			position: relative;
-			opacity: 1;
-			margin: 5px 0;
+			opacity: .95;
 			margin-bottom: 0;
 
 			cursor: pointer;
 			list-style-type: none;
-			background-color: $colorLightGrey;
+			background-color: #b8cdcb;
 			border-radius: 4px;
-			border: 1px solid grey;
+			border: 1px solid #a6b9b7;
 			border-bottom: 0;
-			padding: 5px;
-			padding-left: 22px;
+			padding: 6px;
+			padding-left: 32px;
 
 			&:last-child {
 				border-bottom: 1px solid $colorLightGrey;

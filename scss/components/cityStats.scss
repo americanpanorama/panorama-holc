@@ -42,6 +42,7 @@
 
 	.nestedpiechart {
 		text-align: center;
+		padding-top: 30px;
 		height: 400px;
 		svg {
 			shape-rendering: 'crispEdges';
@@ -65,7 +66,7 @@
 		height: 0px;
 	}
 
-	table {
+	table.population-stats {
 		border: none;
 		margin: 0 auto;
 	}
@@ -73,6 +74,7 @@
 	th {
 		text-align: right;
 		padding: 2px 10px;
+		font-size: 22px;
 	}
 
 	td {

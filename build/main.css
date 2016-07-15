@@ -1011,7 +1011,7 @@ header {
         left: 1px;
         width: 26px;
         height: 26px;
-        background-image: url("static/area-desc.svg"); }
+        background-image: url("static/area-desc-3.svg"); }
       .map-legend-wrapper ul li.user span:before {
         border: none;
         background-color: transparent;
@@ -1091,23 +1091,23 @@ header {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  z-index: 100; }
+  z-index: 100;
+  width: 180px; }
   .panorama.legend ul {
     margin: 0;
     padding: 0; }
     .panorama.legend ul li {
       position: relative;
-      opacity: 1;
-      margin: 5px 0;
+      opacity: .95;
       margin-bottom: 0;
       cursor: pointer;
       list-style-type: none;
-      background-color: #b3b3b3;
+      background-color: #b8cdcb;
       border-radius: 4px;
-      border: 1px solid grey;
+      border: 1px solid #a6b9b7;
       border-bottom: 0;
-      padding: 5px;
-      padding-left: 22px; }
+      padding: 6px;
+      padding-left: 32px; }
       .panorama.legend ul li:last-child {
         border-bottom: 1px solid #b3b3b3; }
       .panorama.legend ul li.selected {
@@ -1160,7 +1160,8 @@ h2 {
   font-size: 1.4em; }
 
 h3 {
-  font-size: 1em; }
+  font-size: 1.3em;
+  letter-spacing: 0.04rem; }
 
 h4 {
   font-size: 0.87em; }
@@ -1326,6 +1327,7 @@ body {
 
 .cityStats .nestedpiechart {
   text-align: center;
+  padding-top: 30px;
   height: 400px; }
   .cityStats .nestedpiechart svg {
     shape-rendering: 'crispEdges'; }
@@ -1343,13 +1345,14 @@ body {
 .cityStats .content {
   height: 0px; }
 
-.cityStats table {
+.cityStats table.population-stats {
   border: none;
   margin: 0 auto; }
 
 .cityStats th {
   text-align: right;
-  padding: 2px 10px; }
+  padding: 2px 10px;
+  font-size: 22px; }
 
 .cityStats td {
   text-align: right;
