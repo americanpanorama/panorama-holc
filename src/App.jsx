@@ -690,7 +690,7 @@ export default class App extends React.Component {
 
 						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 
-							{ (this.state.selectedCity) ?
+							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && this.state.selectedCity) ?
 								<CityStats 
 									name={ CityStore.getName() }
 									state={ CityStore.getState() }
@@ -710,7 +710,7 @@ export default class App extends React.Component {
 								''
 							}
 
-							{ (this.state.selectedCity && Object.keys(ADs).length >= 2) ?
+							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && this.state.selectedCity && Object.keys(ADs).length >= 2) ?
 								<div>
 									<h4>Other Visible Maps</h4>
 									{ Object.keys(visibleMaps).map(mapId => {
@@ -766,7 +766,7 @@ export default class App extends React.Component {
 								''
 							}
 
-							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory) ?
+							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory && visibleStates) ?
 								Object.keys(visibleStates).map((theState) => {
 									return <StateStats 
 										stateName={ stateAbbrs[theState] } 
