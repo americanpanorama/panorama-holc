@@ -19,7 +19,7 @@ export default class Downloader extends React.Component {
 				<h2>
 					<span>{ this.props.name + ', ' + this.props.state }</span>
 
-					<div className='downloadicon' onClick={ this.props.onDownloadClicked }></div>
+					<div className='downloadicon' onClick={ this.props.onDownloadClicked }>x</div>
 				</h2>
 				<ul>
 					<li>
