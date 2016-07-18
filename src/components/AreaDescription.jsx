@@ -49,7 +49,7 @@ export default class AreaDescription extends React.Component {
 					''
 					}
 
-					<span onClick={ this.props.onClose }>x</span>
+					<span className='closeicon' onClick={ this.props.onClose }>x</span>
 				</h2> 
 
 				{ (this.props.previousAreaId) ?

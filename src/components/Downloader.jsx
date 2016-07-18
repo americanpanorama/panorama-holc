@@ -19,20 +19,20 @@ export default class Downloader extends React.Component {
 				<h2>
 					<span>{ this.props.name + ', ' + this.props.state }</span>
 
-					<div className='downloadicon' onClick={ this.props.onDownloadClicked }>DL</div>
+					<div className='downloadicon' onClick={ this.props.onDownloadClicked }></div>
 				</h2>
 				<ul>
 					<li>
-						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC map (original)</a></h3>
 						<img src={this.props.thumbnail } />
+						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC map (original)</a></h3>			
 					</li>
 					<li>
-						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC area description</a></h3>
 						<img src={this.props.mapThumbnail } />
+						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC area description</a></h3>					
 					</li>
 					<li>
+						<img src={this.props.mapThumbnail } />
 						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC georeferenced map</a></h3>
-						<img src={this.props.mapThumbnail } />
 					</li>
 				</ul>
 			</div>

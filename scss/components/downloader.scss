@@ -1,6 +1,28 @@
+h2 {
+        text-align: center;
+        background-color: #d3e0df;
+    }
+
+    .downloadicon {
+        margin-left: -30px;
+        margin-top: 2px;
+        float: right;
+        width: 30px;
+        height: 26px;
+        display: inline-block;
+        background-image: url(http://dsl.richmond.edu/panorama/static/images/cloud.svg);
+        background-repeat: no-repeat;
+        opacity: 0.4;
+        cursor: pointer;
+    }
+
+    .downloadicon:hover {
+        opacity: 1.0;
+    }
+
 .download_menu ul {
     font-family: 'Lato';
-    font-size: 16px;
+    font-size: 12px;
     color: #0c789a;
     list-style: none;
     margin: 1em 0 0 0;
@@ -23,7 +45,7 @@
 
     img {
     	float: right;
-    	margin: -66px 15px 0;
+    	margin: 14px 14px 0;
     	width: 100px;
     }
 

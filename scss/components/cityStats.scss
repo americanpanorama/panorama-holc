@@ -9,6 +9,23 @@
         background-color: #d3e0df;
     }
 
+    .downloadicon {
+        margin-left: -30px;
+        margin-top: 2px;
+        float: right;
+        width: 30px;
+        height: 26px;
+        display: inline-block;
+        background-image: url(http://dsl.richmond.edu/panorama/static/images/cloud.svg);
+        background-repeat: no-repeat;
+        opacity: 0.4;
+        cursor: pointer;
+    }
+
+    .downloadicon:hover {
+        opacity: 1.0;
+    }
+
 		.stats {
 		    /* height: 415px; */
 		}
