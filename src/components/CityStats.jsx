@@ -126,6 +126,8 @@ export default class CityStats extends React.Component {
 					>
 						{ this.props.state }
 					</span>
+
+					<div className='downloadicon' onClick={ this.props.onDownloadClicked }>DL</div>
 				</h2>
 
 				{ (this.props.hasADs) ?

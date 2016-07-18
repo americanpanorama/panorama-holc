@@ -696,7 +696,7 @@ export default class App extends React.Component {
 
 						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
 
-							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && this.state.selectedCity) ?
+							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && !this.state.downloadOpen && this.state.selectedCity) ?
 								<CityStats 
 									name={ CityStore.getName() }
 									state={ CityStore.getState() }
@@ -712,6 +712,7 @@ export default class App extends React.Component {
 									burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 									toggleBurgessDiagram={ this.toggleBurgessDiagram } 
 									hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
+									onDownloadClicked={ this.onDownloadClicked }
 								/> :
 								''
 							}
@@ -785,6 +786,17 @@ export default class App extends React.Component {
 									/>;
 								}) :
 								''
+							}
+
+							{ (this.state.downloadOpen) ?
+								<Downloader 
+									mapurl={ RasterStore.getMapUrl() } 
+									thumbnail={ RasterStore.getMapThumbnail() }
+									name={ RasterStore.getSelectedCityMetadata().name } 
+									state={ CityStore.getState() }
+									onDownloadClicked={ this.onDownloadClicked }
+								/> : 
+								null
 							}
 
 						</div>

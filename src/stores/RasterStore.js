@@ -69,7 +69,7 @@ const RasterStore = {
 			this.data.cityIdsWithADs = response[1].map((row) => row.id);
 			
 			this.data.selectedCity = state.selectedCity;
-			this.data.selectedState = state.selectedState;
+			this.data.selectedState = response[2][0].state;
 
 			this.data.loaded = true;
 
@@ -114,6 +114,10 @@ const RasterStore = {
 
 	getCityMetadata: function(city_id, key=null) {
 		return (this.data.maps[city_id]) ? (key && this.data.maps[city_id][key]) ? this.data.maps[city_id][key] : this.data.maps[city_id] : null;
+	},
+
+	getSelectedState () {
+		return this.data.selectedState;
 	},
 
 	getMapBounds: function () {
@@ -339,7 +343,7 @@ const RasterStore = {
 				hasADs: false,
 				url: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
 				mapurl: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData	.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg',
-				mapThumbnail: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg'
+				mapThumbnail: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg'
 			}
 		});
 
