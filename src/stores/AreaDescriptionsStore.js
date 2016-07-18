@@ -43,6 +43,7 @@ const AreaDescriptionsStore = {
 				}
 			});
 
+
 			this.emit(AppActionTypes.storeChanged);
 
 		}, (error) => {
@@ -85,7 +86,7 @@ const AreaDescriptionsStore = {
 			if(d.sub_cat_id) {
 				// create sub-object if we have a subcategory...
 				if(typeof adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] == 'undefined') {
-					//console.log(d, adData[d.holc_id]);
+
 					adData[d.holc_id].areaDesc[d.cat_id][d.sub_cat_id] = {};
 
 					// look for order
@@ -272,7 +273,7 @@ const AreaDescriptionsStore = {
 		}
 
 		const formId = this.data.areaDescriptions[adId].formId;
-		for (let checkCatNum = (!catLetter) ? parseInt(catNum) - 1 : parseInt(catNum); checkCatNum >= 1; checkCatNum--) {
+		for (let checkCatNum = (!catLetter || catLetter == 'a') ? parseInt(catNum) - 1 : parseInt(catNum); checkCatNum >= 1; checkCatNum--) {
 			for (let checkCatLetter = (!catLetter || catLetter == 'a') ? 'z' : String.fromCharCode(catLetter.charCodeAt()-1); checkCatLetter >= 'a'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()-1), catLetter = undefined) {
 				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
 					return [checkCatNum, undefined];
@@ -385,7 +386,7 @@ AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
-			if (action.state.selectedCity && MapStateStore.isAboveZoomThreshold()) {
+			if (action.state.selectedCity) {
 				AreaDescriptionsStore.loadData([action.state.selectedCity]);
 			}
 			break;

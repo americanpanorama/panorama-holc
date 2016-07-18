@@ -23,7 +23,8 @@ export default class ADCat extends React.Component {
 	}
 
 	shouldComponentUpdate (nextProps) {
-		return (nextProps.catNum !== this.props.catNum || nextProps.catLetter !== this.props.catLetter || nextProps.cityId !== this.props.cityId)
+		return true;
+		//return (nextProps.catNum !== this.props.catNum || nextProps.catLetter !== this.props.catLetter || nextProps.cityId !== this.props.cityId)
 	}
 
 	/* alphanum.js (C) Brian Huisman
@@ -178,7 +179,7 @@ export default class ADCat extends React.Component {
 		return (
 			<div className='ADCategory'>
 
-				<h2>{this.props.title}</h2>
+				<h2>{this.props.title} <span onClick={ this.props.onClose }>x</span></h2>
 
 				{ (this.props.previousCatIds) ?
 					<div 

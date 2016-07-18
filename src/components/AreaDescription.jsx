@@ -48,6 +48,8 @@ export default class AreaDescription extends React.Component {
 						<span>{ ' ' + this.props.neighborhoodNames[this.props.areaId] }</span> :
 					''
 					}
+
+					<span onClick={ this.props.onClose }>x</span>
 				</h2> 
 
 				{ (this.props.previousAreaId) ?

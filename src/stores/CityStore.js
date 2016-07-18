@@ -65,6 +65,8 @@ const CityStore = {
 		hasLoaded: false
 	},
 
+	cache: {},
+
 	// TODO: Make a generic DataLoader class to define an interface,
 	// and let CartoDBLoader extend and implement that?
 	// Basic idea is that anything with a query method that returns a Promise
@@ -75,7 +77,7 @@ const CityStore = {
 	loadData: function (cityId, selectedByUser) {
 		if (cityId == null) {
 			this.data.id = null;
-			this.data.selectedNeighborhood = null;
+			this.data.selectedHolcId = null;
 			this.data.selectedCategory = null;
 			this.emit(AppActionTypes.storeChanged);
 			return;
@@ -86,6 +88,15 @@ const CityStore = {
 			this.emit(AppActionTypes.storeChanged);
 			return;
 		}
+
+		// // check to see if the city data has already been loaded and stored in cache
+		// if (this.cache[cityId]) {
+		// 	console.log(this.cache);
+		// 	this.data = this.cache[cityId];
+		// 	console.log(this.data);
+		// 	this.emit(AppActionTypes.storeChanged);
+		// 	return;
+		// }
 
 		this.dataLoader.query([
 			{
@@ -581,23 +592,28 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 		case AppActionTypes.mapMoved:
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
 
-			let visibleAdIds = MapStateStore.getVisibleAdIds();
-			// unload city if nothing's visible or below zoom threshold
-			if (visibleAdIds.length == 0 || !MapStateStore.isAboveZoomThreshold()) {
-				CityStore.loadData(null);
-			}
-			// load a city if there's only one visible and it's different
-			else if (visibleAdIds.length == 1 && visibleAdIds[0] !== CityStore.getId()) {
-				CityStore.loadData(visibleAdIds[0], { zoomTo: false });
-			} 
-			// unload the city if there are more than one but it's not among them
-			else if (visibleAdIds.length > 1 && visibleAdIds.indexOf(CityStore.getId()) == -1) {
-				CityStore.loadData(null);
-			}
-			// unload city if more than one are visible and it's below the zoom threshold
-			else if (visibleAdIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
-				CityStore.loadData(null);
-			} 
+			// you have to wait for initial load of mapstore
+			const waitingInitialLoad = setInterval(() => {
+				clearInterval(waitingInitialLoad);
+
+				let visibleAdIds = MapStateStore.getVisibleAdIds();
+				// unload city if nothing's visible or below zoom threshold
+				if (visibleAdIds.length == 0 || !MapStateStore.isAboveZoomThreshold()) {
+					CityStore.loadData(null);
+				}
+				// load a city if there's only one visible and it's different
+				else if (visibleAdIds.length == 1 && visibleAdIds[0] !== CityStore.getId()) {
+					CityStore.loadData(visibleAdIds[0], { zoomTo: false });
+				} 
+				// unload the city if there are more than one but it's not among them
+				else if (visibleAdIds.length > 1 && visibleAdIds.indexOf(CityStore.getId()) == -1) {
+					CityStore.loadData(null);
+				}
+				// unload city if more than one are visible and it's below the zoom threshold
+				else if (visibleAdIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
+					CityStore.loadData(null);
+				} 
+			}, 100);
 			break;
 	}
 

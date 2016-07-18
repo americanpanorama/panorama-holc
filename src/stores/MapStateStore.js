@@ -9,12 +9,13 @@ const MapStateStore = {
 	data: {
 		theMap: null,
 		center: [39.8333333,-98.585522],
-		zoom: 5,
+		zoom: 12,
 		bounds: null,
 		visibleHOLCMaps: {},
 		visibleHOLCMapsIds: [],
 		visibleAdIds: [],
-		adZoomThreshold: 9
+		adZoomThreshold: 9,
+		hasLoaded: false
 	},
 
 	loadData: function (theMap, rasters) {
@@ -52,6 +53,8 @@ const MapStateStore = {
 		this.data.visibleHOLCMapsIds = visibleHOLCMapsIds;
 		this.data.visibleHOLCMapsByState = visibleHOLCMapsByState;
 		this.data.visibleAdIds = visibleAdIds;
+
+		this.data.hasLoaded = true;
 
 		// console.log('MapStateStore finished loading');
 
@@ -107,7 +110,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			// you have to wait for RasterStore and, if a city is requested in the hash, CityStore to finish their initial load
-			const waitingInitialLoad = setInterval(() => {
+			let waitingInitialLoad = setInterval(() => {
 				if (RasterStore.hasLoaded() && (!action.state.selectedCity || CityStore.hasLoaded())) {
 					clearInterval(waitingInitialLoad);
 

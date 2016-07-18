@@ -50,7 +50,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -162,12 +162,16 @@ export default class App extends React.Component {
 
 	onNeighborhoodPolygonClick (event) {
 		let neighborhoodId = event.target.options.neighborhoodId,
-			adId = event.target.options.adId;
+			adId = parseInt(event.target.options.adId);
 
 		// clicking on a selected neighborhood deselects it
-		neighborhoodId = (neighborhoodId == this.state.selectedNeighborhood) ? null : neighborhoodId
+		neighborhoodId = (neighborhoodId == this.state.selectedNeighborhood && adId == this.state.selectedCity) ? null : neighborhoodId
 
 		AppActions.neighborhoodSelected(neighborhoodId, adId);
+	}
+
+	onNeighborhoodClose() {
+		AppActions.neighborhoodSelected(null, this.state.selectedCity);
 	}
 
 	onHOLCIDClick (event) {
@@ -184,6 +188,10 @@ export default class App extends React.Component {
 
 	onCategoryClick (event) {
 		AppActions.ADCategorySelected(event.target.id);
+	}
+
+	onCategoryClose (event) {
+		AppActions.ADCategorySelected(null);
 	}
 
 	onBurgessChartHover (ringId, grade) {
@@ -273,7 +281,6 @@ export default class App extends React.Component {
 	}
 
 	onModalClick (event) {
-		console.log(event.target);
 		const subject = (event.target.id) ? (event.target.id) : null;
 		AppActions.onModalClick(subject);
 	}
@@ -583,7 +590,7 @@ export default class App extends React.Component {
 													<AreaPolygon
 														data={ ADs[adId][areaId].area_geojson }
 														className={ 'neighborhoodPolygon grade' + ADs[adId][areaId].holc_grade }
-														key={ 'neighborhoodPolygon' + areaId } 
+														key={ 'neighborhoodPolygon' + adId + '-' + areaId } 
 														onClick={ this.onNeighborhoodPolygonClick }
 														adId={ adId }
 														neighborhoodId={ areaId } 
@@ -739,6 +746,7 @@ export default class App extends React.Component {
 									cityId={ this.state.selectedCity }
 									onCategoryClick={ this.onCategoryClick } 
 									onHOLCIDClick={ this.onHOLCIDClick } 
+									onClose={ this.onNeighborhoodClose }
 									ref={'areadescription' + this.state.selectedNeighborhood } 
 									positioning={ this.state.dimensions.adNav }
 								/> : 
@@ -761,6 +769,7 @@ export default class App extends React.Component {
 									onNeighborhoodHover={ this.neighborhoodHighlighted } 
 									onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
 									positioning={ this.state.dimensions.adNav }
+									onClose={ this.onCategoryClose }
 								/> :
 								''
 							}
