@@ -320,6 +320,47 @@ const AreaDescriptionsStore = {
 		}
 	},
 
+	getADsAsGeojson (adId) {
+		console.log(adId);
+		let ADs = this.data.areaDescriptions[adId].byNeighborhood;
+		let features = Object.keys(ADs).map((holcId) => { 
+			console.log(ADs[holcId]);
+			let the_geojson = {
+				type: "Feature",
+				geometry: ADs[holcId].area_geojson,
+				properties: {
+					id: holcId,
+					grade: ADs[holcId].holc_grade,
+					name: ADs[holcId].name
+				}
+			}
+
+			Object.keys(ADs[holcId].areaDesc).forEach(catNum => {
+				if (typeof ADs[holcId].areaDesc[catNum] == 'string') {
+					the_geojson.properties['ad' + catNum] = ADs[holcId].areaDesc[catNum];
+				} else {
+					Object.keys(ADs[holcId].areaDesc[catNum]).forEach(catLetter => {
+						if (typeof ADs[holcId].areaDesc[catNum][catLetter] == 'string') {
+							the_geojson.properties['ad' + catNum + catLetter] = ADs[holcId].areaDesc[catNum][catLetter];
+						} else {
+							Object.keys(ADs[holcId].areaDesc[catNum][catLetter]).forEach(subpart => {
+								the_geojson.properties['ad' + catNum + catLetter + subpart] = ADs[holcId].areaDesc[catNum][catLetter][subpart];
+							});
+						}
+					});
+				}
+			});
+
+			return the_geojson;
+		} );
+		let geojson = {
+			type: "FeatureCollection",
+			features: features
+		}
+
+		return geojson;
+	},
+
 	hasADData: function(adId) {
 		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood['C1']);
 	},

@@ -794,6 +794,7 @@ export default class App extends React.Component {
 									thumbnail={ RasterStore.getMapThumbnail() }
 									name={ RasterStore.getSelectedCityMetadata().name } 
 									state={ CityStore.getState() }
+									adGeojson={ AreaDescriptionsStore.getADsAsGeojson(this.state.selectedCity) }
 									onDownloadClicked={ this.onDownloadClicked }
 								/> : 
 								null
