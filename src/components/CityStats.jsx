@@ -131,7 +131,7 @@ export default class CityStats extends React.Component {
 				</h2>
 
 				{ (this.props.hasADs) ?
-					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 
+					<div className='adInstructions'>click neighborhoods on the map to read their area description</div> : 
 					<div className='adInstructions'>area descriptions aren't available for this city, but will be soon</div>
 				}
 

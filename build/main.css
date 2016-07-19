@@ -1433,7 +1433,22 @@ body {
   .ADCategory h2 {
     margin: 0px 10px 10px;
     text-align: center;
-    background-color: #d3e0df; }
+    background-color: #d3e0df;
+    font-size: 1.4vmax; }
+  .areaDescription .downloadicon,
+  .ADCategory .downloadicon {
+    margin-left: -30px;
+    margin-top: -2px;
+    float: right;
+    width: 30px;
+    height: 26px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+    cursor: pointer; }
+  .areaDescription .downloadicon:hover,
+  .ADCategory .downloadicon:hover {
+    opacity: 1.0; }
   .areaDescription .adNav,
   .ADCategory .adNav {
     position: fixed;
@@ -1464,7 +1479,8 @@ body {
     .ADCategory ul.ad_cat li {
       list-style: none;
       margin-bottom: 0px;
-      padding-bottom: 3px; }
+      padding-bottom: 3px;
+      min-height: 24px; }
     .areaDescription ul.area_description .catNum, .areaDescription ul.area_description .catLetter,
     .areaDescription ul.ad_cat .catNum,
     .areaDescription ul.ad_cat .catLetter,
