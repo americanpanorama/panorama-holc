@@ -32,7 +32,6 @@ export default class Downloader extends React.Component {
 			<div className='download_menu'>
 				<h2>
 					<span>{ this.props.name + ', ' + this.props.state }</span>
-
 					<div onClick={ this.props.onDownloadClicked }>x</div>
 				</h2>
 				<ul>
