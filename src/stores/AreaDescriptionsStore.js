@@ -24,7 +24,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.city_id as ad_id, holc_polygons.name, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
+					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null  where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
 					format: 'JSON'
 				});
 			}
@@ -70,6 +70,10 @@ const AreaDescriptionsStore = {
 			adData[d.holc_id].name = d.name;
 			adData[d.holc_id].holc_grade = d.holc_grade;
 			adData[d.holc_id].sqmi = d.sqmi;
+
+			adData[d.holc_id].url = 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/full-size/' + d.holc_id + '.jpg';
+			adData[d.holc_id].tileUrl = 'http://holc.s3-website-us-east-1.amazonaws.com/ads/' + d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/' + d.holc_id + '/{z}/{x}_{y}.png';
+			adData[d.holc_id].thumbnailUrl = 'http://holc.s3-website-us-east-1.amazonaws.com/ads/' + d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/' + d.holc_id + '/thumbnail.jpg';
 			
 			// define area description if undefined
 			if(typeof adData[d.holc_id].areaDesc == 'undefined') {
@@ -153,6 +157,18 @@ const AreaDescriptionsStore = {
 
 	getName: function(adId, HOLCId) {
 		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null;
+	},
+
+	getThumbnailUrl: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null;
+	},
+
+	getAdUrl: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].url : null;
+	},
+
+	getAdTileUrl: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].tileUrl : null;
 	},
 
 	getNeighborhoodNames: function (adId) {
@@ -324,7 +340,6 @@ const AreaDescriptionsStore = {
 		console.log(adId);
 		let ADs = this.data.areaDescriptions[adId].byNeighborhood;
 		let features = Object.keys(ADs).map((holcId) => { 
-			console.log(ADs[holcId]);
 			let the_geojson = {
 				type: "Feature",
 				geometry: ADs[holcId].area_geojson,

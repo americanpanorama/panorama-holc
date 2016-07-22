@@ -171,7 +171,7 @@ export default class CityStats extends React.Component {
 						<div className='content' ref='content'></div> :
 						<p>Area descriptions are not yet available but will be eventually.</p>
 					}
-					<img src='static/burgess.png' className={ burgessClassName } ref='burgessDiagram' id='burgessDiagram' />
+					
 				</div>
 			</div>
 		);

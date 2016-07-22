@@ -430,6 +430,15 @@ header {
 	position: relative;
 }
 
+.the_ad {
+	position: absolute;
+
+	top: 20px;
+	left: 20px;
+	z-index: 10000;
+	background: rgba(243, 243, 243, 0.8);
+}
+
 .longishform {
 	position: absolute;
 

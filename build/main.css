@@ -1061,6 +1061,13 @@ header {
 .main-pane {
   position: relative; }
 
+.the_ad {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10000;
+  background: rgba(243, 243, 243, 0.8); }
+
 .longishform {
   position: absolute;
   bottom: 20px;
@@ -1445,6 +1452,9 @@ body {
     .areaDescription .adNav:hover,
     .ADCategory .adNav:hover {
       background-color: #e1ebea; }
+  .areaDescription .adThumbnail,
+  .ADCategory .adThumbnail {
+    text-align: center; }
   .areaDescription .prev3,
   .ADCategory .prev3 {
     transform: rotate(90deg); }
