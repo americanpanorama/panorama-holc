@@ -13,7 +13,7 @@ export default class TypeAheadCitySnippet extends React.Component {
 		return (
 			<div>
 				{ this.props.options.map((cityData) => {
-					return <CitySnippet cityData={ cityData } onCityClick={ this.props.onOptionSelected } displayState={ true } key={ 'city' + cityData.cityId } />
+					return <CitySnippet cityData={ cityData } onCityClick={ this.props.onOptionSelected } displayState={ true } key={ 'city' + cityData.ad_id } />
 				}) }
 			</div>
 		);

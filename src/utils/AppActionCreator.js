@@ -1,5 +1,6 @@
 import AppDispatcher from './AppDispatcher';
 import RasterStore from '../stores/RasterStore';
+import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
 
 export const AppActionTypes = {
 
@@ -129,7 +130,8 @@ export const AppActions = {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.mapInitialized,
 			theMap: theMap,
-			rasters: RasterStore.getAllRasters() 
+			rasters: RasterStore.getAllRasters(),
+			adsMetadata: AreaDescriptionsStore.getADsMetadata()
 		});
 	},
 
@@ -141,7 +143,8 @@ export const AppActions = {
 			AppDispatcher.dispatch({
 				type: AppActionTypes.mapMoved,
 				theMap: theMap,
-				rasters: RasterStore.getAllRasters()
+				rasters: RasterStore.getAllRasters(),
+				adsMetadata: AreaDescriptionsStore.getADsMetadata()
 			});
 		}
 	}

@@ -581,8 +581,30 @@ $colorLightGrey: #b3b3b3;
 
 					}
 				}
-			}
+			
 
+			}
+		}
+	}
+
+	&.adClose {
+		top: 10px;
+		right: 10px;
+		left: auto;
+		width: auto;
+
+		ul {
+			li:nth-child(1) {
+				padding: 4px 10px;
+				background-color: #444;
+				color: white;
+				span {
+					&:before {
+						border: none;
+						background-color: rgba($gradeD, 0);
+					}
+				}
+			}
 		}
 	}
 }

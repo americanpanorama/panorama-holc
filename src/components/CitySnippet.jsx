@@ -43,7 +43,7 @@ export default class CitySnippet extends React.Component {
 			<div 
 				className='city-snippet' 
 				onClick={ this.props.onCityClick } 
-				id={ this.props.cityData.cityId }
+				id={ this.props.cityData.ad_id }
 			>
 				{ (this.props.cityData.hasADs) ?
 					<h4>area descriptions available</h4> : 
@@ -53,7 +53,7 @@ export default class CitySnippet extends React.Component {
 					<div className='barchart' ref='barchart'></div> :
 					null
 				}
-				<h3 >{this.props.cityData.city + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
+				<h3 >{this.props.cityData.name + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
 				<div className='populationStats'><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.population_1940.toLocaleString() }</span></div>
 				{ this.render_population_details() }
 

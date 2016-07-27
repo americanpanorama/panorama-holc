@@ -21,7 +21,7 @@ export default class StateStats extends React.Component {
 					return <CitySnippet 
 						cityData={ cityData } 
 						onCityClick={ this.props.onCityClick } 
-						key={ 'city' + cityData.cityId } 
+						key={ 'city' + cityData.ad_id } 
 						areaChartWidth={ this.props.areaChartWidth }
 					/>
 				}) }

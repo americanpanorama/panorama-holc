@@ -18,7 +18,7 @@ const MapStateStore = {
 		hasLoaded: false
 	},
 
-	loadData: function (theMap, rasters) {
+	loadData: function (theMap, rasters, adsMetadata) {
 		const theBounds = theMap.getBounds();
 		let visibleHOLCMaps = {},
 			visibleHOLCMapsIds = [],
@@ -29,16 +29,33 @@ const MapStateStore = {
 			if (theBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
 				visibleHOLCMaps[id] = rasters[id];
 				visibleHOLCMapsIds.push(parseInt(id));
-				if (visibleAdIds.indexOf(rasters[id].ad_id) == -1) {
-					visibleAdIds.push(parseInt(rasters[id].ad_id));
+			}
+		});
+
+		Object.keys(adsMetadata).forEach(ad_id => {
+			if (theBounds.intersects(adsMetadata[ad_id].bounds)) {
+				if (visibleAdIds.indexOf(ad_id) == -1) {
+					visibleAdIds.push(parseInt(ad_id));
 				}
 			}
 		});
 
+		// // organize by state
+		// visibleHOLCMapsIds.forEach((id) => {
+		// 	visibleHOLCMapsByState[visibleHOLCMaps[id].state] = (visibleHOLCMapsByState[visibleHOLCMaps[id].state]) ? visibleHOLCMapsByState[visibleHOLCMaps[id].state] : [];
+		// 	visibleHOLCMapsByState[visibleHOLCMaps[id].state].push(visibleHOLCMaps[id]);
+		// });
+		// // alphabetize
+		// Object.keys(visibleHOLCMapsByState).forEach((the_state) => {
+		// 	visibleHOLCMapsByState[the_state].sort((a,b) => a.city > b.city);
+		// });
+
 		// organize by state
-		visibleHOLCMapsIds.forEach((id) => {
-			visibleHOLCMapsByState[visibleHOLCMaps[id].state] = (visibleHOLCMapsByState[visibleHOLCMaps[id].state]) ? visibleHOLCMapsByState[visibleHOLCMaps[id].state] : [];
-			visibleHOLCMapsByState[visibleHOLCMaps[id].state].push(visibleHOLCMaps[id]);
+		visibleAdIds.forEach((id) => {
+			if (adsMetadata[id]) {
+				visibleHOLCMapsByState[adsMetadata[id].state] = (visibleHOLCMapsByState[adsMetadata[id].state]) ? visibleHOLCMapsByState[adsMetadata[id].state] : [];
+				visibleHOLCMapsByState[adsMetadata[id].state].push(adsMetadata[id]);
+			}
 		});
 		// alphabetize
 		Object.keys(visibleHOLCMapsByState).forEach((the_state) => {
@@ -134,7 +151,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.mapInitialized:
-			MapStateStore.loadData(action.theMap, action.rasters);
+			MapStateStore.loadData(action.theMap, action.rasters, action.adsMetadata);
 
 			// if a city has been selected (though the hash), set the new bounds
 			if (CityStore.getId()) {
@@ -146,7 +163,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.mapMoved:
-			MapStateStore.loadData(action.theMap, action.rasters);
+			MapStateStore.loadData(action.theMap, action.rasters, action.adsMetadata);
 			break;
 
 		case AppActionTypes.citySelected:

@@ -12,27 +12,21 @@ import TextsStore from './stores/TextsStore';
 // components (views)
 import ADCat from './components/ADCat.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
-import AreaPolygon from './components/AreaPolygon.jsx';
 import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
-import Donut from './components/Donut/Donut.jsx';
 import Downloader from './components/Downloader.jsx';
 import { icon } from 'leaflet';
-import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImagePath } from 'react-leaflet';
+import { Map, TileLayer, LayerGroup, setIconDefaultImagePath } from 'react-leaflet';
 import Modal from 'react-modal';
 import Slider from 'rc-slider';
 import StateStats from './components/StateStats.jsx';
 import { Typeahead } from 'react-typeahead';
 import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
+import HOLCMap from './components/HOLCMap.jsx';
 
 // utils
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
-
-// config
-import cartodbConfig from '../basemaps/cartodb/config.json';
-import cartodbLayers from '../basemaps/cartodb/basemaps.json';
-import tileLayers from '../basemaps/tileLayers.json';
 
 // data
 import panoramaNavData from '../data/panorama_nav.json';
@@ -83,11 +77,11 @@ export default class App extends React.Component {
 
 		// you have to wait until there's a map to query to get the visible maps
 		const waitingId = setInterval(() => {
-			if (RasterStore.hasLoaded()) {
+			if (RasterStore.hasLoaded() && AreaDescriptionsStore.hasLoaded()) {
 				clearInterval(waitingId);
 
 				// emit mapped moved event to initialize map state
-				AppActions.mapInitialized(this.refs.the_map.leafletElement);
+				AppActions.mapInitialized(this.refs.holc_map.refs.the_map.leafletElement);
 			}
 		}, 100);
 	}
@@ -150,7 +144,7 @@ export default class App extends React.Component {
 	}
 
 	onMapMoved (event) {
-		AppActions.mapMoved(this.refs.the_map.leafletElement);
+		AppActions.mapMoved(this.refs.holc_map.refs.the_map.leafletElement);
 	}
 
 	onCitySelected (event) {
@@ -242,7 +236,7 @@ export default class App extends React.Component {
 			selectedCity: null,
 			selectedNeighborhood: null,
 			map: {
-				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
+				zoom: this.refs.holc_map.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
 				center: RasterStore.getCenterForState(value.id)
 			}
 		}, this.changeHash());
@@ -413,19 +407,6 @@ export default class App extends React.Component {
 			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
 			visibleStates = MapStateStore.getVisibleHOLCMapsByState();
 
-
-		let legendData = {
-			items: [
-				'A First Grade',
-				'B Second Grade',
-				'C Third Grade',
-				'D Third Grade',
-			]
-		};
-		if (!MapStateStore.isAboveZoomThreshold()) {
-			legendData.items.push('Proportion of Each Grade');
-		}
-
 		//setIconDefaultImagePath('./static');
 
 		return (
@@ -448,228 +429,40 @@ export default class App extends React.Component {
 							<hr className='style-eight' />
 						</header>
 						<div className='row template-tile leaflet-container main-pane' style={{height: this.state.dimensions.bottom.height + 'px'}}>
-							<Map 
-								ref='the_map' 
-								center={ this.state.map.center } 
-								zoom={ this.state.map.zoom }  
-								onMoveend={ this.onMapMoved } 
-								className='the_map'
-							>
 
-								{ tileLayers.layers.map((item, i) => {
-									return (this.state.map.zoom < 10 ) ?
-										<TileLayer
-											key='noLabels'
-											url={ item.urlNoLabels }
-											zIndex={ -1 }
-										/> : 
-										<TileLayer
-											key='labels'
-											url={ item.urlLabels }
-											zIndex={ -1 }
-										/>
-								}) } 
+							{ (!this.state.adImageOpen) ?
+								<HOLCMap
+									ref='holc_map'
+									state={ this.state }
+									onMapMoved={ this.onMapMoved }
+									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
+									onCityMarkerSelected= { this.onCityMarkerSelected }
+								/> :
+								<Map 
+									ref='the_ad_tiles' 
+									center={ [75,-125] } 
+									zoom={ 3 }  
+									className='the_ad'
+									style={ this.state.dimensions.adViewer }
+								>
 
-								{ RasterStore.getMapsList().map((item, i) => {
-									let mapBounds = this.refs.the_map.leafletElement.getBounds();
-									if (mapBounds.intersects(item.bounds)) {
-										return (
-											<TileLayer
-												key={ 'holctiles' + i}
-												className={ 'tilesForCity' + item.cityId }
-												url={ item.url }
-												minZoom={ item.minZoom }
-												bounds= { item.bounds }
-												opacity={ this.state.raster.opacity }
-												zIndex={ (item.cityId == this.state.selectedCity) ? 1 : null }
-											/>
-										);
-									}
-								}) }
+									<TileLayer
+										key='AD'
+										url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
+										zIndex={ 1000 }
+									/>
 
-								{ (!aboveThreshold) ?
-									cartodbLayers.layergroup.layers.map((item, i) => {
-										return (
-											<CartoDBTileLayer
-												key={ 'cartodb-tile-layer-' + i }
-												userId={ cartodbConfig.userId }
-												sql={ item.options.sql }
-												cartocss={ item.options.cartocss }
-												zIndex={1000}
-											/>
-										);
-									}) :
-									null
-								}
+									<Legend 
+										items={ [ 'Close' ] }
+										className='adClose' 
+										onItemSelected={ this.onAdImageClicked } 
+									/>
 
-								{/* rings: donut holes */}
-								{ (aboveThreshold && outerRadius > 0) ?
-									<Circle 
-										center={ CityStore.getLoopLatLng() } 
-										radius={ outerRadius / 7 } 
-										fillOpacity={ (this.state.selectedRingGrade.ringId >= 2) ? 0.75 : 0 } 
-										fillColor= { '#000' } 
-										clickable={ false } 
-										className={ 'donuthole' } 
-										key={ 'donuthole' } 
-									/> :
-									null
-								}
+									
+								</Map> 
+							}
 							
-								{/* rings: donuts */}
-								{ (aboveThreshold && outerRadius > 0) ?
-									[2,3,4,5].map((ringNum) => {
-										return (
-											<Donut 
-												center={ CityStore.getLoopLatLng() } 
-												innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
-												outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
-												clickable={ false } 
-												fillOpacity={ (this.state.selectedRingGrade.ringId > 0 && ringNum !== this.state.selectedRingGrade.ringId) ? 0.75 : 0 } 
-												fillColor= { '#000' } 
-												weight={ 1 }
-												className={ 'donut' } 
-												key={ 'donut' + String(ringNum) } 
-											/>
-										);
-									}) :
-									null
-								}
-
-								{/* rings: selected ring */}
-								{ (aboveThreshold && this.state.selectedRingGrade.ringId > 0) ?
-									<LayerGroup>
-										<GeoJson 
-											data={ CityStore.getInvertedGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ringId, this.state.selectedRingGrade.grade) }
-											clickable={ false }
-											key={ 'invertedRingStroke'} 
-											fillColor={ '#000'}
-											fillOpacity={ 0.6 }
-											color={ '#fff' }
-											weight={ 2 }
-											opacity={ 0.9 }
-											className={ 'invertedRingGradedArea' }
-										/>
-										<GeoJson 
-											data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ringId, this.state.selectedRingGrade.grade) }
-											clickable={ false }
-											key={ 'ringStroke'} 
-											fillOpacity={ (1 - this.state.raster.opacity) / 2 }
-											weight={ 2 }
-											opacity={ 0.9 }
-											className={ 'ringGradedArea grade' + this.state.selectedRingGrade.grade}
-										/>
-									</LayerGroup> :
-									null
-								}
-
-								{/* selected grade */}
-								{ (aboveThreshold && this.state.selectedGrade) ?
-									<AreaPolygon 
-										data={ AreaDescriptionsStore.getGeoJsonForGrade(this.state.selectedCity, this.state.selectedGrade) }
-										key={ 'selectedGradedNeighborhoods' } 
-										className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
-									/> :
-									null
-								}
-
-								{ (aboveThreshold && this.state.highlightedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.highlightedNeighborhood] && ADs[this.state.selectedCity][this.state.highlightedNeighborhood].area_geojson_inverted) ?
-									<AreaPolygon
-										data={ ADs[this.state.selectedCity][this.state.highlightedNeighborhood].area_geojson_inverted } 
-										clickable={ false }
-										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedCity][this.state.highlightedNeighborhood].holc_grade } 
-										key={ 'neighborhoodPolygonInverted' + this.state.highlightedNeighborhood }
-									/> :
-									null
-								}
-
-								{/* selected neighborhood */}
-								{ (aboveThreshold && this.state.selectedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.selectedNeighborhood] && ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted) ?
-									<AreaPolygon
-										data={ ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted } 
-										clickable={ false }
-										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedCity][this.state.selectedNeighborhood].holc_grade } 
-										key={ 'neighborhoodPolygonInverted' + this.state.selectedNeighborhood }
-									/> :
-									null
-								}
-
-								{/* neighborhood polygons: shown on zoom level 10 and higher */}
-								{ (aboveThreshold) ?
-									Object.keys(ADs).map(adId => {
-										return (
-											Object.keys(ADs[adId]).map((areaId) => {
-												return (
-													<AreaPolygon
-														data={ ADs[adId][areaId].area_geojson }
-														className={ 'neighborhoodPolygon grade' + ADs[adId][areaId].holc_grade }
-														key={ 'neighborhoodPolygon' + adId + '-' + areaId } 
-														onClick={ this.onNeighborhoodPolygonClick }
-														adId={ adId }
-														neighborhoodId={ areaId } 
-														//fillOpacity={ (id == this.state.selectedNeighborhood) ? 1 : 0 }
-														style={{
-															opacity:(this.state.selectedRingGrade.ringId > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
-															fillOpacity: (this.state.selectedRingGrade.ringId > 0) ? 0 : (1 - this.state.raster.opacity) / 5
-														}}
-													/>
-												);
-											})
-										)
-									}) :
-									null
-								}
-
-								{/* cartogram marker for city: shown below zoom level 10 */}
-								{ (!aboveThreshold) ?
-									RasterStore.getMapsList().map((item, i) => {
-										return ((item.radii) ?
-											Object.keys(item.radii).map((grade) => {
-												return (item.radii[grade].inner == 0) ?
-													<Circle
-														center={ [item.centerLat, item.centerLng] }
-														radius={ item.radii[grade].outer }
-														id={ item.cityId }
-														onClick={ this.onCityMarkerSelected }
-														key={ 'clickableDonut' + item.cityId + grade }
-														className={ 'simpleDonut grade_' + grade }
-													/> :
-													<Donut
-														center={ [item.centerLat, item.centerLng] }
-														innerRadius={ item.radii[grade].inner }
-														outerRadius={ item.radii[grade].outer }
-														id={ item.cityId }
-														onClick={ this.onCityMarkerSelected }
-														key={ 'clickableDonut' + item.cityId + grade }
-														className={ 'simpleDonut grade_' + grade }
-													/>
-											}) :
-											(!item.parent_id) ?
-												<Circle
-													center={ [item.centerLat, item.centerLng] }
-													radius={ 25000 }
-													id={ item.cityId }
-													onClick={ this.onCityMarkerSelected }
-													key={ 'clickableMap' + item.cityId }
-													className={ 'cityCircle '}
-												/> :
-												null
-											
-										);
-									}) :
-									null
-								}
-
-								{/* marker for user's location */}
-								{ (this.state.userLocation) ?
-									<Marker position={ this.state.userLocation } /> :
-									null
-								}
-
-								<Legend { ...legendData } onItemSelected={ this.onGradeHover } />
-
-
-							</Map>
+							
 
 							{ TextsStore.mainModalIsOpen() ?
 								<div className='longishform'>
@@ -702,6 +495,12 @@ export default class App extends React.Component {
 										zIndex={ 1000 }
 									/>
 
+									<Legend 
+										items={ [ 'Close' ] }
+										className='adClose' 
+										onItemSelected={ this.onAdImageClicked } 
+									/>
+
 									
 								</Map> :
 								null
@@ -709,22 +508,24 @@ export default class App extends React.Component {
 
 						</div>
 					</div>
-
-					<div className='opacitySlider'>
-						<Slider 
-							vertical={ true }
-							defaultValue={ this.state.raster.opacity * 100 }
-							onAfterChange={ this.onSliderChange }
-						/>
-					</div>
+					{ (aboveThreshold) ?
+						<div className='opacitySlider'>
+							<Slider 
+								vertical={ true }
+								defaultValue={ this.state.raster.opacity * 100 }
+								onAfterChange={ this.onSliderChange }
+							/>
+						</div> :
+						''
+					}
 
 					<div className='columns four full-height'>
 						<div className='row template-tile city-selector' style={{height: this.state.dimensions.search.height + 'px', width: this.state.dimensions.search.width + 'px'}}>
 							<Typeahead
-								options={ RasterStore.getMapsList() }
+								options={ AreaDescriptionsStore.getADsList() }
 								placeholder={ 'Search by city or state' }
 								filterOption={ 'searchName' }
-								displayOption={(city, i) => city.cityId }
+								displayOption={(city, i) => city.ad_id }
 								onOptionSelected={ this.onCitySelected }
 								customListComponent={ TypeAheadCitySnippet }
 								maxVisible={ 8 }

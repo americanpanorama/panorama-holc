@@ -4,16 +4,71 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
 import formsMetadata from '../../data/formsMetadata.json';
 import MapStateStore from '../stores/MapStateStore';
+import stateAbbrs from '../../data/state_abbr.json';
 
 
 const AreaDescriptionsStore = {
 
 	data: {
 		adIds: [],
-		areaDescriptions: {}
+		areaDescriptions: {},
+		adsMetadata: {},
+		hasLoaded: false
 	},
 
 	dataLoader: CartoDBLoader,
+
+	loadADMetadata: function () {
+		const query = "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id) SELECT holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id group by holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930, asian_pacific_ilslander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc";
+
+		this.dataLoader.query([{query: query, format: 'JSON'}]).then((responses) => {
+			responses.forEach(response => {
+				if (response.length > 0) {
+					responses[0].forEach(response => {
+						this.data.adsMetadata[response.ad_id] = {
+							ad_id: response.ad_id,
+							state: response.state,
+							name: response.city,
+							searchName: response.city + ', ' + stateAbbrs[response.state],
+							centerLat: response.looplat,
+							centerLng: response.looplng,
+							bounds: [[response.bbymin, response.bbxmin], [response.bbymax, response.bbxmax]],
+							population_1930: response.population_1930,
+							population_1940: response.population_1940,
+							american_indian_eskimo_1930: response.american_indian_eskimo_1930,
+							american_indian_eskimo_1940: response.american_indian_eskimo_1940,
+							asian_pacific_islander_1930: response.asian_pacific_islander_1930,
+							asian_pacific_islander_1940: response.asian_pacific_islander_1940,
+							black_pop_1930: response.black_pop_1930,
+							black_pop_1940: response.black_pop_1940,
+							white_pop_1930: response.white_pop_1930,
+							white_pop_1940: response.white_pop_1940,
+							hasPolygons: true,
+							hasADs: false,
+							area : {
+								total: response.total_area,
+								a: response.area_a,
+								b: response.area_b,
+								c: response.area_c,
+								d: response.area_d
+							}
+						}
+
+						this.data.adsMetadata[response.ad_id].radii = this.calculateSimpleRingsRadii(this.data.adsMetadata[response.ad_id].area);
+					});
+				}
+			});
+
+			this.data.hasLoaded = true;
+
+			this.emit(AppActionTypes.storeChanged);
+
+		}, (error) => {
+			// TODO: handle this.
+			console.log('AreaDescriptionsStore received error:', error);
+			throw error;
+		});
+	},
 
 	loadData: function (adIds) {
 
@@ -42,7 +97,6 @@ const AreaDescriptionsStore = {
 					this.data.areaDescriptions[adId].area = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).map((HOLCId, i) => this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sqmi ).reduce((a,b) => a+b, 0);
 				}
 			});
-
 
 			this.emit(AppActionTypes.storeChanged);
 
@@ -155,6 +209,29 @@ const AreaDescriptionsStore = {
 		return geojson;
 	},
 
+	calculateSimpleRingsRadii: function (areaData) {
+		let furthestRadius = 25000,
+			fullArea = Math.PI * furthestRadius * furthestRadius,
+			outerRadius,
+			innerRadius = 0,
+			donutArea,
+			gradeArea,
+			radii = {};
+
+		['d','c','b','a'].forEach((grade) => {
+			let donutholeArea = Math.PI * innerRadius * innerRadius,
+				gradeArea = fullArea * (areaData[grade] / areaData.total),
+				outerRadius = Math.round(Math.sqrt((gradeArea + donutholeArea) / Math.PI));
+			radii[grade] = {
+				'inner': innerRadius,
+				'outer': outerRadius
+			};
+			innerRadius = outerRadius;
+		});
+
+		return radii;
+	},
+
 	getName: function(adId, HOLCId) {
 		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null;
 	},
@@ -189,17 +266,26 @@ const AreaDescriptionsStore = {
 		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false;
 	},
 
+	getADsMetadata: function() {
+		return this.data.adsMetadata;
+	},
+
+	// return a flat list of the HOLC maps for rendering
+	getADsList: function() { return Object.keys(this.data.adsMetadata).map((adId) => this.data.adsMetadata[adId]); },
+
 	getGeoJsonForGrade: function(adId, grade) {
 		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],
 			holes = [];
 		Object.keys(this.data.areaDescriptions[adId].byNeighborhood).forEach((id, i) => {
 			if (this.data.areaDescriptions[adId].byNeighborhood[id].holc_grade == grade) {
-				this.data.areaDescriptions[adId].byNeighborhood[id].area_geojson.coordinates[0].forEach((coords, i2) => {
-					if (i2 == 0) {
-						polygons.push(coords);
-					} else {
-						holes.push(coords);
-					}
+				this.data.areaDescriptions[adId].byNeighborhood[id].area_geojson.coordinates.forEach(coordset => {
+					coordset.forEach((coords, i2) => {
+						if (i2 == 0) {
+							polygons.push(coords);
+						} else {
+							holes.push(coords);
+						}
+					});
 				});
 			}
 		});
@@ -376,6 +462,10 @@ const AreaDescriptionsStore = {
 		return geojson;
 	},
 
+	hasLoaded: function () {
+		return this.data.hasLoaded;
+	},
+
 	hasADData: function(adId) {
 		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood['C1']);
 	},
@@ -442,6 +532,7 @@ AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
+			AreaDescriptionsStore.loadADMetadata();
 			if (action.state.selectedCity) {
 				AreaDescriptionsStore.loadData([action.state.selectedCity]);
 			}
@@ -450,10 +541,11 @@ AppDispatcher.register((action) => {
 		case AppActionTypes.mapMoved:
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
 
-			let visibleHOLCMapsIds = MapStateStore.getVisibleHOLCMapsIds();
+			let visibleHOLCMapsIds = MapStateStore.getVisibleHOLCMapsIds(),
+				visibleADIds = MapStateStore.getVisibleAdIds();
 
-			if (visibleHOLCMapsIds && MapStateStore.isAboveZoomThreshold()) {
-				AreaDescriptionsStore.loadData(visibleHOLCMapsIds);
+			if (visibleADIds && MapStateStore.isAboveZoomThreshold()) {
+				AreaDescriptionsStore.loadData(visibleADIds);
 			}
 			break;
 	}
