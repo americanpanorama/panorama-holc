@@ -46,6 +46,7 @@ export default class HOLCMap extends React.Component {
 			catNum = (this.props.state.selectedCategory) ? this.props.state.selectedCategory.split('-')[0] : null,
 			catLetter = (this.props.state.selectedCategory) ? this.props.state.selectedCategory.split('-')[1] : null,
 			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
+			visibleMapsList = MapStateStore.getVisibleHOLCMapsList(),
 			visibleStates = MapStateStore.getVisibleHOLCMapsByState();
 
 		let legendData = {
@@ -81,21 +82,18 @@ export default class HOLCMap extends React.Component {
 						/>
 				}) } 
 
-				{ RasterStore.getMapsList().map((item, i) => {
-					let mapBounds = this.refs.the_map.leafletElement.getBounds();
-					if (mapBounds.intersects(item.bounds)) {
-						return (
-							<TileLayer
-								key={ 'holctiles' + i}
-								className={ 'tilesForCity' + item.cityId + item.id }
-								url={ item.url }
-								minZoom={ item.minZoom }
-								bounds= { item.bounds }
-								opacity={ this.props.state.raster.opacity }
-								zIndex={ (item.cityId == this.props.state.selectedCity) ? 1 : null }
-							/>
-						);
-					}
+				{ visibleMapsList.map((item, i) => {
+					return (
+						<TileLayer
+							key={ 'holctiles' + i}
+							className={ 'tilesForCity' + item.cityId + item.id }
+							url={ item.url }
+							minZoom={ item.minZoom }
+							bounds= { item.bounds }
+							opacity={ this.props.state.raster.opacity }
+							zIndex={ (item.cityId == this.props.state.selectedCity) ? 1 : null }
+						/>
+					);
 				}) }
 
 				{ (!aboveThreshold) ?

@@ -26,7 +26,7 @@ const MapStateStore = {
 			visibleAdIds = [];
 
 		Object.keys(rasters).forEach((id) => {
-			if (theBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
+			if (theBounds.intersects(rasters[id].bounds)) {
 				visibleHOLCMaps[id] = rasters[id];
 				visibleHOLCMapsIds.push(parseInt(id));
 			}
@@ -96,8 +96,16 @@ const MapStateStore = {
 		return this.data.zoom;
 	},
 
+	getBounds: function() {
+		return this.data.bounds;
+	},
+
 	getVisibleHOLCMaps: function() {
 		return this.data.visibleHOLCMaps;
+	},
+
+	getVisibleHOLCMapsList: function() {
+		return Object.keys(this.data.visibleHOLCMaps).map(mapId => this.data.visibleHOLCMaps[mapId]);
 	},
 
 	getVisibleHOLCMapsIds: function() {
