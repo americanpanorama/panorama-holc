@@ -50,7 +50,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -116,6 +116,7 @@ export default class App extends React.Component {
 			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
 			downloadOpen: false,
+			adImageOpen: false,
 			map: {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
 				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
@@ -261,6 +262,12 @@ export default class App extends React.Component {
 		});
 	}
 
+	onAdImageClicked () {
+		this.setState({
+			adImageOpen: !this.state.adImageOpen
+		});
+	}
+
 	onPanoramaMenuClick () {
 		this.setState({
 			show_panorama_menu: !this.state.show_panorama_menu
@@ -310,6 +317,7 @@ export default class App extends React.Component {
 			bottomRowHeight = 300,
 			sidebarWidth = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : 0,
 			sidebarHeight = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetHeight : 0,
+			mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : 0,
 			adNavHeight = 20,
 			dimensions = {};
 
@@ -337,6 +345,11 @@ export default class App extends React.Component {
 				right: containerPadding * 1.5 - sidebarHeight / 2 + sidebarWidth - adNavHeight
 				
 			}
+		};
+
+		dimensions.adViewer = {
+			height: (sidebarHeight - containerPadding * 2) + 'px',
+			width: (mainPaneWidth - containerPadding * 2) + 'px'
 		};
 
 		this.setState({ dimensions: dimensions });
@@ -666,6 +679,34 @@ export default class App extends React.Component {
 								null
 							}
 
+							{ (false) ?
+								<div className='longishform'>
+									<button className='close' onClick={ this.onAdImageClicked}><span>×</span></button>
+									<img src={ AreaDescriptionsStore.getAdUrl(this.state.selectedCity, this.state.selectedNeighborhood) } />
+								</div> :
+								null
+							}
+
+							{ (this.state.adImageOpen) ?
+								<Map 
+									ref='the_ad_tiles' 
+									center={ [75,-125] } 
+									zoom={ 3 }  
+									className='the_ad'
+									style={ this.state.dimensions.adViewer }
+								>
+
+									<TileLayer
+										key='AD'
+										url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
+										zIndex={ 1000 }
+									/>
+
+									
+								</Map> :
+								null
+							}
+
 						</div>
 					</div>
 
@@ -743,10 +784,12 @@ export default class App extends React.Component {
 									nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
 									neighborhoodNames={ neighborhoodNames }
 									areaDescriptions={ selectedADs } 
+									thumbnailUrl={ AreaDescriptionsStore.getThumbnailUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
 									formId={ CityStore.getFormId() } 
 									cityId={ this.state.selectedCity }
 									onCategoryClick={ this.onCategoryClick } 
 									onHOLCIDClick={ this.onHOLCIDClick } 
+									onAdImageClicked={ this.onAdImageClicked }
 									onClose={ this.onNeighborhoodClose }
 									ref={'areadescription' + this.state.selectedNeighborhood } 
 									positioning={ this.state.dimensions.adNav }

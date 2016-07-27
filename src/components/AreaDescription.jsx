@@ -84,12 +84,18 @@ export default class AreaDescription extends React.Component {
 					</div> :
 					''
 				}
+
+
 	
 				{ ([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :
 				  (parseInt(this.props.formId) == 19371001) ? this.renderNSForm8_19371001() :
 				  null
 				}
 
+				<figure className='adThumbnail'>
+					<img src={ this.props.thumbnailUrl } onClick={ this.props.onAdImageClicked } />
+					<figcaption>Click on the thumbnail to see a zoomable version.</figcaption>
+				</figure>
 			</div>
 		);
 
