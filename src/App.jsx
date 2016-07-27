@@ -406,7 +406,7 @@ export default class App extends React.Component {
 				'A First Grade',
 				'B Second Grade',
 				'C Third Grade',
-				'D Third Grade',
+				'D Fourth Grade',
 			]
 		};
 		if (!MapStateStore.isAboveZoomThreshold()) {

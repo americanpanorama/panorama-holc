@@ -1746,18 +1746,28 @@ h2 {
 .download_menu ul {
   font-family: 'Lato';
   font-size: 12px;
-  color: #0c789a;
+  color: #454545;
   list-style: none;
-  margin: 1em 0 0 0;
+  margin: 0;
   padding: 0; }
-  .download_menu ul li {
+  .download_menu ul li.greentop {
     list-style: none;
-    background-color: #fafafa;
+    background-color: #d9e4e3;
+    height: 100px; }
+  .download_menu ul li.greenmiddle {
+    list-style: none;
+    background-color: #e5edec;
+    height: 100px; }
+  .download_menu ul li.greenbottom {
+    list-style: none;
+    background-color: #eaf1f0;
     height: 100px; }
   .download_menu ul li a {
-    text-decoration: none; }
+    text-decoration: none;
+    color: #454545;
+    font-size: .9em; }
   .download_menu ul h3 {
-    padding: 20px 4px; }
+    padding: 35px 4px; }
   .download_menu ul img {
     float: right;
     margin: 14px 14px 0;
