@@ -58,6 +58,8 @@ export default class HOLCMap extends React.Component {
 			]
 		};
 
+		console.log(visibleMapsList);
+
 		return (
 
 			<Map 
@@ -83,9 +85,10 @@ export default class HOLCMap extends React.Component {
 				}) } 
 
 				{ visibleMapsList.map((item, i) => {
+					console.log(item.city);
 					return (
 						<TileLayer
-							key={ 'holctiles' + i}
+							key={ 'holctiles' + item.id}
 							className={ 'tilesForCity' + item.cityId + item.id }
 							url={ item.url }
 							minZoom={ item.minZoom }
@@ -238,18 +241,18 @@ export default class HOLCMap extends React.Component {
 									<Circle
 										center={ [item.centerLat, item.centerLng] }
 										radius={ item.radii[grade].outer }
-										id={ item.cityId }
+										id={ item.ad_id }
 										onClick={ this.props.onCityMarkerSelected }
-										key={ 'clickableDonut' + item.cityId + grade }
+										key={ 'clickableDonut' + item.ad_id + grade }
 										className={ 'simpleDonut grade_' + grade }
 									/> :
 									<Donut
 										center={ [item.centerLat, item.centerLng] }
 										innerRadius={ item.radii[grade].inner }
 										outerRadius={ item.radii[grade].outer }
-										id={ item.cityId }
+										id={ item.ad_id }
 										onClick={ this.props.onCityMarkerSelected }
-										key={ 'clickableDonut' + item.cityId + grade }
+										key={ 'clickableDonut' + item.ad_id + grade }
 										className={ 'simpleDonut grade_' + grade }
 									/>
 							}) :
@@ -257,9 +260,9 @@ export default class HOLCMap extends React.Component {
 								<Circle
 									center={ [item.centerLat, item.centerLng] }
 									radius={ 25000 }
-									id={ item.cityId }
+									id={ item.ad_id }
 									onClick={ this.onCityMarkerSelected }
-									key={ 'clickableMap' + item.cityId }
+									key={ 'clickableMap' + item.ad_id }
 									className={ 'cityCircle '}
 								/> :
 								null
