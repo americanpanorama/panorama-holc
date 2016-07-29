@@ -4,6 +4,7 @@ import * as React from 'react';
 // stores
 import AreaDescriptionsStore from './stores/AreaDescriptionsStore';
 import CityStore from './stores/CityStore';
+import DimensionsStore from './stores/DimensionsStore';
 import MapStateStore from './stores/MapStateStore';
 import RasterStore from './stores/RasterStore';
 import UserLocationStore from './stores/UserLocationStore';
@@ -24,6 +25,7 @@ import StateStats from './components/StateStats.jsx';
 import { Typeahead } from 'react-typeahead';
 import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 import HOLCMap from './components/HOLCMap.jsx';
+import SidebarMap from './components/SidebarMap.jsx';
 
 // utils
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
@@ -51,7 +53,6 @@ export default class App extends React.Component {
 	/* Lifecycle methods */
 
 	componentWillMount () {
-		this.computeComponentDimensions();
 		AppActions.loadInitialData(this.state, HashManager.getState());
 
 		//try to retrieve the users location
@@ -65,11 +66,11 @@ export default class App extends React.Component {
 	}
 
 	componentDidMount () {
-		this.computeComponentDimensions();
 
 		window.addEventListener('resize', this.onWindowResize);
 		AreaDescriptionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		DimensionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		MapStateStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		UserLocationStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
@@ -81,7 +82,7 @@ export default class App extends React.Component {
 				clearInterval(waitingId);
 
 				// emit mapped moved event to initialize map state
-				AppActions.mapInitialized(this.refs.holc_map.refs.the_map.leafletElement);
+				AppActions.mapInitialized(this.getLeafletElementForMap());
 			}
 		}, 100);
 	}
@@ -144,7 +145,7 @@ export default class App extends React.Component {
 	}
 
 	onMapMoved (event) {
-		AppActions.mapMoved(this.refs.holc_map.refs.the_map.leafletElement);
+		AppActions.mapMoved(this.getLeafletElementForMap());
 	}
 
 	onCitySelected (event) {
@@ -225,7 +226,7 @@ export default class App extends React.Component {
 	}
 
 	onWindowResize (event) {
-		this.computeComponentDimensions();
+		AppActions.windowResized();
 	}
 
 	onStateSelected (value, index) {
@@ -236,7 +237,7 @@ export default class App extends React.Component {
 			selectedCity: null,
 			selectedNeighborhood: null,
 			map: {
-				zoom: this.refs.holc_map.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
+				zoom: this.getLeafletElementForMap().getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
 				center: RasterStore.getCenterForState(value.id)
 			}
 		}, this.changeHash());
@@ -257,6 +258,7 @@ export default class App extends React.Component {
 	}
 
 	onAdImageClicked () {
+		AppActions.ADImageOpened(this.state.selectedNeighborhood, this.state.selectedCity);
 		this.setState({
 			adImageOpen: !this.state.adImageOpen
 		});
@@ -286,6 +288,10 @@ export default class App extends React.Component {
 		AppActions.onModalClick(subject);
 	}
 
+	getLeafletElementForMap() {
+		return (this.refs.holc_map) ? this.refs.holc_map.refs.the_map.leafletElement : this.refs.sidebar_map.refs.holc_map.refs.the_map.leafletElement;
+	}
+
 	/* manage hash */
 
 	changeHash () {
@@ -299,54 +305,6 @@ export default class App extends React.Component {
 				center: this.state.map.center
 			}
 		});
-	}
-
-	/* helper methods */
-
-	computeComponentDimensions () {
-		// based off of sizes stored within _variables.scss --
-		// if you change them there, change them here.
-		var containerPadding = 20,
-			headerHeight = 100,
-			bottomRowHeight = 300,
-			sidebarWidth = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : 0,
-			sidebarHeight = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetHeight : 0,
-			mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : 0,
-			adNavHeight = 20,
-			dimensions = {};
-
-		dimensions.search = {
-			width: window.innerWidth / 3 - 2 * containerPadding,
-			height: window.innerHeight - 2 * containerPadding
-		};
-
-		dimensions.areaChart = {
-			width: window.innerWidth / 3 - 4 * containerPadding,
-		};
-
-		dimensions.bottom = {
-			height: window.innerHeight - headerHeight - 2 * containerPadding
-		};
-
-		dimensions.adNav = {
-			width: sidebarHeight,
-			next: {
-				top: (sidebarHeight + containerPadding) / 2 + headerHeight,
-				right: containerPadding * 1.5 - sidebarHeight / 2
-			},
-			previous: {
-				top: (sidebarHeight + containerPadding) / 2 + headerHeight,
-				right: containerPadding * 1.5 - sidebarHeight / 2 + sidebarWidth - adNavHeight
-				
-			}
-		};
-
-		dimensions.adViewer = {
-			height: (sidebarHeight - containerPadding * 2) + 'px',
-			width: (mainPaneWidth - containerPadding * 2) + 'px'
-		};
-
-		this.setState({ dimensions: dimensions });
 	}
 
 	searchDisplay () {
@@ -364,18 +322,6 @@ export default class App extends React.Component {
 			}
 		});
 	}
-
-	/* render and display methods */
-     
-	// renderSidebar() {
-	// 	if (this.state.downloadOpen) {
-	// 		title = 	<h2>
-	// 						{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
-	// 						<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-	// 					</h2>;
-	// 		content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-	// 	} 
-	// }
 
 	render () {
 
@@ -428,7 +374,10 @@ export default class App extends React.Component {
 							<h4 onClick={ this.onModalClick } id={ 'credits' }>Credits</h4>
 							<hr className='style-eight' />
 						</header>
-						<div className='row template-tile leaflet-container main-pane' style={{height: this.state.dimensions.bottom.height + 'px'}}>
+						<div 
+							className='row template-tile leaflet-container main-pane' 
+							style={ DimensionsStore.getMainPaneStyle() }
+						>
 
 							{ (!this.state.adImageOpen) ?
 								<HOLCMap
@@ -443,7 +392,7 @@ export default class App extends React.Component {
 									center={ [75,-125] } 
 									zoom={ 3 }  
 									className='the_ad'
-									style={ this.state.dimensions.adViewer }
+									style={ DimensionsStore.getADViewerStyle() }
 								>
 
 									<TileLayer
@@ -480,32 +429,6 @@ export default class App extends React.Component {
 								null
 							}
 
-							{ (this.state.adImageOpen) ?
-								<Map 
-									ref='the_ad_tiles' 
-									center={ [75,-125] } 
-									zoom={ 3 }  
-									className='the_ad'
-									style={ this.state.dimensions.adViewer }
-								>
-
-									<TileLayer
-										key='AD'
-										url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
-										zIndex={ 1000 }
-									/>
-
-									<Legend 
-										items={ [ 'Close' ] }
-										className='adClose' 
-										onItemSelected={ this.onAdImageClicked } 
-									/>
-
-									
-								</Map> :
-								null
-							}
-
 						</div>
 					</div>
 					{ (aboveThreshold) ?
@@ -520,7 +443,11 @@ export default class App extends React.Component {
 					}
 
 					<div className='columns four full-height'>
-						<div className='row template-tile city-selector' style={{height: this.state.dimensions.search.height + 'px', width: this.state.dimensions.search.width + 'px'}}>
+
+						<div 
+							className='row template-tile city-selector' 
+							style={ DimensionsStore.getSearchStyle() }
+						>
 							<Typeahead
 								options={ AreaDescriptionsStore.getADsList() }
 								placeholder={ 'Search by city or state' }
@@ -532,11 +459,10 @@ export default class App extends React.Component {
 							/>
 						</div>
 
-
-
-
-
-						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
+						<div 
+							className='row full-height template-tile dataViewer' 
+							style={ DimensionsStore.getSidebarHeightStyle() }
+						>
 
 							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && !this.state.downloadOpen && this.state.selectedCity) ?
 								<CityStats 
@@ -578,7 +504,7 @@ export default class App extends React.Component {
 							}
 							
 
-							{ (this.state.selectedNeighborhood) ? 
+							{ (this.state.selectedNeighborhood && !this.state.adImageOpen) ? 
 								<AreaDescription 
 									areaId={ this.state.selectedNeighborhood } 
 									previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
@@ -593,7 +519,29 @@ export default class App extends React.Component {
 									onAdImageClicked={ this.onAdImageClicked }
 									onClose={ this.onNeighborhoodClose }
 									ref={'areadescription' + this.state.selectedNeighborhood } 
-									positioning={ this.state.dimensions.adNav }
+									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
+									nextStyle={ DimensionsStore.getADNavNextStyle() }
+								/> : 
+								''
+							}
+
+							{ (this.state.selectedNeighborhood && this.state.adImageOpen) ? 
+								<SidebarMap
+									ref='sidebar_map'
+									state={ this.state }
+									onMapMoved={ this.onMapMoved }
+									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
+									onCityMarkerSelected= { this.onCityMarkerSelected }
+									areaId={ this.state.selectedNeighborhood } 
+									previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+									nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+									neighborhoodNames={ neighborhoodNames }
+									onHOLCIDClick={ this.onHOLCIDClick } 
+									onClose={ this.onNeighborhoodClose }
+									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
+									nextStyle={ DimensionsStore.getADNavNextStyle() }
+									mapStyle={ DimensionsStore.getSidebarMapStyle() }
+									
 								/> : 
 								''
 							}
@@ -613,7 +561,8 @@ export default class App extends React.Component {
 									onCategoryClick={ this.onCategoryClick } 
 									onNeighborhoodHover={ this.neighborhoodHighlighted } 
 									onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
-									positioning={ this.state.dimensions.adNav }
+									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
+									nextStyle={ DimensionsStore.getADNavNextStyle() }
 									onClose={ this.onCategoryClose }
 								/> :
 								''
@@ -626,7 +575,6 @@ export default class App extends React.Component {
 										cities={ visibleStates[theState] } 
 										onCityClick={ this.onCitySelected }
 										key={ theState }
-										areaChartWidth={ this.state.dimensions.areaChart.width }
 									/>;
 								}) :
 								''

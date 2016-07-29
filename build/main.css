@@ -1229,10 +1229,10 @@ body {
 
 .leaflet-container .selectedGradedNeighborhoods,
 .leaflet-container .neighborhoodPolygonInverted {
-  fill-opacity: 0.75;
+  fill-opacity: 0.5;
   stroke-opacity: 1;
-  fill: #000;
-  stroke-width: 2; }
+  fill: white;
+  stroke-width: 5; }
   .leaflet-container .selectedGradedNeighborhoods.gradeA,
   .leaflet-container .neighborhoodPolygonInverted.gradeA {
     stroke: #418e41; }

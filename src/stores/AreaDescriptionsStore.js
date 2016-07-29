@@ -79,7 +79,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(holc_polygons.the_geom)) as bbymax,st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null  where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
+					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(holc_polygons.the_geom)) as bbymax, st_y(st_centroid(holc_polygons.the_geom)) as centerlat, st_x(st_centroid(holc_polygons.the_geom)) as centerlng, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null  where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
 					format: 'JSON'
 				});
 			}
@@ -120,7 +120,8 @@ const AreaDescriptionsStore = {
 			// assign properties    
 			adData[d.holc_id].area_geojson = (!adData[d.holc_id].area_geojson) ? JSON.parse(d.the_geojson) : adData[d.holc_id].area_geojson;
 			adData[d.holc_id].area_geojson_inverted = (!adData[d.holc_id].area_geojson_inverted) ? this.parseInvertedGeoJson(JSON.parse(d.the_geojson)) : adData[d.holc_id].area_geojson_inverted;
-			adData[d.holc_id].boundingBox = [[d.bbxmin,d.bbymin],[d.bbxmax,d.bbymax]];
+			adData[d.holc_id].center = [d.centerlat,d.centerlng];
+			adData[d.holc_id].boundingBox = [[d.bbymin,d.bbxmin],[d.bbymax,d.bbxmax]];
 			adData[d.holc_id].name = d.name;
 			adData[d.holc_id].holc_grade = d.holc_grade;
 			adData[d.holc_id].sqmi = d.sqmi;
@@ -345,6 +346,14 @@ const AreaDescriptionsStore = {
 
 	getArea: function(adId) {
 		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].area : null;
+	},
+
+	getNeighborhoodBoundingBox: function (adId, holcId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].boundingBox : null;
+	},
+
+	getNeighborhoodCenter: function (adId, holcId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null;
 	},
 
 	getPreviousHOLCId: function(adId, HOLCId) {

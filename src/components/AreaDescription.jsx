@@ -1,6 +1,8 @@
 
 import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
+import SidebarNeighborhoodNav from './SidebarNeighborhoodNav.jsx';
+import SidebarNeighborhoodTitle from './SidebarNeighborhoodTitle.jsx';
 
 export default class AreaDescription extends React.Component {
 
@@ -28,60 +30,32 @@ export default class AreaDescription extends React.Component {
 
 	render () {
 
-		const nextStyle = {
-			top: this.props.positioning.next.top + 'px',
-			right: this.props.positioning.next.right + 'px',
-			width: this.props.positioning.width + 'px'
-		};
-		const previousStyle = {
-			top: this.props.positioning.previous.top + 'px',
-			right: this.props.positioning.previous.right + 'px',
-			width: this.props.positioning.width + 'px'
-		};
-
 		return (
 			<div className='areaDescription'>
 
-				<h2>
-					<span>{ this.props.areaId}</span>
-					{ (this.props.neighborhoodNames[this.props.areaId]) ?
-						<span>{ ' ' + this.props.neighborhoodNames[this.props.areaId] }</span> :
-					''
-					}
-
-					<span className='closeicon' onClick={ this.props.onClose }>x</span>
-				</h2> 
+				<SidebarNeighborhoodTitle
+					areaId={ this.props.areaId }
+					name={ this.props.neighborhoodNames[this.props.areaId] }
+					onClose={ this.props.onClose }
+				/>
 
 				{ (this.props.previousAreaId) ?
-					<div 
-						className='adNav' 
-						style={ previousStyle }
-						onClick={ this.props.onHOLCIDClick } 
-						id={ this.props.previousAreaId } 
-					>
-						{ this.props.previousAreaId }
-						{ (this.props.neighborhoodNames[this.props.previousAreaId]) ?
-							' ' + this.props.neighborhoodNames[this.props.previousAreaId] :
-							''
-						} 
-					</div> :
+					<SidebarNeighborhoodNav
+						style={ this.props.previousStyle }
+						onHOLCIDClick={ this.props.onHOLCIDClick } 
+						areaId ={ this.props.previousAreaId } 
+						name={ this.props.neighborhoodNames[this.props.previousAreaId] }
+					/> :
 					''
 				}
 
-
 				{ (this.props.nextAreaId && this.props.nextAreaId !== 'null') ?
-					<div 
-						className='adNav' 
-						style={ nextStyle }
-						onClick={ this.props.onHOLCIDClick } 
-						id={ this.props.nextAreaId } 
-					>
-						{ this.props.nextAreaId }
-						{ (this.props.neighborhoodNames[this.props.nextAreaId]) ?
-							' ' + this.props.neighborhoodNames[this.props.nextAreaId] :
-							''
-						} 
-					</div> :
+					<SidebarNeighborhoodNav
+						style={ this.props.nextStyle }
+						onHOLCIDClick={ this.props.onHOLCIDClick } 
+						areaId ={ this.props.nextAreaId } 
+						name={ this.props.neighborhoodNames[this.props.nextAreaId] }
+					/> :
 					''
 				}
 

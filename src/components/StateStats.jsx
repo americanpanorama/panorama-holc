@@ -22,7 +22,6 @@ export default class StateStats extends React.Component {
 						cityData={ cityData } 
 						onCityClick={ this.props.onCityClick } 
 						key={ 'city' + cityData.ad_id } 
-						areaChartWidth={ this.props.areaChartWidth }
 					/>
 				}) }
 			</div>

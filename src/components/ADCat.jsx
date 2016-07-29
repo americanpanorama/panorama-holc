@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
+import SidebarNeighborhoodNav from './SidebarNeighborhoodNav.jsx';
 
 export default class ADCat extends React.Component {
 
@@ -165,17 +166,6 @@ export default class ADCat extends React.Component {
 		let previousCat = this.props.previousCatIds,
 			nextCat = this.props.nextCatIds;
 
-		const nextStyle = {
-			top: this.props.positioning.next.top + 'px',
-			right: this.props.positioning.next.right + 'px',
-			width: this.props.positioning.width + 'px'
-		};
-		const previousStyle = {
-			top: this.props.positioning.previous.top + 'px',
-			right: this.props.positioning.previous.right + 'px',
-			width: this.props.positioning.width + 'px'
-		};
-
 		return (
 			<div className='ADCategory'>
 
@@ -184,7 +174,7 @@ export default class ADCat extends React.Component {
 				{ (this.props.previousCatIds) ?
 					<div 
 						className='adNav' 
-						style={ previousStyle }
+						style={ this.props.previousStyle }
 						onClick={ this.props.onCategoryClick } 
 						id={ this.getCategoryString(...previousCat) } 
 					>
@@ -193,10 +183,12 @@ export default class ADCat extends React.Component {
 					''
 				}
 
+			
+
 				{ (this.props.nextCatIds) ?
 					<div 
 						className='adNav' 
-						style={ nextStyle }
+						style={ this.props.nextStyle }
 						onClick={ this.props.onCategoryClick } 
 						id={ this.getCategoryString(...nextCat) } 
 					>

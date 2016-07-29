@@ -313,7 +313,7 @@ const RasterStore = {
 		citiesData.forEach(mapData => {
 			maps[mapData.map_id] = {
 				cityId : mapData.ad_id,
-				id: mapData.ad_id,
+				id: mapData.map_id,
 				ad_id: parseInt(mapData.ad_id),
 				parent_id: mapData.parent_id,
 				city: mapData.name,

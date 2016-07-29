@@ -36,29 +36,22 @@ export default class HOLCMap extends React.Component {
 
 	render () {
 
-		let ADs = AreaDescriptionsStore.getVisible(),
+		const ADs = AreaDescriptionsStore.getVisible(),
 			aboveThreshold = MapStateStore.isAboveZoomThreshold(),
-			outerRadius = CityStore.getOuterRingRadius();
-
-		const selectedADs = AreaDescriptionsStore.getADsForNeighborhood(this.props.state.selectedCity, this.props.state.selectedNeighborhood),
-			neighborhoodNames = AreaDescriptionsStore.getNeighborhoodNames(this.props.state.selectedCity),
-			ADsByCat = AreaDescriptionsStore.getADsForCategory(this.props.state.selectedCity, this.props.state.selectedCategory),
-			catNum = (this.props.state.selectedCategory) ? this.props.state.selectedCategory.split('-')[0] : null,
-			catLetter = (this.props.state.selectedCategory) ? this.props.state.selectedCategory.split('-')[1] : null,
-			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
+			outerRadius = CityStore.getOuterRingRadius(),
 			visibleMapsList = MapStateStore.getVisibleHOLCMapsList(),
-			visibleStates = MapStateStore.getVisibleHOLCMapsByState();
+			legendData = {
+				items: [
+					'A First Grade',
+					'B Second Grade',
+					'C Third Grade',
+					'D Fourth Grade',
+				]
+			};
 
-		let legendData = {
-			items: [
-				'A First Grade',
-				'B Second Grade',
-				'C Third Grade',
-				'D Fourth Grade',
-			]
-		};
-
-		console.log(visibleMapsList);
+		if (!aboveThreshold) {
+			legendData.items.push('Area for each grade')
+		}
 
 		return (
 
@@ -70,35 +63,28 @@ export default class HOLCMap extends React.Component {
 				className='the_map'
 			>
 
-				{ tileLayers.layers.map((item, i) => {
-					return (this.props.state.map.zoom < 10 ) ?
-						<TileLayer
-							key='noLabels'
-							url={ item.urlNoLabels }
-							zIndex={ -1 }
-						/> : 
-						<TileLayer
-							key='labels'
-							url={ item.urlLabels }
-							zIndex={ -1 }
-						/>
-				}) } 
+				{/* base map */}
+				<TileLayer
+					key={ (aboveThreshold) ? 'labels' : 'noLabels' }
+					url={ (aboveThreshold) ? tileLayers.layers[0].urlLabels : tileLayers.layers[0].urlNoLabels }
+					zIndex={ -1 }
+				/>
 
+				{/* holc tiles */}
 				{ visibleMapsList.map((item, i) => {
-					console.log(item.city);
 					return (
 						<TileLayer
 							key={ 'holctiles' + item.id}
-							className={ 'tilesForCity' + item.cityId + item.id }
 							url={ item.url }
 							minZoom={ item.minZoom }
 							bounds= { item.bounds }
 							opacity={ this.props.state.raster.opacity }
-							zIndex={ (item.cityId == this.props.state.selectedCity) ? 1 : null }
+							zIndex={ (item.ad_id == this.props.state.selectedCity) ? 1 : null }
 						/>
 					);
 				}) }
 
+				{/* text labels for cities */}
 				{ (!aboveThreshold) ?
 					cartodbLayers.layergroup.layers.map((item, i) => {
 						return (

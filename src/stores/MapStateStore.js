@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
+import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
 import CityStore from '../stores/CityStore';
 import RasterStore from '../stores/RasterStore';
 
@@ -190,6 +191,15 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 					}
 				}
 			}, 100);
+			break;
+
+		case AppActionTypes.ADImageOpened:
+			if (MapStateStore.getTheMap() !== null) {
+				const bounds = AreaDescriptionsStore.getNeighborhoodBoundingBox(action.adId, action.holcId),
+					newZoom = -1 + MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newCenter = AreaDescriptionsStore.getNeighborhoodCenter(action.adId, action.holcId);
+				MapStateStore.setView(newZoom, newCenter);
+			}
 	}
 	return true;
 });

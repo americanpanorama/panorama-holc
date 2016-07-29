@@ -10,6 +10,7 @@ export const AppActionTypes = {
 	storeChanged: 'storeChanged',
 
 	ADCategorySelected: 'ADCategorySelected',
+	ADImageOpened: 'ADImageOpened',
 	loadInitialData: 'loadInitialData',
 	initialDataLoaded: 'initialDataLoaded',
 	getInitialData: 'getInitialData',
@@ -22,7 +23,8 @@ export const AppActionTypes = {
 	mapMoved: 'mapMoved',
 	userLocated: 'userLocated',
 	userRespondedToZoomOffer: 'userRespondedToZoomOffer',
-	onModalClick: 'onModalClick'
+	onModalClick: 'onModalClick',
+	windowResized: 'windowResized'
 
 };
 
@@ -51,6 +53,14 @@ export const AppActions = {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.initialDataLoaded,
 			state: state
+		});
+	},
+
+	ADImageOpened: (holcId, adId) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.ADImageOpened,
+			holcId: holcId,
+			adId: adId
 		});
 	},
 
@@ -147,6 +157,12 @@ export const AppActions = {
 				adsMetadata: AreaDescriptionsStore.getADsMetadata()
 			});
 		}
+	},
+
+	windowResized: () => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.windowResized
+		});
 	}
 };
 
