@@ -12,6 +12,7 @@ body {
 		stroke-width: 1;
 		stroke: #ddd;
 		stroke-dasharray: 5,5;
+
 	}
 	
 	.ringArea {
@@ -55,7 +56,7 @@ body {
 		&.gradeD {
 			stroke: $gradeD;
 		}
-	
+
 		fill-opacity: 0.5;
 		stroke-opacity: 1;
 		fill: white;

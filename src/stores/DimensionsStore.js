@@ -22,8 +22,6 @@ const DimensionsStore = {
 		this.data.mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : 0;
 		this.data.sidebarTitleHeight = (document.getElementsByClassName('sidebarTitle').length > 0) ? document.getElementsByClassName('sidebarTitle')[0].offsetHeight: 0;
 
-		console.log(this.data);
-
 		this.emit(AppActionTypes.storeChanged);
 	},
 
@@ -73,7 +71,6 @@ const DimensionsStore = {
 	},
 
 	getSidebarMapStyle: function() {
-		console.log(this.data.tilesHeight, this.data.sidebarTitleHeight, this.data.containerPadding);
 		return {
 			width: (this.data.sidebarWidth - 2*this.data.adNavHeight) + 'px',
 			height: (this.data.tilesHeight - this.data.sidebarTitleHeight - this.data.sidebarTitleBottomMargin - 2*this.data.containerPadding) + 'px'

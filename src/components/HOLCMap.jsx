@@ -75,6 +75,7 @@ export default class HOLCMap extends React.Component {
 					return (
 						<TileLayer
 							key={ 'holctiles' + item.id}
+							className='holctiles'
 							url={ item.url }
 							minZoom={ item.minZoom }
 							bounds= { item.bounds }

@@ -46,7 +46,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -54,6 +54,7 @@ export default class App extends React.Component {
 
 	componentWillMount () {
 		AppActions.loadInitialData(this.state, HashManager.getState());
+		
 
 		//try to retrieve the users location
 		if (navigator.geolocation) {
@@ -111,7 +112,7 @@ export default class App extends React.Component {
 			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
 			downloadOpen: false,
-			adImageOpen: false,
+			adImageOpen: (hashState.adimage),
 			map: {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
 				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
@@ -149,10 +150,12 @@ export default class App extends React.Component {
 	}
 
 	onCitySelected (event) {
+		this.closeADImage();
 		AppActions.citySelected(event.target.id, true);
 	}
 
 	onCityMarkerSelected (event) {
+		this.closeADImage();
 		AppActions.citySelected(event.target.options.id, true);
 	}
 
@@ -160,13 +163,17 @@ export default class App extends React.Component {
 		let neighborhoodId = event.target.options.neighborhoodId,
 			adId = parseInt(event.target.options.adId);
 
-		// clicking on a selected neighborhood deselects it
-		neighborhoodId = (neighborhoodId == this.state.selectedNeighborhood && adId == this.state.selectedCity) ? null : neighborhoodId
+		// clicking on a selected neighborhood deselects it and closeds the adImage if it's open
+		if (neighborhoodId == this.state.selectedNeighborhood && adId == this.state.selectedCity) {
+			neighborhoodId = null;
+			this.closeADImage();
+		} 
 
 		AppActions.neighborhoodSelected(neighborhoodId, adId);
 	}
 
 	onNeighborhoodClose() {
+		this.closeADImage();
 		AppActions.neighborhoodSelected(null, this.state.selectedCity);
 	}
 
@@ -183,6 +190,7 @@ export default class App extends React.Component {
 	}
 
 	onCategoryClick (event) {
+		this.closeADImage();
 		AppActions.ADCategorySelected(event.target.id);
 	}
 
@@ -288,9 +296,20 @@ export default class App extends React.Component {
 		AppActions.onModalClick(subject);
 	}
 
+	closeADImage() {
+		this.setState({
+			adImageOpen: false
+		});
+	}
+
 	getLeafletElementForMap() {
 		return (this.refs.holc_map) ? this.refs.holc_map.refs.the_map.leafletElement : this.refs.sidebar_map.refs.holc_map.refs.the_map.leafletElement;
 	}
+
+	getLeafletElementForAD() {
+		return (this.refs.the_ad_tiles) ? this.refs.the_ad_tiles.leafletElement : null;
+	}
+
 
 	/* manage hash */
 
@@ -303,8 +322,38 @@ export default class App extends React.Component {
 			loc: {
 				zoom: this.state.map.zoom,
 				center: this.state.map.center
-			}
+			},
+			adimage: (this.state.adImageOpen) ? this.formatADHashState() : null,
 		});
+	}
+
+	formatADHashState () {
+		if (!this.state.adImageOpen) {
+			return null;
+		}
+
+		const adLE = this.getLeafletElementForAD(),
+			zoom = adLE.getZoom(),
+			center = adLE.getCenter(),
+			x = Math.round(center.lng),
+			y = Math.round(center.lat);
+
+		return zoom + '/' + y + '/' + x;
+	}
+
+	getADZoom() {
+		const hashState = HashManager.getState();
+		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[0]) : 3;
+	}
+
+	getADX() {
+		const hashState = HashManager.getState();
+		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[2]) : -125;
+	}
+
+	getADY() {
+		const hashState = HashManager.getState();
+		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[1]) : 75;
 	}
 
 	searchDisplay () {
@@ -389,17 +438,21 @@ export default class App extends React.Component {
 								/> :
 								<Map 
 									ref='the_ad_tiles' 
-									center={ [75,-125] } 
-									zoom={ 3 }  
+									center={ [this.getADY(),this.getADX()] } 
+									zoom={ this.getADZoom() }  
 									className='the_ad'
 									style={ DimensionsStore.getADViewerStyle() }
+									onMoveend={ this.changeHash }
 								>
 
-									<TileLayer
-										key='AD'
-										url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
-										zIndex={ 1000 }
-									/>
+									{ AreaDescriptionsStore.hasLoaded() ? 
+										<TileLayer
+											key='AD'
+											url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
+											zIndex={ 1000 }
+										/>:
+										null
+									}
 
 									<Legend 
 										items={ [ 'Close' ] }
