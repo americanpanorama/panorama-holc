@@ -79,7 +79,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(holc_polygons.the_geom)) as bbymax, st_y(st_centroid(holc_polygons.the_geom)) as centerlat, st_x(st_centroid(holc_polygons.the_geom)) as centerlng, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null  where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
+					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(holc_polygons.the_geom)) as bbymax, st_y(st_centroid(holc_polygons.the_geom)) as centerlat, st_x(st_centroid(holc_polygons.the_geom)) as centerlng, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null  where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
 					format: 'JSON'
 				});
 			}
@@ -108,10 +108,14 @@ const AreaDescriptionsStore = {
 	},
 
 	parseAreaDescriptions: function(rawAdData) {
+		const bucketUrl = 'http://holc.s3-website-us-east-1.amazonaws.com/';
+
 		let adData = {};
 
 		for(var row in rawAdData) {
-			let d = rawAdData[row];
+			let d = rawAdData[row],
+				urlPath = d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/',
+				adImageUrl = bucketUrl + 'ads/' + urlPath + d.holc_id;
 
 			// define id if undefined
 			if(typeof adData[d.holc_id] == 'undefined') {
@@ -126,9 +130,17 @@ const AreaDescriptionsStore = {
 			adData[d.holc_id].holc_grade = d.holc_grade;
 			adData[d.holc_id].sqmi = d.sqmi;
 
-			adData[d.holc_id].url = 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/full-size/' + d.holc_id + '.jpg';
-			adData[d.holc_id].tileUrl = 'http://holc.s3-website-us-east-1.amazonaws.com/ads/' + d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/' + d.holc_id + '/{z}/{x}_{y}.png';
-			adData[d.holc_id].thumbnailUrl = 'http://holc.s3-website-us-east-1.amazonaws.com/ads/' + d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/' + d.holc_id + '/thumbnail.jpg';
+			adData[d.holc_id].url = bucketUrl + 'tiles/' + urlPath, + 'full-size/' + d.holc_id + '.jpg';
+			adData[d.holc_id].tileUrl = adImageUrl + '/{z}/{x}_{y}.png';
+			adData[d.holc_id].thumbnailUrl = adImageUrl  + '/thumbnail.jpg';
+
+			// if there are multiple ad images, create those urls
+			// if (d.sheets > 1) {
+			// 	for (let page = 2; page <= d.sheets; page++) {
+			// 		adData[d.holc_id].tileUrls.push(adImageUrl + '-' + page + '/{z}/{x}_{y}.png');
+			// 		adData[d.holc_id].thumbnailUrls.push(adImageUrl + '-' + page + '/thumbnail.jpg');
+			// 	}
+			// }
 			
 			// define area description if undefined
 			if(typeof adData[d.holc_id].areaDesc == 'undefined') {

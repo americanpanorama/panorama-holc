@@ -400,7 +400,14 @@ export default class App extends React.Component {
 			catNum = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[0] : null,
 			catLetter = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[1] : null,
 			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
-			visibleStates = MapStateStore.getVisibleHOLCMapsByState();
+			visibleStates = MapStateStore.getVisibleHOLCMapsByState(),
+			visibleStateNames = (visibleStates) ? 
+				Object.keys(visibleStates).sort((a,b) => {
+					console.log(stateAbbrs[a], stateAbbrs[b], stateAbbrs[a] < stateAbbrs[b]); 
+					return stateAbbrs[a] < stateAbbrs[b]; 
+				}) : [];
+
+		console.log(visibleStateNames);
 
 		//setIconDefaultImagePath('./static');
 
@@ -622,7 +629,7 @@ export default class App extends React.Component {
 							}
 
 							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory && visibleStates) ?
-								Object.keys(visibleStates).map((theState) => {
+								Object.keys(visibleStates).sort((a,b) => a > b).map((theState) => {
 									return <StateStats 
 										stateName={ stateAbbrs[theState] } 
 										cities={ visibleStates[theState] } 
