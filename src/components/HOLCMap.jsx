@@ -14,6 +14,7 @@ import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImag
 import { CartoDBTileLayer, Legend } from '@panorama/toolkit';
 import AreaPolygon from './AreaPolygon.jsx';
 import Donut from './Donut/Donut.jsx';
+import Slider from 'rc-slider';
 
 
 import cartodbConfig from '../../basemaps/cartodb/config.json';
@@ -30,7 +31,16 @@ export default class HOLCMap extends React.Component {
 
 	}
 
+	componentDidMount() {
+	}
+
 	componentDidUpdate(prevProps) {
+		this.refs.slider.addEventListener('mouseover', () => {
+			this.refs.the_map.leafletElement.dragging.disable();
+		});
+		this.refs.slider.addEventListener('mouseout', () => {
+			this.refs.the_map.leafletElement.dragging.enable();
+		});
 
 	}
 
@@ -263,6 +273,17 @@ export default class HOLCMap extends React.Component {
 				{ (this.props.state.userLocation) ?
 					<Marker position={ this.props.state.userLocation } /> :
 					null
+				}
+
+				{ (aboveThreshold) ?
+					<div className='opacitySlider' ref='slider'>
+						<Slider 
+							vertical={ true }
+							defaultValue={ this.props.state.raster.opacity * 100 }
+							onAfterChange={ this.props.onSliderChange }
+						/>
+					</div> :
+					''
 				}
 
 				<Legend { ...legendData } onItemSelected={ this.onGradeHover } />

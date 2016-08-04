@@ -9,7 +9,7 @@ const TextsStore = {
 			open: false,
 			subject: null
 		},
-		about: [
+		intro: [
 			"<h2>Introduction</h2>",
 			"<p><cite>Mapping Inequality</cite> updates the study of New Deal America, the federal government, housing, and inequality for the twenty-first century. It offers unprecedented online access to the national collection of \"	security maps\" and area descriptions produced between 1935 and 1940 by one of the New Deal's most important agencies, the Home Owners' Loan Corporation or HOLC (pronounced \"holk\"). </p>",
 			"<p>HOLC recruited mortgage lenders, developers, and real estate appraisers in nearly 250 cities to create maps that color-coded credit worthiness and risk on neighborhood and metropolitan levels. These maps and their accompanying documentation helped set the rules for nearly a century of real estate practice. They have also served as critical evidence in countless urban studies in the fields of history, sociology, economics, and law.  Indeed, more than a half-century of research has shown housing to be for the twentieth century what slavery was to the antebellum period, namely the broad foundation of both American prosperity and racial inequality.  Through offering a digital library of the state's role in housing development, Mapping Inequality illustrates vividly the interplay between racism, administrative culture, economics, and the built environment.</p>",
@@ -80,6 +80,13 @@ const TextsStore = {
 			"<p>Burgess's model, in addition to reflecting the homes of real estate investor communities, served as an extension of wider segregationist thinking driving both sociology as a discipline and administrative practice during the progressive era.  Obsession with cities as \"organisms\" of society, they believed in what the sociologist Louis Wirth benignly described as the \"eugenics of the city.\"</p>",
 			"<p>Many of the HOLC maps reflected both the categorical impulse and spatial organization of Burgess model with D and C neighborhoods more likely to be located around central business districts and A and B neighborhoods in increasingly suburban peripheries. The diagram visualizes the relative distribution of HOLC grades in relation to the center of the city. The opacity of the rings reflects the relative density of zoned areas on the map. Hovering over the rings will highlight areas for that grade.</p>",
 			"<p>Our adaptation of Burgess diagrams is not meant to resuscitate his discredited theory.  Rather, we aim to show just how profoundly segregationist practices of redlining actually shaped American cities to resemble a roundly discredited social theory.  Segregation was not natural.  Quite the contrary, redlining greatly impeded the natural flows of people and capital.  Through federal action and local manipulation, life was made to imitate art.</p>"
+		],
+		"credits": [
+			"<p><cite>Mapping Inequality</cite> was created through the collaboration of three teams at four universities.</p>",
+			"<p>At the <a href='//dsl.richmond.edu'>University of Richmond's Digital Scholarship Lab</a>, <strong>Justin Madron</strong> managed the data and metadata for the project and <strong>Nathaniel Ayers</strong> co-designed the map. The DSL's student interns contributed an enormous amount of labor to georeferencing HOLC maps, creating polygons, and transcribing area descriptions. They are <strong>Lily Calaycay</strong>, <strong>Erica Ott</strong>, <strong>Barbie Savani</strong>, <strong>Hillary ??</strong>, <strong>Radha Zanza</strong>, <strong>Zach Halaschak</strong>, <strong>Gavin Hosman</strong>, <strong>Stefan St. John</strong>, <strong>Donald Edmonds</strong>, <strong>Haley Fortner</strong>, <strong>Max Hoffman</strong>, <strong>Amanda Lineberry</strong>. <strong>Robert K. Nelson</strong> led the DSL team; he developed the application for <cite>Mapping Inequality</cite>, co-designed it, and contributed to its explanatory and interpretative text.</p>",
+			"<p>[paragraphs for VT, UMD, and Hopkins (or just Nathan)]</p>",
+			"<p>We would like to thank a number of individuals and groups. <strong>Bobby Allen</strong>, <strong>Pam Lach</strong>, and <strong>Claire Clements</strong> with Nelson and Marciano inventoried the HOLC files at the National Archives at College Park. <a href='//stamen.com/'>Stamen Design</a> developed the <a href='//github.com/americanpanorama/panorama'>Panorama toolkit</a>, components of which are used in <cite>Mapping Inequality</cite>.</p>",
+			"<p>The <a href='//mellon.org'>Andrew W. Mellon Foundation</a> provided the DSL generous funding to work on this and the other initial maps of <cite><a href='//dsl.richmond.edu/panorama'>American Panorama</a></cite>.</p>"
 
 		]
 	},
@@ -94,6 +101,10 @@ const TextsStore = {
 
 	getModalContent: function() {
 		return (this.data.modal.open) ? this.parseModalCopy(this.data[this.data.modal.subject]) : null;
+	},
+
+	getSubject: function () {
+		return this.data.modal.subject;
 	},
 
 	mainModalIsOpen: function() {
@@ -127,8 +138,15 @@ AppDispatcher.register((action) => {
 
 	switch (action.type) {
 
+		case AppActionTypes.loadInitialData:
+			if (action.hashState.text) {
+				TextsStore.setShow(action.hashState.text);
+			}
+			break;
+
 		case AppActionTypes.onModalClick:
-			TextsStore.setShow(action.subject);
+			// toggle of when the same text is requested
+			TextsStore.setShow((action.subject !== TextsStore.getSubject()) ? action.subject : null);
 			break;
 
 	}

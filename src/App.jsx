@@ -90,7 +90,9 @@ export default class App extends React.Component {
 
 	componentWillUnmount () { }
 
-	componentDidUpdate () {}
+	componentDidUpdate () {
+		this.changeHash();
+	}
 
 	/* setState methods */
 
@@ -141,8 +143,10 @@ export default class App extends React.Component {
 			map: {
 				center: MapStateStore.getCenter(),
 				zoom: MapStateStore.getZoom()
-			}
-		}, this.changeHash); 
+			},
+			adImageOpen: (MapStateStore.isAboveZoomThreshold() == false || !CityStore.getSelectedHolcId() || !CityStore.getId()) ? false : this.state.adImageOpen,
+			text: TextsStore.getSubject()
+		}); 
 	}
 
 	onMapMoved (event) {
@@ -173,7 +177,6 @@ export default class App extends React.Component {
 	}
 
 	onNeighborhoodClose() {
-		this.closeADImage();
 		AppActions.neighborhoodSelected(null, this.state.selectedCity);
 	}
 
@@ -230,7 +233,7 @@ export default class App extends React.Component {
 		this.setState({
 			selectedNeighborhood: null,
 			selectedCategory: id
-		}, this.changeHash);
+		});
 	}
 
 	onWindowResize (event) {
@@ -248,7 +251,7 @@ export default class App extends React.Component {
 				zoom: this.getLeafletElementForMap().getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
 				center: RasterStore.getCenterForState(value.id)
 			}
-		}, this.changeHash());
+		});
 	}
 
 	onSliderChange (value) {
@@ -256,7 +259,7 @@ export default class App extends React.Component {
 			raster: {
 				opacity: value / 100
 			}
-		}, this.changeHash);
+		});
 	}
 
 	onDownloadClicked () {
@@ -303,7 +306,13 @@ export default class App extends React.Component {
 	}
 
 	getLeafletElementForMap() {
-		return (this.refs.holc_map) ? this.refs.holc_map.refs.the_map.leafletElement : this.refs.sidebar_map.refs.holc_map.refs.the_map.leafletElement;
+		if (this.refs.holc_map) {
+			return this.refs.holc_map.refs.the_map.leafletElement;
+		} 
+		if (this.refs.sidebar_map) {
+			return this.refs.sidebar_map.refs.holc_map.refs.the_map.leafletElement;
+		}
+		return false;
 	}
 
 	getLeafletElementForAD() {
@@ -324,6 +333,7 @@ export default class App extends React.Component {
 				center: this.state.map.center
 			},
 			adimage: (this.state.adImageOpen) ? this.formatADHashState() : null,
+			text: this.state.text
 		});
 	}
 
@@ -354,6 +364,17 @@ export default class App extends React.Component {
 	getADY() {
 		const hashState = HashManager.getState();
 		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[1]) : 75;
+	}
+
+	getADMaxBounds() {
+		const sheets = AreaDescriptionsStore.getSheets(this.state.selectedCity, this.state.selectedNeighborhood);
+		switch (sheets) {
+			case 1:
+				return [[-10,-180],[90,-60]];
+			case 2:
+				return [[-10,-180],[90,70]];
+		}
+		
 	}
 
 	searchDisplay () {
@@ -407,9 +428,7 @@ export default class App extends React.Component {
 					return stateAbbrs[a] < stateAbbrs[b]; 
 				}) : [];
 
-		console.log(visibleStateNames);
-
-		//setIconDefaultImagePath('./static');
+		//console.log(visibleStateNames);
 
 		return (
 			<div className='container full-height'>
@@ -417,6 +436,11 @@ export default class App extends React.Component {
 					show_menu={ this.state.show_panorama_menu } 
 					on_hamburger_click={ this.onPanoramaMenuClick } 
 					nav_data={ panoramaNavData.filter((item, i) => item.url.indexOf('holc') === -1) } 
+					links={ [
+						{ name: 'Digital Scholarship Lab', url: '//dsl.richmond.edu' },
+						{ name: 'University of Richmond', url: '//www.richmond.edu' }
+					] }
+					link_separator=', '
 				/>
 				<div className='row full-height'>
 					<div className='columns eight full-height'>
@@ -425,7 +449,7 @@ export default class App extends React.Component {
 								<span className='header-main'>Mapping Inequality</span>
 								<span className='header-sub'>Redlining in New Deal America</span>
 							</h1>
-							<h4 onClick={ this.onModalClick } id={ 'about' }>Introduction</h4>
+							<h4 onClick={ this.onModalClick } id={ 'intro' }>Introduction</h4>
 							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
 							<h4 onClick={ this.onModalClick } id={ 'credits' }>Credits</h4>
 							<hr className='style-eight' />
@@ -442,17 +466,21 @@ export default class App extends React.Component {
 									onMapMoved={ this.onMapMoved }
 									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
 									onCityMarkerSelected= { this.onCityMarkerSelected }
+									onSliderChange={ this.onSliderChange }
 								/> :
 								<Map 
 									ref='the_ad_tiles' 
 									center={ [this.getADY(),this.getADX()] } 
-									zoom={ this.getADZoom() }  
+									zoom={ this.getADZoom() }
+									minZoom={ 3 }
+									maxZoom={ 5 }
+									maxBounds={ this.getADMaxBounds() }
 									className='the_ad'
 									style={ DimensionsStore.getADViewerStyle() }
 									onMoveend={ this.changeHash }
 								>
 
-									{ AreaDescriptionsStore.hasLoaded() ? 
+									{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ? 
 										<TileLayer
 											key='AD'
 											url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
@@ -470,8 +498,6 @@ export default class App extends React.Component {
 									
 								</Map> 
 							}
-							
-							
 
 							{ TextsStore.mainModalIsOpen() ?
 								<div className='longishform'>
@@ -481,26 +507,9 @@ export default class App extends React.Component {
 								null
 							}
 
-							{ (false) ?
-								<div className='longishform'>
-									<button className='close' onClick={ this.onAdImageClicked}><span>×</span></button>
-									<img src={ AreaDescriptionsStore.getAdUrl(this.state.selectedCity, this.state.selectedNeighborhood) } />
-								</div> :
-								null
-							}
-
 						</div>
 					</div>
-					{ (aboveThreshold) ?
-						<div className='opacitySlider'>
-							<Slider 
-								vertical={ true }
-								defaultValue={ this.state.raster.opacity * 100 }
-								onAfterChange={ this.onSliderChange }
-							/>
-						</div> :
-						''
-					}
+
 
 					<div className='columns four full-height'>
 
@@ -597,6 +606,7 @@ export default class App extends React.Component {
 									nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
 									neighborhoodNames={ neighborhoodNames }
 									onHOLCIDClick={ this.onHOLCIDClick } 
+									onSliderChange={ this.onSliderChange }
 									onClose={ this.onNeighborhoodClose }
 									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
 									nextStyle={ DimensionsStore.getADNavNextStyle() }

@@ -134,6 +134,8 @@ const AreaDescriptionsStore = {
 			adData[d.holc_id].tileUrl = adImageUrl + '/{z}/{x}_{y}.png';
 			adData[d.holc_id].thumbnailUrl = adImageUrl  + '/thumbnail.jpg';
 
+			adData[d.holc_id].sheets = d.sheets;
+
 			// if there are multiple ad images, create those urls
 			// if (d.sheets > 1) {
 			// 	for (let page = 2; page <= d.sheets; page++) {
@@ -386,6 +388,10 @@ const AreaDescriptionsStore = {
 		}
 	},
 
+	getSheets: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : null;
+	},
+
 	getFormId: function(adId) {
 		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null;
 	},
@@ -488,7 +494,7 @@ const AreaDescriptionsStore = {
 	},
 
 	hasADData: function(adId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood['C1']);
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood);
 	},
 
 	/* alphanum.js (C) Brian Huisman

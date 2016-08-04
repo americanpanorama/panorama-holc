@@ -79,6 +79,11 @@ const MapStateStore = {
 		this.emit(AppActionTypes.storeChanged);
 	},
 
+	setTheMap: function (theMap) {
+		this.data.theMap = theMap;
+		this.emit(AppActionTypes.storeChanged);
+	},
+
 	setView: function (zoom, center) {
 		this.data.zoom = zoom;
 		this.data.center = center;
@@ -194,12 +199,19 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.ADImageOpened:
+		case AppActionTypes.neighborhoodSelected:
+			if (action.type == AppActionTypes) {
+
+			}
 			if (MapStateStore.getTheMap() !== null) {
 				const bounds = AreaDescriptionsStore.getNeighborhoodBoundingBox(action.adId, action.holcId),
-					newZoom = -1 + MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newZoom = -2 + MapStateStore.getTheMap().getBoundsZoom(bounds),
 					newCenter = AreaDescriptionsStore.getNeighborhoodCenter(action.adId, action.holcId);
-				MapStateStore.setView(newZoom, newCenter);
+				if (!MapStateStore.getBounds().contains(bounds)) {
+					MapStateStore.getTheMap().panTo(newCenter);
+				}
 			}
+			break;
 	}
 	return true;
 });

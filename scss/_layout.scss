@@ -435,7 +435,6 @@ header {
 
 	top: 20px;
 	left: 20px;
-	z-index: 10000;
 	background: #444;
 }
 
@@ -596,8 +595,9 @@ $colorLightGrey: #b3b3b3;
 		ul {
 			li:nth-child(1) {
 				padding: 4px 10px;
-				background-color: #444;
-				color: white;
+				background-color: white;
+				color: #444;
+				font-weight: bold;
 				span {
 					&:before {
 						border: none;

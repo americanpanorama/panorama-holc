@@ -61,6 +61,7 @@ export default class SidebarMap extends React.Component {
 						onMapMoved={ this.props.onMapMoved }
 						onNeighborhoodPolygonClick={ this.props.onNeighborhoodPolygonClick }
 						onCityMarkerSelected= { this.props.onCityMarkerSelected }
+						onSliderChange={ this.props.onSliderChange }
 						style={ this.props.mapStyle }
 					/>
 				</div>
