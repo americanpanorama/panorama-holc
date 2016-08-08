@@ -21,6 +21,10 @@ export default class AreaDescription extends React.Component {
 
 	constructor () {
 		super();
+
+		// bind handlers
+		const handlers = ['renderNSForm8_19370203','renderNSForm8_19371001','render1939'];
+		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
 	shouldComponentUpdate (nextProps) {
@@ -29,6 +33,20 @@ export default class AreaDescription extends React.Component {
 	}
 
 	render () {
+
+		let renderForm = () => null;
+		switch(parseInt(this.props.formId)) {
+			case 19370203:
+			case 19370826:
+				renderForm = this.renderNSForm8_19370203;
+				break;
+			case 19371001:
+				renderForm = this.renderNSForm8_19371001;
+				break;
+			case 1939:
+				renderForm = this.render1939;
+				break;
+		}
 
 		return (
 			<div className='areaDescription'>
@@ -59,12 +77,7 @@ export default class AreaDescription extends React.Component {
 					''
 				}
 
-
-	
-				{ ([19370203,19370826].indexOf(parseInt(this.props.formId)) >= 0) ? this.renderNSForm8_19370203() :
-				  (parseInt(this.props.formId) == 19371001) ? this.renderNSForm8_19371001() :
-				  null
-				}
+				{ renderForm() }
 
 				<figure className='adThumbnail'>
 					<img src={ this.props.thumbnailUrl } onClick={ this.props.onAdImageClicked } />
@@ -531,6 +544,235 @@ export default class AreaDescription extends React.Component {
 					<span className='subcatData'>{ (AD[6] && AD[6][2] ) ? AD[6][2] : <span className='empty'>empty</span> }</span>
 					<span className='catName'>Area No.</span>
 					<span className='subcatData'>{ (AD[6] && AD[6][3] ) ? AD[6][3] : <span className='empty'>empty</span> }</span>
+				</li>
+			</ul>
+		);
+	}
+
+	render1939() {
+		let AD = this.props.areaDescriptions;
+
+		if (AD === false) {
+			return;
+		}
+
+		return (
+			<ul className='area_description'>
+				<li>
+					<span className='catNum'>1</span>
+					<span className='catName'>Population</span>
+					<ul>
+						<li>
+							<span className='catLetter'>a</span>
+							<span className='catName'>Increasing</span>
+							<span className='subcatData'>{ this.renderSimpleData(1, 'a', 1) }</span><br />
+							<span className='catName'> Decreasing</span>
+							<span className='subcatData'> { this.renderSimpleData(1, 'a', 2) }</span><br />
+							<span className='catName'> Static</span>
+							<span className='subcatData'> { this.renderSimpleData(1, 'a', 3) }</span>
+						</li>
+						{ this.renderSimpleSubcategory(1, 'b', 'Class and Occupation') }
+						<li>
+							<span className='catLetter'>c</span>
+							<span className='catName'>Foreign Families</span>
+							<span className='subcatData'>{ this.renderSimpleData(1, 'c', 1) }</span><br />
+							<span className='catName'> Nationalities</span>
+							<span className='subcatData'> { this.renderSimpleData(1, 'c', 2) }</span>
+						</li>
+						{ this.renderSimpleSubcategory(2, 'd', 'Negro') }
+						{ this.renderSimpleSubcategory(1, 'e', 'Shifting or Infiltration') }
+					</ul>
+				</li>
+				<li>
+					<span className='catNum'>2</span>
+					<span className='catName'>Buildings</span>
+
+					<table>
+						<tbody>
+							<tr>
+								<th></th>
+								<th colSpan={2}>Predominating { this.renderSimpleData(2, '', 1) }%</th>
+								<th colSpan={2}>Other Type { this.renderSimpleData(2, '', 2) }%</th>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>a</span>
+									<span className='catName'>Type and Size</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'a', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'a', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>b</span>
+									<span className='catName'>Construction</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'b', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'b', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>c</span>
+									<span className='catName'>Average Age</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'c', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'c', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>d</span>
+									<span className='catName'>Repair</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'd', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'd', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>e</span>
+									<span className='catName'>Occupancy</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'e', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'e', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>f</span>
+									<span className='catName'>Owner-occupied</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'f', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'f', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>g</span>
+									<span className='catName'>1935 Price Bracket</span>
+								</td>
+								<td>${ this.renderSimpleData(2, 'g', 1) }</td>
+								<th>% change</th>
+								<td>${ this.renderSimpleData(2, 'g', 2) }</td>
+								<th>% change</th>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>h</span>
+									<span className='catName'>1937 Price Bracket</span>
+								</td>
+								<td>${ this.renderSimpleData(2, 'h', 1) }</td>
+								<td>{ this.renderSimpleData(2, 'h', 2) }%</td>
+								<td>${ this.renderSimpleData(2, 'h', 3) }</td>
+								<td>{ this.renderSimpleData(2, 'h', 4) }%</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>i</span>
+									{ this.renderSimpleData(2, 'i', 1) } <span className='catName'>Price Bracket</span>
+								</td>
+								<td>${ this.renderSimpleData(2, 'i', 2) }</td>
+								<td>{ this.renderSimpleData(2, 'i', 3) }%</td>
+								<td>${ this.renderSimpleData(2, 'i', 4) }</td>
+								<td>{ this.renderSimpleData(2, 'i', 5) }%</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>j</span>
+									<span className='catName'>Sales Demand</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'j', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'j', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>k</span>
+									<span className='catName'>Predicted Price Trend<br />(next 6-12 months)</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'k', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'k', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>l</span>
+									<span className='catName'>1935 Rent Bracket</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'l', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'l', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>m</span>
+									<span className='catName'>1937 Rent Bracket</span>
+								</td>
+								<td>${ this.renderSimpleData(2, 'm', 1) }</td>
+								<td>{ this.renderSimpleData(2, 'm', 2) }%</td>
+								<td>${ this.renderSimpleData(2, 'm', 3) }</td>
+								<td>{ this.renderSimpleData(2, 'm', 4) }%</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>n</span>
+									{ this.renderSimpleData(2, 'n', 1) }<span className='catName'>Rent Bracket</span>
+								</td>
+								<td>${ this.renderSimpleData(2, 'n', 2) }</td>
+								<td>{ this.renderSimpleData(2, 'n', 3) }%</td>
+								<td>${ this.renderSimpleData(2, 'n', 4) }</td>
+								<td>{ this.renderSimpleData(2, 'n', 5) }%</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>o</span>
+									<span className='catName'>Rental Demand</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'o', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'o', 2) }</td>
+							</tr>
+							<tr>
+								<td>
+									<span className='catLetter'>p</span>
+									<span className='catName'>Predicted Rent Trend<br />(next 6-12 months)</span>
+								</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'p', 1) }</td>
+								<td colSpan={2}>{ this.renderSimpleData(2, 'p', 2) }</td>
+							</tr>
+						</tbody>
+					</table>
+				</li>
+				<li>
+					<span className='catNum'>3</span>
+					<span className='catName'>New Construction (past yr.)</span>
+					<div>
+						<span className='subcatName'>No.</span> { this.renderSimpleData(3, '', 1) }
+						<span className='subcatName'>Type &amp; Price</span> { this.renderSimpleData(3, '', 2) }
+						<span className='subcatName'>How Selling</span> { this.renderSimpleData(3, '', 3) }
+					</div>
+				</li>
+				<li>
+					<span className='catNum'>4</span>
+					<span className='catName'>Overhang of Home Properties</span>
+					<ul>
+						{ this.renderSimpleSubcategory(4, 'a', 'HOLC') }
+						{ this.renderSimpleSubcategory(4, 'b', 'Institutions') }
+					</ul>
+				</li>
+				<li>
+					<span className='catNum'>5</span>
+					<span className='catName'>Sale of Home Properties</span>
+					<ul>
+						{ this.renderSimpleSubcategory(5, 'a', 'HOLC') }
+						{ this.renderSimpleSubcategory(5, 'b', 'Institutions') }
+					</ul>
+				</li>
+				{ this.renderSimpleCategory(6, 'Mortgage Funds') }
+				<li>
+					<span className='catNum'>7</span>
+					<span className='catName'>Total Tax Rate Per $1000 (193</span>{ this.renderSimpleData(7, '', 1) }<span className='catName'>)</span>
+					<span className='catData'>{ this.renderSimpleData(7, '', 2) }</span>
+				</li>
+				{ this.renderSimpleCategory(8, 'Description and Characteristics of Area') }
+				<li>
+					<span className='catNum'>9</span>
+					<span className='catName'>Location</span> { this.renderSimpleData(9, '', 1) }
+					<div><span className='catName'>Security Grade</span> { this.renderSimpleData(9, '', 2) }</div>
+					<div><span className='catName'>Area No</span> { this.renderSimpleData(9, '', 3) }</div>
+					<div><span className='catName'>Date</span> { this.renderSimpleData(9, '', 4) }</div>
 				</li>
 			</ul>
 		);
