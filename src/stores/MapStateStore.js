@@ -14,6 +14,7 @@ const MapStateStore = {
 		bounds: null,
 		visibleHOLCMaps: {},
 		visibleHOLCMapsIds: [],
+		visibleHOLCMapsByState: {},
 		visibleAdIds: [],
 		adZoomThreshold: 9,
 		hasLoaded: false
@@ -128,6 +129,10 @@ const MapStateStore = {
 
 	isAboveZoomThreshold() {
 		return this.data.zoom >= this.data.adZoomThreshold;
+	},
+
+	hasLoaded() {
+		return this.data.hasLoaded;
 	}
 }
 
@@ -203,7 +208,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			if (action.type == AppActionTypes) {
 
 			}
-			if (MapStateStore.getTheMap() !== null) {
+			if (MapStateStore.getTheMap() !== null && action.holcId !== null) {
 				const bounds = AreaDescriptionsStore.getNeighborhoodBoundingBox(action.adId, action.holcId),
 					newZoom = -2 + MapStateStore.getTheMap().getBoundsZoom(bounds),
 					newCenter = AreaDescriptionsStore.getNeighborhoodCenter(action.adId, action.holcId);

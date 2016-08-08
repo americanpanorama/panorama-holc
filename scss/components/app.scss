@@ -44,23 +44,12 @@ body {
 	
 	.selectedGradedNeighborhoods,
 	.neighborhoodPolygonInverted {
-		&.gradeA {
-			stroke: $gradeA;
-		}
-		&.gradeB {
-			stroke: $gradeB;
-		}
-		&.gradeC {
-			stroke: $gradeCDark;
-		}
-		&.gradeD {
-			stroke: $gradeD;
-		}
+		stroke: black;
 
 		fill-opacity: 0.5;
 		stroke-opacity: 1;
-		fill: white;
-		stroke-width : 5;
+		fill: $background;
+		stroke-width : 2.5;
 	}
 	
 	.simpleDonut {

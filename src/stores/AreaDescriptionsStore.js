@@ -19,9 +19,13 @@ const AreaDescriptionsStore = {
 	dataLoader: CartoDBLoader,
 
 	loadADMetadata: function () {
-		const query = "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id) SELECT holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id group by holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930, asian_pacific_ilslander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc";
 
-		this.dataLoader.query([{query: query, format: 'JSON'}]).then((responses) => {
+		this.dataLoader.query([
+			{
+				query: "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id) SELECT holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id group by holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930, asian_pacific_ilslander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc",
+				format: 'JSON'
+			}
+		]).then((responses) => {
 			responses.forEach(response => {
 				if (response.length > 0) {
 					responses[0].forEach(response => {
@@ -51,17 +55,37 @@ const AreaDescriptionsStore = {
 								b: response.area_b,
 								c: response.area_c,
 								d: response.area_d
-							}
+							},
+							maps: []
 						}
 
 						this.data.adsMetadata[response.ad_id].radii = this.calculateSimpleRingsRadii(this.data.adsMetadata[response.ad_id].area);
 					});
+
+					// get the map_ids 
+					this.dataLoader.query([
+						{
+							query: 'select ad_id, holc_maps.map_id, name from holc_maps_ads_join join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id',
+							format: 'JSON'
+						}
+					]).then((responses) => {
+						responses[0].forEach(response => {
+							if (this.data.adsMetadata[response.ad_id]) {
+								this.data.adsMetadata[response.ad_id].maps.push({
+									id: response.map_id,
+									name: response.name
+								});
+							}
+						});
+
+						this.data.hasLoaded = true;
+
+						this.emit(AppActionTypes.storeChanged);
+					});
 				}
 			});
 
-			this.data.hasLoaded = true;
 
-			this.emit(AppActionTypes.storeChanged);
 
 		}, (error) => {
 			// TODO: handle this.
@@ -247,206 +271,10 @@ const AreaDescriptionsStore = {
 		return radii;
 	},
 
-	getName: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null;
-	},
-
-	getThumbnailUrl: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null;
-	},
-
-	getAdUrl: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].url : null;
-	},
-
-	getAdTileUrl: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].tileUrl : null;
-	},
-
-	getNeighborhoodNames: function (adId) {
-		let names = {};
-		if (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood) {
-			Object.keys(this.data.areaDescriptions[adId].byNeighborhood).forEach(holcId => {
-				names[holcId] = this.getName(adId, holcId);
-			});
-		}
-		return names;
-	},
-
-	getAreaDescriptions: function() {
-		return this.data.areaDescriptions;
-	},
+	/* GETS */
 
 	getADs: function(adId) {
 		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false;
-	},
-
-	getADsMetadata: function() {
-		return this.data.adsMetadata;
-	},
-
-	// return a flat list of the HOLC maps for rendering
-	getADsList: function() { return Object.keys(this.data.adsMetadata).map((adId) => this.data.adsMetadata[adId]); },
-
-	getGeoJsonForGrade: function(adId, grade) {
-		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],
-			holes = [];
-		Object.keys(this.data.areaDescriptions[adId].byNeighborhood).forEach((id, i) => {
-			if (this.data.areaDescriptions[adId].byNeighborhood[id].holc_grade == grade) {
-				this.data.areaDescriptions[adId].byNeighborhood[id].area_geojson.coordinates.forEach(coordset => {
-					coordset.forEach((coords, i2) => {
-						if (i2 == 0) {
-							polygons.push(coords);
-						} else {
-							holes.push(coords);
-						}
-					});
-				});
-			}
-		});
-
-		polygons = (holes.length > 0) ? [polygons.concat(holes)] : [polygons]
-
-		let geojson = {
-			'type': 'Feature',
-			'geometry': {
-				'type': 'MultiPolygon',
-				'coordinates': polygons
-			},
-			'properties': {}
-		};
-
-		return geojson;
-	},
-
-	getADsForNeighborhood: function(adId, holcId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].areaDesc : false;
-	},
-
-	getADsForCategory: function(adId, category) {
-		if (!this.data.areaDescriptions[adId] || !category) {
-			return null;
-		}
-
-		let [catNum, catLetter] = category.split('-');
-
-		if (!catNum) {
-			return this.data.areaDescriptions[adId].byCategory;
-		}
-
-		if (!catLetter && this.data.areaDescriptions[adId].byCategory[catNum]) {
-			return this.data.areaDescriptions[adId].byCategory[catNum];
-		} else if (catLetter && this.data.areaDescriptions[adId].byCategory[catNum] && this.data.areaDescriptions[adId].byCategory[catNum][catLetter]) {
-			return this.data.areaDescriptions[adId].byCategory[catNum][catLetter];
-		}
-		
-		return null;
-	},
-
-
-	getVisible: function() {
-		let ADs = {};
-		this.data.adIds.forEach(adId => {
-			if (this.data.areaDescriptions[adId]) {
-				ADs[adId] = this.data.areaDescriptions[adId].byNeighborhood;
-			}
-		});
-		return ADs;
-	},
-
-	getVisibleMapIds: function() {
-		return this.data.adIds;
-	},
-
-	getArea: function(adId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].area : null;
-	},
-
-	getNeighborhoodBoundingBox: function (adId, holcId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].boundingBox : null;
-	},
-
-	getNeighborhoodCenter: function (adId, holcId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null;
-	},
-
-	getPreviousHOLCId: function(adId, HOLCId) {
-		if (this.data.areaDescriptions[adId]) {
-			let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
-			return formIds[formIds.indexOf(HOLCId) - 1];
-		} else {
-			return false;
-		}
-	},
-
-	getNextHOLCId: function(adId, HOLCId) {
-		if (this.data.areaDescriptions[adId]) {
-			let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
-			return formIds[formIds.indexOf(HOLCId) + 1];
-		} else {
-			return false;
-		}
-	},
-
-	getSheets: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : null;
-	},
-
-	getFormId: function(adId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null;
-	},
-
-	getPreviousCatIds: function(adId, catNum, catLetter) {
-		if (!this.data.areaDescriptions[adId]) {
-			return null;
-		}
-
-		const formId = this.data.areaDescriptions[adId].formId;
-		for (let checkCatNum = (!catLetter || catLetter == 'a') ? parseInt(catNum) - 1 : parseInt(catNum); checkCatNum >= 1; checkCatNum--) {
-			for (let checkCatLetter = (!catLetter || catLetter == 'a') ? 'z' : String.fromCharCode(catLetter.charCodeAt()-1); checkCatLetter >= 'a'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()-1), catLetter = undefined) {
-				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
-					return [checkCatNum, undefined];
-				} else if (formsMetadata[formId][checkCatNum] && formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
-					return [checkCatNum, checkCatLetter];
-				}
-			}
-		}
-
-		return false;
-	},
-
-	getNextCatIds: function(adId, catNum, catLetter) {
-		if (!this.data.areaDescriptions[adId]) {
-			return null;
-		}
-
-		const formId = this.data.areaDescriptions[adId].formId;
-		for (let checkCatNum = (!catLetter) ? parseInt(catNum) + 1 : parseInt(catNum); checkCatNum < 30; checkCatNum++) {
-			for (let checkCatLetter = (!catLetter || catLetter == 'z') ? 'a' : String.fromCharCode(catLetter.charCodeAt()+1); checkCatLetter <= 'z'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()+1), catLetter = undefined) {
-				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
-					return [checkCatNum, undefined];
-				} else if (formsMetadata[formId][checkCatNum] && formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
-					return [checkCatNum, checkCatLetter];
-				}
-			}
-		}
-
-		return false;
-	},
-
-	getCatTitle: function(adId, cat, subcat) {
-		if (!this.data.areaDescriptions[adId]) {
-			return null;
-		}
-
-		const formId = this.data.areaDescriptions[adId].formId;
-		if (!subcat) {
-			return cat + ' ' + formsMetadata[formId][cat];
-		} else if (subcat) {
-			return cat + subcat + ' ' + formsMetadata[formId][cat].header + ((formsMetadata[formId][cat].subcats[subcat] !== '') ? ': ' + formsMetadata[formId][cat].subcats[subcat] : '');
-		} else {
-			return null;
-		}
 	},
 
 	getADsAsGeojson (adId) {
@@ -486,7 +314,210 @@ const AreaDescriptionsStore = {
 			features: features
 		}
 
+		console.log(geojson);
+
 		return geojson;
+	},
+
+	getADsForCategory: function(adId, category) {
+		if (!this.data.areaDescriptions[adId] || !category) {
+			return null;
+		}
+
+		let [catNum, catLetter] = category.split('-');
+
+		if (!catNum) {
+			return this.data.areaDescriptions[adId].byCategory;
+		}
+
+		if (!catLetter && this.data.areaDescriptions[adId].byCategory[catNum]) {
+			return this.data.areaDescriptions[adId].byCategory[catNum];
+		} else if (catLetter && this.data.areaDescriptions[adId].byCategory[catNum] && this.data.areaDescriptions[adId].byCategory[catNum][catLetter]) {
+			return this.data.areaDescriptions[adId].byCategory[catNum][catLetter];
+		}
+		
+		return null;
+	},
+
+	getADsForNeighborhood: function(adId, holcId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].areaDesc : false;
+	},
+
+	// return a flat list of the HOLC maps for rendering
+	getADsList: function() { return Object.keys(this.data.adsMetadata).map((adId) => this.data.adsMetadata[adId]); },
+
+	getADsMetadata: function() {
+		return this.data.adsMetadata;
+	},
+
+	getAdTileUrl: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].tileUrl : null;
+	},
+
+	getAdUrl: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].url : null;
+	},
+
+	getArea: function(adId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].area : null;
+	},
+
+	getAreaDescriptions: function() {
+		return this.data.areaDescriptions;
+	},
+
+	getCatTitle: function(adId, cat, subcat) {
+		if (!this.data.areaDescriptions[adId]) {
+			return null;
+		}
+
+		const formId = this.data.areaDescriptions[adId].formId;
+		if (!subcat) {
+			return cat + ' ' + formsMetadata[formId][cat];
+		} else if (subcat) {
+			return cat + subcat + ' ' + formsMetadata[formId][cat].header + ((formsMetadata[formId][cat].subcats[subcat] !== '') ? ': ' + formsMetadata[formId][cat].subcats[subcat] : '');
+		} else {
+			return null;
+		}
+	},
+
+	getFormId: function(adId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null;
+	},
+
+	getGeoJsonForGrade: function(adId, grade) {
+		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],
+			holes = [];
+		Object.keys(this.data.areaDescriptions[adId].byNeighborhood).forEach((id, i) => {
+			if (this.data.areaDescriptions[adId].byNeighborhood[id].holc_grade == grade) {
+				this.data.areaDescriptions[adId].byNeighborhood[id].area_geojson.coordinates.forEach(coordset => {
+					coordset.forEach((coords, i2) => {
+						if (i2 == 0) {
+							polygons.push(coords);
+						} else {
+							holes.push(coords);
+						}
+					});
+				});
+			}
+		});
+
+		polygons = (holes.length > 0) ? [polygons.concat(holes)] : [polygons]
+
+		let geojson = {
+			'type': 'Feature',
+			'geometry': {
+				'type': 'MultiPolygon',
+				'coordinates': polygons
+			},
+			'properties': {}
+		};
+
+		return geojson;
+	},
+
+	getName: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null;
+	},
+
+	getMaps: function(adId) {
+		return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].maps : [];
+	},
+
+	getNeighborhoodBoundingBox: function (adId, holcId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].boundingBox : null;
+	},
+
+	getNeighborhoodCenter: function (adId, holcId) {
+		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null;
+	},
+
+	getNeighborhoodNames: function (adId) {
+		let names = {};
+		if (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood) {
+			Object.keys(this.data.areaDescriptions[adId].byNeighborhood).forEach(holcId => {
+				names[holcId] = this.getName(adId, holcId);
+			});
+		}
+		return names;
+	},
+
+	getNextCatIds: function(adId, catNum, catLetter) {
+		if (!this.data.areaDescriptions[adId]) {
+			return null;
+		}
+
+		const formId = this.data.areaDescriptions[adId].formId;
+		for (let checkCatNum = (!catLetter) ? parseInt(catNum) + 1 : parseInt(catNum); checkCatNum < 30; checkCatNum++) {
+			for (let checkCatLetter = (!catLetter || catLetter == 'z') ? 'a' : String.fromCharCode(catLetter.charCodeAt()+1); checkCatLetter <= 'z'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()+1), catLetter = undefined) {
+				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
+					return [checkCatNum, undefined];
+				} else if (formsMetadata[formId][checkCatNum] && formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
+					return [checkCatNum, checkCatLetter];
+				}
+			}
+		}
+
+		return false;
+	},
+
+	getNextHOLCId: function(adId, HOLCId) {
+		if (this.data.areaDescriptions[adId]) {
+			let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
+			return formIds[formIds.indexOf(HOLCId) + 1];
+		} else {
+			return false;
+		}
+	},
+
+	getPreviousCatIds: function(adId, catNum, catLetter) {
+		if (!this.data.areaDescriptions[adId]) {
+			return null;
+		}
+
+		const formId = this.data.areaDescriptions[adId].formId;
+		for (let checkCatNum = (!catLetter || catLetter == 'a') ? parseInt(catNum) - 1 : parseInt(catNum); checkCatNum >= 1; checkCatNum--) {
+			for (let checkCatLetter = (!catLetter || catLetter == 'a') ? 'z' : String.fromCharCode(catLetter.charCodeAt()-1); checkCatLetter >= 'a'; checkCatLetter = String.fromCharCode(checkCatLetter.charCodeAt()-1), catLetter = undefined) {
+				if (typeof(formsMetadata[formId][checkCatNum]) === 'string') {
+					return [checkCatNum, undefined];
+				} else if (formsMetadata[formId][checkCatNum] && formsMetadata[formId][checkCatNum].subcats && typeof(formsMetadata[formId][checkCatNum].subcats[checkCatLetter]) === 'string') {
+					return [checkCatNum, checkCatLetter];
+				}
+			}
+		}
+
+		return false;
+	},
+
+	getPreviousHOLCId: function(adId, HOLCId) {
+		if (this.data.areaDescriptions[adId]) {
+			let formIds = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).sort(this.alphanumCase);
+			return formIds[formIds.indexOf(HOLCId) - 1];
+		} else {
+			return false;
+		}
+	},
+
+	getSheets: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : null;
+	},
+
+	getThumbnailUrl: function(adId, HOLCId) {
+		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null;
+	},
+
+	getVisible: function() {
+		let ADs = {};
+		this.data.adIds.forEach(adId => {
+			if (this.data.areaDescriptions[adId]) {
+				ADs[adId] = this.data.areaDescriptions[adId].byNeighborhood;
+			}
+		});
+		return ADs;
+	},
+
+	getVisibleMapIds: function() {
+		return this.data.adIds;
 	},
 
 	hasLoaded: function () {
@@ -497,26 +528,7 @@ const AreaDescriptionsStore = {
 		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood);
 	},
 
-	/* alphanum.js (C) Brian Huisman
-	* Based on the Alphanum Algorithm by David Koelle
-	* The Alphanum Algorithm is discussed at http://www.DaveKoelle.com
-	*
-	* Distributed under same license as original
-	* 
-	* This library is free software; you can redistribute it and/or
-	* modify it under the terms of the GNU Lesser General Public
-	* License as published by the Free Software Foundation; either
-	* version 2.1 of the License, or any later version.
-	* 
-	* This library is distributed in the hope that it will be useful,
-	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	* Lesser General Public License for more details.
-	* 
-	* You should have received a copy of the GNU Lesser General Public
-	* License along with this library; if not, write to the Free Software
-	* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-	*/
+	/* alphanum.js (C) Brian Huisman * Based on the Alphanum Algorithm by David Koelle * The Alphanum Algorithm is discussed at http://www.DaveKoelle.com * * Distributed under same license as original * * This library is free software; you can redistribute it and/or * modify it under the terms of the GNU Lesser General Public * License as published by the Free Software Foundation; either * version 2.1 of the License, or any later version. * * This library is distributed in the hope that it will be useful, * but WITHOUT ANY WARRANTY; without even the implied warranty of * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU * Lesser General Public License for more details. * * You should have received a copy of the GNU Lesser General Public * License along with this library; if not, write to the Free Software * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */ 
 	alphanumCase: function(a, b) {
 		function chunkify(t) {
 			var tz = new Array();
@@ -547,13 +559,13 @@ const AreaDescriptionsStore = {
 
 };
 
+
 // Mixin EventEmitter functionality
 Object.assign(AreaDescriptionsStore, EventEmitter.prototype);
 
+
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
-
-
 
 	switch (action.type) {
 

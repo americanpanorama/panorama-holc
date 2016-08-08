@@ -35,12 +35,14 @@ export default class HOLCMap extends React.Component {
 	}
 
 	componentDidUpdate(prevProps) {
-		this.refs.slider.addEventListener('mouseover', () => {
-			this.refs.the_map.leafletElement.dragging.disable();
-		});
-		this.refs.slider.addEventListener('mouseout', () => {
-			this.refs.the_map.leafletElement.dragging.enable();
-		});
+		if (this.refs.slider) {
+			this.refs.slider.addEventListener('mouseover', () => {
+				this.refs.the_map.leafletElement.dragging.disable();
+			});
+			this.refs.slider.addEventListener('mouseout', () => {
+				this.refs.the_map.leafletElement.dragging.enable();
+			});
+		}
 
 	}
 

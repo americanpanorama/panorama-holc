@@ -16,7 +16,6 @@ import AreaDescription from './components/AreaDescription.jsx';
 import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
-import Downloader from './components/Downloader.jsx';
 import { icon } from 'leaflet';
 import { Map, TileLayer, LayerGroup, setIconDefaultImagePath } from 'react-leaflet';
 import Modal from 'react-modal';
@@ -46,7 +45,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash','downloadGeojson'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -57,13 +56,13 @@ export default class App extends React.Component {
 		
 
 		//try to retrieve the users location
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition((position) => {
-				AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
-			}, (error) => {
-				console.warn('Geolocation error occurred. Error code: ' + error.code);
-			});
-		}
+		// if (navigator.geolocation) {
+		// 	navigator.geolocation.getCurrentPosition((position) => {
+		// 		AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
+		// 	}, (error) => {
+		// 		console.warn('Geolocation error occurred. Error code: ' + error.code);
+		// 	});
+		// }
 	}
 
 	componentDidMount () {
@@ -115,6 +114,7 @@ export default class App extends React.Component {
 			burgessDiagramVisible: false,
 			downloadOpen: false,
 			adImageOpen: (hashState.adimage),
+			text: (hashState.text) ? hashState.text : null,
 			map: {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
 				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
@@ -144,7 +144,7 @@ export default class App extends React.Component {
 				center: MapStateStore.getCenter(),
 				zoom: MapStateStore.getZoom()
 			},
-			adImageOpen: (MapStateStore.isAboveZoomThreshold() == false || !CityStore.getSelectedHolcId() || !CityStore.getId()) ? false : this.state.adImageOpen,
+			adImageOpen: ((MapStateStore.isAboveZoomThreshold() == false || !CityStore.getSelectedHolcId() || !CityStore.getId()) && CityStore.hasLoaded() && MapStateStore.hasLoaded()) ? false : this.state.adImageOpen,
 			text: TextsStore.getSubject()
 		}); 
 	}
@@ -377,6 +377,17 @@ export default class App extends React.Component {
 		
 	}
 
+	downloadGeojson () {
+		let geojson = AreaDescriptionsStore.getADsAsGeojson(this.state.selectedCity);
+		let blob = new Blob([JSON.stringify(geojson)]); 
+
+		let geojsonURL = window.URL.createObjectURL(blob);
+		let tempLink = document.createElement('a');
+		tempLink.href = geojsonURL;
+		tempLink.setAttribute('download', 'areadescription.geojson');
+		tempLink.click();
+	}
+
 	searchDisplay () {
 		let citiesOptions = RasterStore.getCityIdsAndNames(),
 			citiesData = RasterStore.getAllRasters();
@@ -422,13 +433,12 @@ export default class App extends React.Component {
 			catLetter = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[1] : null,
 			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
 			visibleStates = MapStateStore.getVisibleHOLCMapsByState(),
-			visibleStateNames = (visibleStates) ? 
-				Object.keys(visibleStates).sort((a,b) => {
-					console.log(stateAbbrs[a], stateAbbrs[b], stateAbbrs[a] < stateAbbrs[b]); 
-					return stateAbbrs[a] < stateAbbrs[b]; 
-				}) : [];
-
-		//console.log(visibleStateNames);
+			alphebetizedVisibleStateAbbrs = Object.keys(visibleStates)
+				.map(abbr => stateAbbrs[abbr])
+				.sort()
+				.map(fullName => { 
+					return Object.keys(visibleStates).filter(abbr => (fullName == stateAbbrs[abbr]))[0]
+				});
 
 		return (
 			<div className='container full-height'>
@@ -638,8 +648,8 @@ export default class App extends React.Component {
 								''
 							}
 
-							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory && visibleStates) ?
-								Object.keys(visibleStates).sort((a,b) => a > b).map((theState) => {
+							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory && alphebetizedVisibleStateAbbrs.length > 0) ?
+								alphebetizedVisibleStateAbbrs.map((theState) => {
 									return <StateStats 
 										stateName={ stateAbbrs[theState] } 
 										cities={ visibleStates[theState] } 
@@ -651,14 +661,48 @@ export default class App extends React.Component {
 							}
 
 							{ (this.state.downloadOpen) ?
-								<Downloader 
-									mapurl={ RasterStore.getMapUrl() } 
-									thumbnail={ RasterStore.getMapThumbnail() }
-									name={ RasterStore.getSelectedCityMetadata().name } 
-									state={ CityStore.getState() }
-									adGeojson={ AreaDescriptionsStore.getADsAsGeojson(this.state.selectedCity) }
-									onDownloadClicked={ this.onDownloadClicked }
-								/> : 
+								<div>
+									<ul>
+										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
+											console.log(map);
+											if (!RasterStore.isInset(map.id)) {
+												return <li key={ 'ungeorectifiedDownload' + map.id }>
+													<h3>
+														<a 
+															href={ RasterStore.getMapUrl(map.id) } 
+															download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
+														>
+															Download map of { map.name } (.jpg)
+														</a>
+													</h3>
+											</li>
+											}
+										}) }
+										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+											<li>
+												<h3>
+													<a onClick={ this.downloadGeojson }>
+														Download area description (.geojson)
+													</a>
+												</h3>
+											</li> : 
+											''
+										}
+										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
+											return <li key={ 'georectifiedDownload' + map.id }>
+												<h3>
+													<a 
+														href={ RasterStore.getRectifiedUrl(map.id) } 
+														download={ map.name.replace(/\s+/g, '') + '_rectified.zip'}
+													>
+														Download georeferenced map of { map.name } (.zip)
+													</a>
+												</h3>
+											</li>
+										}) }
+									</ul>
+
+								</div> : 
 								null
 							}
 
