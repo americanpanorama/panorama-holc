@@ -27,6 +27,50 @@ const CityStore = {
 		loopLatLng: [],
 		// the distance in meters between the loop center and the outermost point
 		outerRingRadius: null,
+		population: {
+			1930: {
+				total: null,
+
+				AfricanAmerican: null,
+				asianAmerican: null,
+				nativeAmerican: null,
+				other: null,
+				white: null,
+
+				fb: null,
+				fb_percent: null,
+				fb_AfricanAmerican: null,
+				fb_allOther: null,
+				fb_Chinese: null,
+				fb_Indian: null,
+				fb_Japanese: null,
+
+				fb_otherRaces: null,
+				fb_white: null,
+				native_white: null
+			},
+			1940: {
+				total: null,
+
+				AfricanAmerican: null,
+				asianAmerican: null,
+				nativeAmerican: null,
+				other: null,
+				white: null,
+
+				fb: null,
+				fb_percent: null,
+				fb_AfricanAmerican: null,
+				fb_allOther: null,
+				fb_Chinese: null,
+				fb_Indian: null,
+				fb_Japanese: null,
+
+				fb_otherRaces: null,
+				fb_white: null,
+				native_white: null
+			}
+		},
 		cityData: {},
 
 		/** Percentages of each ring for each grade, with 
@@ -62,7 +106,8 @@ const CityStore = {
 			offerZoomTo: false
 		},
 		selectedByUser: false,
-		hasLoaded: false
+		hasLoaded: false,
+		bucketPath: null
 	},
 
 	cache: {},
@@ -122,6 +167,52 @@ const CityStore = {
 			this.data.year = cityData.year;
 			this.data.form_id = cityData.form_id;
 			this.data.cityData = cityData;
+			this.data.bucketPath = 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + cityData.state + '/' + cityData.city.replace(/\s+/g, '')  + '/' + cityData.year + '/';
+
+			this.data.population =  {
+				1930: {
+					total: cityData.total_pop_1930,
+
+					AfricanAmerican: cityData.black_pop_1930,
+					asianAmerican: cityData.asian_pacific_1930,
+					nativeAmerican: cityData.american_indian_eskimo_1930,
+					other: cityData.other_1930,
+					white: cityData.white_pop_1930,
+
+					fb: cityData.fb30,
+					fb_percent: cityData.fb30_percent,
+					fb_AfricanAmerican: cityData.fb30_afr_amer,
+					fb_allOther: cityData.fb30_all_other,
+					fb_Chinese: cityData.fb30_chinese,
+					fb_Indian: cityData.fb30_indian,
+					fb_Japanese: cityData.fb30_japanese,
+
+					fb_otherRaces: cityData.fb30_other_races,
+					fb_white: cityData.fb30_white,
+					native_white: cityData.native_pop_1930
+				},
+				1940: {
+					total: cityData.total_pop_1940,
+
+					AfricanAmerican: cityData.black_pop_1940,
+					asianAmerican: cityData.asian_pacific_1940,
+					nativeAmerican: cityData.american_indian_eskimo_1940,
+					other: cityData.other_1940,
+					white: cityData.white_pop_1940,
+
+					fb: cityData.fb40,
+					fb_percent: cityData.fb40_percent,
+					fb_AfricanAmerican: cityData.fb40_afr_amer,
+					fb_allOther: cityData.fb40_all_other,
+					fb_Chinese: cityData.fb40_chinese,
+					fb_Indian: cityData.fb40_indian,
+					fb_Japanese: cityData.fb40_japanese,
+
+					fb_otherRaces: cityData.fb40_other_races,
+					fb_white: cityData.fb40_white,
+					native_white: cityData.native_pop_1940
+				}
+			};
 
 			const ringData = response[1];
 			this.data.gradedArea = this.calculatedGradedArea(ringData);
@@ -156,25 +247,6 @@ const CityStore = {
 		});
 	},
 
-	getCityFromPoint: function(point) {
-		let adId;
-		this.dataLoader.query([
-			{
-				query: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_maps.looplng, holc_maps.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.city_id = holc_maps_ads_join.ad_id order by distance limit 1',
-				format: 'JSON'
-			}
-		]).then((response) => {
-			this.data.users.city = response[0][0].city;
-			this.data.users.adId = response[0][0].ad_id;
-
-			this.emit(AppActionTypes.userLocated);
-		}, (error) => {
-			// TODO: handle this.
-			console.log('Location received error:', error);
-			throw error;
-		});
-	},
-
 	/* setter functions for state variable */
 
 	setHighlightedHolcId: function (holcId) {
@@ -204,9 +276,28 @@ const CityStore = {
 
 	/* getter functions */
 
-	getHighlightedHolcId: function() {
-		return this.data.highlightedHolcId;
+	getBucketPath: function() { return this.data.bucketPath },
+
+	getCityFromPoint: function(point) {
+		let adId;
+		this.dataLoader.query([
+			{
+				query: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_maps.looplng, holc_maps.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.city_id = holc_maps_ads_join.ad_id order by distance limit 1',
+				format: 'JSON'
+			}
+		]).then((response) => {
+			this.data.users.city = response[0][0].city;
+			this.data.users.adId = response[0][0].ad_id;
+
+			this.emit(AppActionTypes.userLocated);
+		}, (error) => {
+			// TODO: handle this.
+			console.log('Location received error:', error);
+			throw error;
+		});
 	},
+
+	getHighlightedHolcId: function() { return this.data.highlightedHolcId; },
 
 	getId: function() {
 		return this.data.id;

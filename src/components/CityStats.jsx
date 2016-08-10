@@ -40,7 +40,7 @@ export default class CityStats extends React.Component {
 	};
 
 	shouldComponentUpdate(nextProps, nextState) {
-		if (nextProps.hasADs !== this.props.hasADs) {
+		if (nextProps.hasADs !== this.props.hasADs || nextProps.popStats !== this.props.popStats) {
 			return true;
 		}
 		// don't know why this is necessary, but the component is updating on mouseover--this prevents that.
@@ -85,35 +85,39 @@ export default class CityStats extends React.Component {
 		return labels[key];
 	}
 
+	findAndFormatPercent(year, cat) {
+		let proportion = this.props.popStats[year].percents.filter(pop => (pop.label == cat))[0].proportion;
+		return (proportion !== null) ? (Math.round(proportion * 1000) / 10) + '%' : '---';
+	}
+
 	render () {
 
 		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
-			population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
-			population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
+			// population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
+			// population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
 			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
 
-		let CD = this.props.cityData,
-			aggregated_pop_1930 = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930,
-			aggregated_pop_1940 = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940,
-			popStats = {
-				1930: {
-					//total: (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930 : null,
-					white: CD.white_pop_1930 / aggregated_pop_1930,
-					black: CD.black_pop_1930 / aggregated_pop_1930,
-					asianAmerican: CD.asian_pacific_ilslander_1930 / aggregated_pop_1930,
-					nativeAmerican: CD.american_indian_eskimo_1930 / aggregated_pop_1930
-				},
-				1940: {
-					//total: (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940 : null,
-					white: CD.white_pop_1940 / aggregated_pop_1940,
-					black: CD.black_pop_1940 / aggregated_pop_1940,
-					asianAmerican: CD.asian_pacific_ilslander_1940 / aggregated_pop_1940,
-					nativeAmerican: CD.american_indian_eskimo_1940 / aggregated_pop_1940
-				}
-			};
+		let CD = this.props.cityData;
+		// 	aggregated_pop_1930 = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930,
+		// 	aggregated_pop_1940 = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940,
+		// 	popStats = {
+		// 		1930: {
+		// 			//total: (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930 : null,
+		// 			white: CD.white_pop_1930 / aggregated_pop_1930,
+		// 			black: CD.black_pop_1930 / aggregated_pop_1930,
+		// 			asianAmerican: CD.asian_pacific_ilslander_1930 / aggregated_pop_1930,
+		// 			nativeAmerican: CD.american_indian_eskimo_1930 / aggregated_pop_1930
+		// 		},
+		// 		1940: {
+		// 			//total: (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940 : null,
+		// 			white: CD.white_pop_1940 / aggregated_pop_1940,
+		// 			black: CD.black_pop_1940 / aggregated_pop_1940,
+		// 			asianAmerican: CD.asian_pacific_ilslander_1940 / aggregated_pop_1940,
+		// 			nativeAmerican: CD.american_indian_eskimo_1940 / aggregated_pop_1940
+		// 		}
+		// 	};
 
-		let orderedKeys = Object.keys(popStats[1940]).sort((a,b) => (popStats[1940][a] < popStats[1940][b]));
-
+		// let orderedKeys = Object.keys(popStats[1940]).sort((a,b) => (popStats[1940][a] < popStats[1940][b]));
 
 			
 		return (
@@ -135,30 +139,36 @@ export default class CityStats extends React.Component {
 					<div className='adInstructions'>area descriptions aren't available for this city, but will be soon</div>
 				}
 
-				<table className='population-stats'>
-					<tbody>
-						<tr>
-							<th></th>
-							<th>1930</th>
-							<th>1940</th>
-						</tr>
-						<tr>
-							<td>Population</td>
-							<td className='total' key='total1930'>{ population1930 }</td>
-							<td className='total' key='total1940'>{ population1940 }</td>
-						</tr>
-						{ orderedKeys.map(popkey => {
-							return ((popStats[1930][popkey] > 0.01 || popStats[1930][popkey] > 0.01) ?
-								<tr key={ popkey }>
-									<td>{ this.getPopLabel(popkey) }</td>
-									<td>{ (Math.round(popStats[1930][popkey] * 1000) / 10) + '%' }</td>
-									<td>{ (Math.round(popStats[1940][popkey] * 1000) / 10) + '%' }</td>
-								</tr> :
-								null
-							)
-						})}
-					</tbody>
-				</table>
+				{ (this.props.popStats) ? 
+					<table className='population-stats'>
+						<tbody>
+							<tr>
+								<th></th>
+								<th>1930</th>
+								<th>1940</th>
+							</tr>
+							<tr>
+								<td>Population</td>
+								<td className='total' key='total1930'>{ this.props.popStats[1930].total.toLocaleString() }</td>
+								<td className='total' key='total1940'>{ this.props.popStats[1940].total.toLocaleString() }</td>
+							</tr>
+							{
+								this.props.popStats.order.map(cat => {
+									return (
+										<tr key={ cat }>
+											<td>{ cat }</td>
+											<td>{ this.findAndFormatPercent(1930, cat) }</td>
+											<td>{ this.findAndFormatPercent(1940, cat) }</td>
+										</tr>
+									);
+								})
+							}
+							
+						</tbody>
+					</table> :
+					''
+				}
+
 
 				<div className='nestedpiechart'>
 					<button 

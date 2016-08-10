@@ -10,8 +10,6 @@ export default class CitySnippet extends React.Component {
 
 	constructor () {
 		super();
-
-		//this.d3Chart = this.d3Chart.bind(this);
 	}
 
 	shouldComponentUpdate (nextProps) {
@@ -22,8 +20,6 @@ export default class CitySnippet extends React.Component {
 
 	componentDidMount() {
 		if (this.props.cityData.hasPolygons) {
-			//this.d3Chart.update(this.refs.barchart, this.parsePercents(), this.props.areaChartWidth);
-			//this.d3PieChart.update(this.refs.piechart, this.parsePercents());
 			this.d3BarChart.update(this.refs.barchart, this.parsePercents());
 		}
 	}
@@ -54,108 +50,20 @@ export default class CitySnippet extends React.Component {
 					null
 				}
 				<h3 >{this.props.cityData.name + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
-				<div className='populationStats'><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.population_1940.toLocaleString() }</span></div>
-				{ this.render_population_details() }
-
-			</div>
-		);
-	}
-
-	render_population_details () {
-		let CD = this.props.cityData,
-			aggregated_pop = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_islander_1940 + CD.american_indian_eskimo_1940;
-		if (aggregated_pop == 0) {
-			return false;
-		} else {
-			let proportions = [
-				{
-					'label': 'white',
-					'proportion': CD.white_pop_1940 / aggregated_pop
-				},
-				{
-					'label': 'African American',
-					'proportion': CD.black_pop_1940 / aggregated_pop
-				},
-				{
-					'label': 'Asian American',
-					'proportion': CD.asian_pacific_islander_1940 / aggregated_pop
-				},
-				{
-					'label': 'Native American',
-					'proportion': CD.american_indian_eskimo_1940 / aggregated_pop
+				{ (this.props.cityData.displayPop && this.props.cityData.displayPop[1940].total) ?
+					<div className='populationStats'><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.displayPop[1940].total.toLocaleString() }</span></div> :
+					''
 				}
-			];
-			proportions.sort((a,b) => a.proportion < b.proportion);
-			return <ul>
-				{ proportions.map((pop) => {
-					if (Math.round(pop.proportion * 100) !== 0) {
+				<ul>
+				{ this.props.cityData.displayPop && this.props.cityData.displayPop[1940].percents.map((pop) => {
+					if (Math.round(pop.proportion * 100) !== -1) {
 						return <li key={ 'pop1940' + pop.label.replace(/ /g,'') }>{ Math.round(pop.proportion * 100) + '% ' + pop.label }</li>;
 					}
 				})}
-				</ul>;
-		}
-	}
+				</ul>
 
-	d3PieChart = {
-		radius: 30,
-
-		update: function(node, gradeStats) {
-			if (Object.keys(gradeStats).length === 0) { 
-				this.destroy();
-				return; 
-			}
-
-			let scope = this;
-
-			const color = function(i) { return ['#418e41', '#4a4ae4', '#f4f570', '#eb3f3f'][i]; };
-			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#A3A34B', '#eb3f3f'][i]; };
-			var colorGrade = function(grade) {
-				let gradeColors = {'A':'#418e41','B':'#4a4ae4','C':'#f4f570','D':'#eb3f3f'};
-				return gradeColors[grade];
-			};
-
-			let pie = d3.layout.pie()
-				.value((d) => d.percent)
-				.sort(null);
-			var arc = d3.svg.arc()
-				  .outerRadius(scope.radius - 10)
-				  .innerRadius(0);
-			var percent = d3.format(',%');
-
-			let theChart = d3.select(node)
-				.append('svg')
-				.attr('width', scope.radius * 2)
-				.attr('height', scope.radius * 2)
-				.attr('id', 'piechart')
-				.append('g')
-				.attr('transform', 'translate(' + scope.radius + ',' + scope.radius + ')');
-
-			// theChart
-			//   .selectAll('rect')
-			//   .data(gradeStats)
-			//   .enter().append('rect')
-			//   //.attr('class', (d,i,j) => 'areaBar barGrade' + d.percents[j].grade + ' ring' + (i + 1))
-			//   .attr('height', scope.HEIGHT)
-			//   .attr('width', (d) => d.width)
-			//   .attr('opacity', .7)
-			//   .attr('y', 0)
-			//   .attr('x', (d) => d.x + scope.MARGIN)
-			//   .attr('fill', (d) => colorGrade(d.grade));
-
-			theChart
-			  .selectAll('path')
-			  .data(pie(gradeStats))
-			  .enter().append('path')
-			  .attr("d", arc)
-			  .filter((d) => d.data.percent > 0)
-			  .attr('fill', (d,i) => colorGrade(d.data.grade))
-			  .attr('stroke-width', 0)
-			  .attr('class', (d) => 'sliceGrade' + d.data.grade)
-		},
-
-		destroy: function (node) {
-			d3.select(node).html('');
-		} 
+			</div>
+		);
 	}
 
 	d3BarChart = {
@@ -213,18 +121,6 @@ export default class CitySnippet extends React.Component {
 			  .attr('y', (d,i) => scope.MARGIN + scope.HEIGHT/4 * i)
 			  .attr('x', (d) => scope.WIDTH - d.width)
 			  .attr('fill', (d) => colorGrade(d.grade));
-
-			// theChart
-			//   .selectAll('text')
-			//   .data(gradeStats)
-			//   .enter().append('text')
-			//   .attr('x', (d) => d.x + d.width / 2 + scope.MARGIN)
-			//   .attr('y', 11)
-			//   .attr('text-anchor', 'middle')
-			//   .attr('font-family', 'sans-serif')
-			//   .attr('font-size', '10px')
-			//   .attr('fill', (d) => (d.grade == 'C') ? 'black' : 'white')
-			//   .text((d) => (d.percent > 0.03) ? percent(d.percent) : '');
 		}, 
 
 		destroy: function (node) {
@@ -232,77 +128,4 @@ export default class CitySnippet extends React.Component {
 		} 
 	}
 
-	d3Chart = {
-		// layout constants
-		WIDTH: (this.props && this.props.areaChartWidth) ? this.props.areaChartWidth : 250,
-		HEIGHT: 15,
-		MARGIN: 20,
-
-		update: function(node, gradeStats, width = false) {
-			if (Object.keys(gradeStats).length === 0) { 
-				this.destroy();
-				return; 
-			}
-
-			let scope = this;
-
-			if (width) {
-				//scope.WIDTH = width;
-			}
-
-			var color = function(i) { return ['#418e41', '#4a4ae4', '#f4f570', '#eb3f3f'][i]; };
-			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#A3A34B', '#eb3f3f'][i]; };
-			var colorGrade = function(grade) {
-				let gradeColors = {'A':'#418e41','B':'#4a4ae4','C':'#f4f570','D':'#eb3f3f'};
-				return gradeColors[grade];
-			};
-
-			var percent = d3.format(',%');
-			var width = d3.scale.linear()
-				.rangeRound([0, scope.WIDTH]);
-
-			let x = 0;
-			gradeStats.forEach((d, i) => {
-				gradeStats[i] = { x: x, width: width(d.percent), percent: d.percent, grade: d.grade };
-				x += width(d.percent);
-			});
-
-			let theChart = d3.select(node)
-				.append('svg')
-				.attr('width', scope.WIDTH + scope.MARGIN)
-				.attr('height', scope.HEIGHT)
-				.attr('id', 'barchart')
-				.selectAll('g')
-				.data(gradeStats)
-				.enter().append('g');
-
-			theChart
-			  .selectAll('rect')
-			  .data(gradeStats)
-			  .enter().append('rect')
-			  //.attr('class', (d,i,j) => 'areaBar barGrade' + d.percents[j].grade + ' ring' + (i + 1))
-			  .attr('height', scope.HEIGHT)
-			  .attr('width', (d) => d.width)
-			  .attr('opacity', .7)
-			  .attr('y', 0)
-			  .attr('x', (d) => d.x + scope.MARGIN)
-			  .attr('fill', (d) => colorGrade(d.grade));
-
-			theChart
-			  .selectAll('text')
-			  .data(gradeStats)
-			  .enter().append('text')
-			  .attr('x', (d) => d.x + d.width / 2 + scope.MARGIN)
-			  .attr('y', 11)
-			  .attr('text-anchor', 'middle')
-			  .attr('font-family', 'sans-serif')
-			  .attr('font-size', '10px')
-			  .attr('fill', (d) => (d.grade == 'C') ? 'black' : 'white')
-			  .text((d) => (d.percent > 0.03) ? percent(d.percent) : '');
-		}, 
-
-		destroy: function (node) {
-			d3.select(node).html('');
-		} 
-	}
 }

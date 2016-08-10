@@ -551,6 +551,7 @@ export default class App extends React.Component {
 									area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
 									gradeStats={ CityStore.getGradeStats() } 
 									ringStats={ CityStore.getRingStats() } 
+									popStats={ AreaDescriptionsStore.getDisplayPopStats(this.state.selectedCity) }
 									areaSelected={ this.onBurgessChartHover } 
 									areaUnselected={ this.onBurgessChartOff } 
 									gradeSelected={ this.onAreaChartHover } 
@@ -664,7 +665,6 @@ export default class App extends React.Component {
 								<div>
 									<ul>
 										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
-											console.log(map);
 											if (!RasterStore.isInset(map.id)) {
 												return <li key={ 'ungeorectifiedDownload' + map.id }>
 													<h3>
@@ -678,16 +678,7 @@ export default class App extends React.Component {
 											</li>
 											}
 										}) }
-										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
-											<li>
-												<h3>
-													<a onClick={ this.downloadGeojson }>
-														Download area description (.geojson)
-													</a>
-												</h3>
-											</li> : 
-											''
-										}
+
 										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
 											return <li key={ 'georectifiedDownload' + map.id }>
 												<h3>
@@ -700,6 +691,31 @@ export default class App extends React.Component {
 												</h3>
 											</li>
 										}) }
+
+										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+											<li>
+												<h3>
+													<a onClick={ this.downloadGeojson }>
+														Download area description (.geojson)
+													</a>
+												</h3>
+											</li> :
+											''
+										}
+
+										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+											<li>
+												<h3>
+													<a 
+														href={ CityStore.getBucketPath(this.state.selectedCity) + 'area_descriptions.zip' }
+														download={ CityStore.getName().replace(/\s+/g, '') + '_area_descriptions.zip' }
+													>
+														Download area description (.shp)
+													</a>
+												</h3>
+											</li> : 
+											''
+										}
 									</ul>
 
 								</div> : 

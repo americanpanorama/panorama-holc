@@ -53,7 +53,7 @@ const RasterStore = {
 
 		this.dataLoader.query([
 			{
-				query: 'SELECT population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, ad_id, holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps join holc_maps_ads_join hmaj on hmaj.map_id = holc_maps.map_id join holc_ads on holc_ads.city_id = hmaj.ad_id order by parent_id desc',
+				query: 'SELECT total_pop_1930, total_pop_1940, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930 as asian_pacific_islander_1930, asian_pacific_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, ad_id, holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps join holc_maps_ads_join hmaj on hmaj.map_id = holc_maps.map_id join holc_ads on holc_ads.city_id = hmaj.ad_id order by parent_id desc',
 				format: 'JSON'
 			},
 			{
@@ -133,8 +133,8 @@ const RasterStore = {
 				maxLng: mapData.maxlng,
 				centerLat: mapData.centerlat,
 				centerLng: mapData.centerlng,
-				population_1930: mapData.population_1930,
-				population_1940: mapData.population_1940,
+				population_1930: mapData.total_pop_1930,
+				population_1940: mapData.total_pop_1940,
 				american_indian_eskimo_1930: mapData.american_indian_eskimo_1930,
 				american_indian_eskimo_1940: mapData.american_indian_eskimo_1940,
 				asian_pacific_islander_1930: mapData.asian_pacific_islander_1930,
@@ -320,14 +320,9 @@ const RasterStore = {
 		];
 	},
 
-	getMapThumbnail: function () {
-		return this.getSelectedCityMetadata('mapThumbnail');
-	},
+	getMapThumbnail: function () { return this.getSelectedCityMetadata('mapThumbnail'); },
 
-	getMapUrl: function (mapId) {
-		console.log(mapId, this.data.maps);
-		return this.data.maps[mapId].mapUrl;
-	},
+	getMapUrl: function (mapId) { return this.data.maps[mapId].mapUrl; },
 
 	// return a flat list of the HOLC maps for rendering
 	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },

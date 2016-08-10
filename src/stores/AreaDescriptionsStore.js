@@ -22,7 +22,7 @@ const AreaDescriptionsStore = {
 
 		this.dataLoader.query([
 			{
-				query: "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id) SELECT holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id group by holc_polygons.ad_id, city, state, looplat, looplng, population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930, asian_pacific_ilslander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc",
+				query: "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id) SELECT holc_polygons.ad_id, city, state, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930 as asian_pacific_islander_1930, asian_pacific_1940 as asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id group by holc_polygons.ad_id, city, state, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930, asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc",
 				format: 'JSON'
 			}
 		]).then((responses) => {
@@ -37,8 +37,53 @@ const AreaDescriptionsStore = {
 							centerLat: response.looplat,
 							centerLng: response.looplng,
 							bounds: [[response.bbymin, response.bbxmin], [response.bbymax, response.bbxmax]],
-							population_1930: response.population_1930,
-							population_1940: response.population_1940,
+
+							population:  {
+								1930: {
+									total: response.total_pop_1930,
+
+									AfricanAmerican: response.black_pop_1930,
+									asianAmerican: response.asian_pacific_1930,
+									nativeAmerican: response.american_indian_eskimo_1930,
+									other: response.other_1930,
+									white: response.white_pop_1930,
+
+									fb: response.fb_30,
+									fb_percent: response.fb30_percent,
+									fb_AfricanAmerican: response.fb30_afr_amer,
+									fb_allOther: response.fb30_all_other,
+									fb_Chinese: response.fb30_chinese,
+									fb_Indian: response.fb30_indian,
+									fb_Japanese: response.fb30_japanese,
+
+									fb_otherRaces: response.fb30_other_races,
+									fb_white: response.fb30_white,
+									native: response.native_pop_1930
+								},
+								1940: {
+									total: response.total_pop_1940,
+
+									AfricanAmerican: response.black_pop_1940,
+									asianAmerican: response.asian_pacific_1940,
+									nativeAmerican: response.american_indian_eskimo_1940,
+									other: response.other_1940,
+									white: response.white_pop_1940,
+
+									fb: response.fb_40,
+									fb_percent: response.fb40_percent,
+									fb_AfricanAmerican: response.fb40_afr_amer,
+									fb_allOther: response.fb40_all_other,
+									fb_Chinese: response.fb40_chinese,
+									fb_Indian: response.fb40_indian,
+									fb_Japanese: response.fb40_japanese,
+
+									fb_otherRaces: response.fb40_other_races,
+									fb_white: response.fb40_white,
+									native: response.native_pop_1940
+								}
+							},
+							population_1930: response.total_pop_1930,
+							population_1940: response.total_pop_1940,
 							american_indian_eskimo_1930: response.american_indian_eskimo_1930,
 							american_indian_eskimo_1940: response.american_indian_eskimo_1940,
 							asian_pacific_islander_1930: response.asian_pacific_islander_1930,
@@ -60,6 +105,8 @@ const AreaDescriptionsStore = {
 						}
 
 						this.data.adsMetadata[response.ad_id].radii = this.calculateSimpleRingsRadii(this.data.adsMetadata[response.ad_id].area);
+
+						this.data.adsMetadata[response.ad_id].displayPop = this.parsePopSnippetDisplayData(this.data.adsMetadata[response.ad_id].population);
 					});
 
 					// get the map_ids 
@@ -103,7 +150,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(holc_polygons.the_geom)) as bbymax, st_y(st_centroid(holc_polygons.the_geom)) as centerlat, st_x(st_centroid(holc_polygons.the_geom)) as centerlng, st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on holc_ads.city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null  where holc_ads.city_id = ' + adId + ' order by holc_id, cat_id, sub_cat_id, _order',
+					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, digitalscholarshiplab.holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (digitalscholarshiplab.holc_polygons.the_geom, 4) as the_geojson, st_xmin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmin, st_ymin(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymin, st_xmax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbxmax, st_ymax(st_envelope(digitalscholarshiplab.holc_polygons.the_geom)) as bbymax, st_y(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerlat, st_x(st_centroid(digitalscholarshiplab.holc_polygons.the_geom)) as centerlng, st_area(digitalscholarshiplab.holc_polygons.the_geom::geography)/1000000 * 0.386102 as sqmi FROM digitalscholarshiplab.holc_ad_data right join digitalscholarshiplab.holc_polygons on digitalscholarshiplab.holc_ad_data.polygon_id = digitalscholarshiplab.holc_polygons.neighborhood_id join holc_ads on city_id = digitalscholarshiplab.holc_polygons.ad_id join holc_maps_ads_join on digitalscholarshiplab.holc_maps_ads_join.ad_id = city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null where holc_ads.city_id = ' + adId,
 					format: 'JSON'
 				});
 			}
@@ -157,6 +204,7 @@ const AreaDescriptionsStore = {
 			adData[d.holc_id].url = bucketUrl + 'tiles/' + urlPath, + 'full-size/' + d.holc_id + '.jpg';
 			adData[d.holc_id].tileUrl = adImageUrl + '/{z}/{x}_{y}.png';
 			adData[d.holc_id].thumbnailUrl = adImageUrl  + '/thumbnail.jpg';
+			adData[d.holc_id].bucketPath = bucketUrl + 'tiles/' + urlPath;
 
 			adData[d.holc_id].sheets = d.sheets;
 
@@ -271,6 +319,105 @@ const AreaDescriptionsStore = {
 		return radii;
 	},
 
+	parsePopSnippetDisplayData: function(popStats) {
+		let displayPop = {
+			1930: this.parsePopSnippetDisplayDataDecade(popStats[1930]),
+			1940: this.parsePopSnippetDisplayDataDecade(popStats[1940])
+		};
+
+		displayPop[1930].percents = displayPop[1930].percents.filter(pop30 => {
+			let pop40 = displayPop[1940].percents.filter(pop40temp => (pop30.label == pop40temp.label));
+			if (pop40.length == 0 && pop30.proportion >= 0.005) {
+				displayPop[1940].percents.push({
+					label: pop30.label,
+					proportion: null 
+				});
+			}
+			return (pop30.proportion >= 0.005);
+		});
+
+		displayPop[1940].percents = displayPop[1940].percents.filter(pop40 => {
+			let pop30 = displayPop[1930].percents.filter(pop30temp => (pop30temp.label == pop40.label));
+			if (pop30.length == 0 && pop40.proportion >= 0.005) {
+				displayPop[1930].percents.push({
+					label: pop40.label,
+					proportion: null
+				});
+			}
+			return (pop40.proportion >= 0.005);
+		});
+
+		displayPop[1940].percents.sort((a,b) => a.proportion < b.proportion);
+		displayPop.order = displayPop[1940].percents.map(pop40 => pop40.label);
+
+		return displayPop;
+	},
+
+	parsePopSnippetDisplayDataDecade: function(popStatsDecade) {
+		let displayData = { total: popStatsDecade.total, percents: [] };
+
+		// if there's data for foreign-born & native-born whites, use that
+		if (popStatsDecade.fb_white && popStatsDecade.white) {
+			displayData.percents.push( {
+				label: 'Native-born white',
+				proportion: (popStatsDecade.white - popStatsDecade.fb_white) / popStatsDecade.total 
+			});
+			displayData.percents.push( {
+				label: 'Foreign-born white',
+				proportion: popStatsDecade.fb_white / popStatsDecade.total 
+			});
+		} else if (popStatsDecade.white) {
+			displayData.percents.push( {
+				label: 'white',
+				proportion: popStatsDecade.white / popStatsDecade.total 
+			});
+		}
+
+		if (popStatsDecade.AfricanAmerican) {
+			displayData.percents.push( {
+				label: 'African American',
+				proportion: popStatsDecade.AfricanAmerican / popStatsDecade.total 
+			});
+		}
+
+		if (popStatsDecade.asianAmerican) {
+			displayData.percents.push( {
+				label: 'Asian American',
+				proportion: popStatsDecade.asianAmerican / popStatsDecade.total 
+			});
+		}
+
+		if (popStatsDecade.nativeAmerican) {
+			displayData.percents.push( {
+				label: 'Native American',
+				proportion: popStatsDecade.nativeAmerican / popStatsDecade.total 
+			});
+		}
+
+		if (popStatsDecade.fb_Chinese) {
+			displayData.percents.push( {
+				label: 'Foreign-born Chinese',
+				proportion: popStatsDecade.fb_Chinese / popStatsDecade.total 
+			});
+		}
+
+		if (popStatsDecade.fb_Japanese) {
+			displayData.percents.push( {
+				label: 'Foreign-born Japanese',
+				proportion: popStatsDecade.fb_Japanese / popStatsDecade.total 
+			});
+		}
+
+		if (popStatsDecade.fb_AfricanAmerican) {
+			displayData.percents.push( {
+				label: 'Foreign-born African American',
+				proportion: popStatsDecade.fb_AfricanAmerican / popStatsDecade.total 
+			});
+		}
+
+		return displayData;
+	},
+
 	/* GETS */
 
 	getADs: function(adId) {
@@ -339,32 +486,20 @@ const AreaDescriptionsStore = {
 		return null;
 	},
 
-	getADsForNeighborhood: function(adId, holcId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].areaDesc : false;
-	},
+	getADsForNeighborhood: function(adId, holcId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].areaDesc : false; },
 
 	// return a flat list of the HOLC maps for rendering
 	getADsList: function() { return Object.keys(this.data.adsMetadata).map((adId) => this.data.adsMetadata[adId]); },
 
-	getADsMetadata: function() {
-		return this.data.adsMetadata;
-	},
+	getADsMetadata: function() { return this.data.adsMetadata; },
 
-	getAdTileUrl: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].tileUrl : null;
-	},
+	getAdTileUrl: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].tileUrl : null; },
 
-	getAdUrl: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].url : null;
-	},
+	getAdUrl: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].url : null; },
 
-	getArea: function(adId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].area : null;
-	},
+	getArea: function(adId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].area : null; },
 
-	getAreaDescriptions: function() {
-		return this.data.areaDescriptions;
-	},
+	getAreaDescriptions: function() { return this.data.areaDescriptions; },
 
 	getCatTitle: function(adId, cat, subcat) {
 		if (!this.data.areaDescriptions[adId]) {
@@ -380,6 +515,8 @@ const AreaDescriptionsStore = {
 			return null;
 		}
 	},
+
+	getDisplayPopStats: function(adId) { return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].displayPop : null },
 
 	getFormId: function(adId) {
 		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null;
