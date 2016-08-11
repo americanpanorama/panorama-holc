@@ -123,9 +123,14 @@ export default class CityStats extends React.Component {
 		return (
 			<div className='cityStats'>
 				<h2>
-					{ this.props.name + ', '}
+					<span
+						onClick={ this.props.onCitySelected }
+						id={ this.props.adId}
+					>
+						{this.props.name + ', '}
+					</span>
 					<span 
-						//onClick={ this.onStateSelected } 
+						onClick={ this.props.onStateSelected } 
 						id={ this.props.state }
 					>
 						{ this.props.state }

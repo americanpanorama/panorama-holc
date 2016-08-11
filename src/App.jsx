@@ -45,7 +45,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash','downloadGeojson'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash','downloadGeojson','onCountrySelected'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -149,8 +149,33 @@ export default class App extends React.Component {
 		}); 
 	}
 
-	onMapMoved (event) {
-		AppActions.mapMoved(this.getLeafletElementForMap());
+	/* action handler functions */
+
+	onAdImageClicked () {
+		AppActions.ADImageOpened(this.state.selectedNeighborhood, this.state.selectedCity);
+		this.setState({
+			adImageOpen: !this.state.adImageOpen
+		});
+	}
+
+	onAreaChartHover (grade) { AppActions.gradeSelected(grade); }
+
+	onAreaChartOff () { AppActions.gradeSelected(null); }
+
+	onBurgessChartHover (ringId, grade) { AppActions.ringGradeSelected({ringId: ringId, grade: grade}); }
+
+	onBurgessChartOff () { AppActions.ringGradeSelected({ringId: -1, grade: null}); }
+
+	onCategoryClick (event) {
+		this.closeADImage();
+		AppActions.ADCategorySelected(event.target.id);
+	}
+
+	onCategoryClose (event) {AppActions.ADCategorySelected(null); }
+
+	onCityMarkerSelected (event) {
+		this.closeADImage();
+		AppActions.citySelected(event.target.options.id, true);
 	}
 
 	onCitySelected (event) {
@@ -158,10 +183,30 @@ export default class App extends React.Component {
 		AppActions.citySelected(event.target.id, true);
 	}
 
-	onCityMarkerSelected (event) {
-		this.closeADImage();
-		AppActions.citySelected(event.target.options.id, true);
+	onCountrySelected () { AppActions.countrySelected(); }
+
+	onDownloadClicked () {
+		this.setState({
+			downloadOpen: !this.state.downloadOpen
+		});
 	}
+
+	onGradeHover (event) { AppActions.gradeSelected(event.target.grade); }
+
+	onGradeUnhover () { AppActions.gradeSelected(null); }
+
+	onHOLCIDClick (event) { AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity); }
+
+	onLegendSelect (legendText) { }
+
+	onMapMoved (event) { AppActions.mapMoved(this.getLeafletElementForMap()); }
+
+	onModalClick (event) {
+		const subject = (event.target.id) ? (event.target.id) : null;
+		AppActions.onModalClick(subject);
+	}
+
+	onNeighborhoodClose() { AppActions.neighborhoodSelected(null, this.state.selectedCity); }
 
 	onNeighborhoodPolygonClick (event) {
 		let neighborhoodId = event.target.options.neighborhoodId,
@@ -176,81 +221,9 @@ export default class App extends React.Component {
 		AppActions.neighborhoodSelected(neighborhoodId, adId);
 	}
 
-	onNeighborhoodClose() {
-		AppActions.neighborhoodSelected(null, this.state.selectedCity);
-	}
-
-	onHOLCIDClick (event) {
-		AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity);
-	}
-
-	neighborhoodHighlighted (event) {
-		AppActions.neighborhoodHighlighted(event.target.id);
-	}
-
-	neighborhoodsUnhighlighted () {
-		AppActions.neighborhoodHighlighted(null);
-	}
-
-	onCategoryClick (event) {
-		this.closeADImage();
-		AppActions.ADCategorySelected(event.target.id);
-	}
-
-	onCategoryClose (event) {
-		AppActions.ADCategorySelected(null);
-	}
-
-	onBurgessChartHover (ringId, grade) {
-		AppActions.ringGradeSelected({ringId: ringId, grade: grade});
-	}
-
-	onBurgessChartOff () {
-		AppActions.ringGradeSelected({ringId: -1, grade: null});
-	}
-
-	onAreaChartHover (grade) {
-		AppActions.gradeSelected(grade);
-	}
-
-	onAreaChartOff () {
-		AppActions.gradeSelected(null);
-	}
-
-	onLegendSelect (legendText) {
-
-	}
-
-	onGradeHover (event) {
-		AppActions.gradeSelected(event.target.grade);
-	}
-
-	onGradeUnhover () {
-		AppActions.gradeSelected(null);
-	}
-
-	categorySelected (id) {
+	onPanoramaMenuClick () {
 		this.setState({
-			selectedNeighborhood: null,
-			selectedCategory: id
-		});
-	}
-
-	onWindowResize (event) {
-		AppActions.windowResized();
-	}
-
-	onStateSelected (value, index) {
-		// for click on state name in sidebar
-		value = (value.target) ? value.target : value;
-				
-		this.setState({
-			selectedCity: null,
-			selectedNeighborhood: null,
-			map: {
-				zoom: this.getLeafletElementForMap().getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
-				center: RasterStore.getCenterForState(value.id)
-			}
+			show_panorama_menu: !this.state.show_panorama_menu
 		});
 	}
 
@@ -262,23 +235,11 @@ export default class App extends React.Component {
 		});
 	}
 
-	onDownloadClicked () {
-		this.setState({
-			downloadOpen: !this.state.downloadOpen
-		});
-	}
-
-	onAdImageClicked () {
-		AppActions.ADImageOpened(this.state.selectedNeighborhood, this.state.selectedCity);
-		this.setState({
-			adImageOpen: !this.state.adImageOpen
-		});
-	}
-
-	onPanoramaMenuClick () {
-		this.setState({
-			show_panorama_menu: !this.state.show_panorama_menu
-		});
+	onStateSelected (value, index) {
+		// for click on state name in sidebar
+		value = (value.target) ? value.target : value;
+		const abbr = value.id;
+		AppActions.stateSelected(abbr);
 	}
 
 	onUserCityResponse(event) {
@@ -288,16 +249,45 @@ export default class App extends React.Component {
 		AppActions.userRespondedToZoomOffer();
 	}
 
+	onWindowResize (event) { AppActions.windowResized(); }
+
+
+
+	neighborhoodHighlighted (event) {
+		AppActions.neighborhoodHighlighted(event.target.id);
+	}
+
+	neighborhoodsUnhighlighted () {
+		AppActions.neighborhoodHighlighted(null);
+	}
+
+
+	categorySelected (id) {
+		this.setState({
+			selectedNeighborhood: null,
+			selectedCategory: id
+		});
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 	toggleBurgessDiagram () {
 		this.setState({
 			burgessDiagramVisible: !this.state.burgessDiagramVisible
 		});
 	}
 
-	onModalClick (event) {
-		const subject = (event.target.id) ? (event.target.id) : null;
-		AppActions.onModalClick(subject);
-	}
+
 
 	closeADImage() {
 		this.setState({
@@ -315,9 +305,7 @@ export default class App extends React.Component {
 		return false;
 	}
 
-	getLeafletElementForAD() {
-		return (this.refs.the_ad_tiles) ? this.refs.the_ad_tiles.leafletElement : null;
-	}
+
 
 
 	/* manage hash */
@@ -376,6 +364,8 @@ export default class App extends React.Component {
 		}
 		
 	}
+
+	getLeafletElementForAD() { return (this.refs.the_ad_tiles) ? this.refs.the_ad_tiles.leafletElement : null; }
 
 	downloadGeojson () {
 		let geojson = AreaDescriptionsStore.getADsAsGeojson(this.state.selectedCity);
@@ -477,6 +467,7 @@ export default class App extends React.Component {
 									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
 									onCityMarkerSelected= { this.onCityMarkerSelected }
 									onSliderChange={ this.onSliderChange }
+									onCountryClick={ this.onCountrySelected }
 								/> :
 								<Map 
 									ref='the_ad_tiles' 
@@ -490,7 +481,7 @@ export default class App extends React.Component {
 									onMoveend={ this.changeHash }
 								>
 
-									{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ? 
+									{ (AreaDescriptionsStore.hasADImages(this.state.selectedCity)) ? 
 										<TileLayer
 											key='AD'
 											url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
@@ -545,6 +536,7 @@ export default class App extends React.Component {
 
 							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && !this.state.downloadOpen && this.state.selectedCity) ?
 								<CityStats 
+									adId={ this.state.selectedCity }
 									name={ CityStore.getName() }
 									state={ CityStore.getState() }
 									cityData={ CityStore.getCityData() } 
@@ -562,6 +554,8 @@ export default class App extends React.Component {
 									hasADData={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
 									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
 									onDownloadClicked={ this.onDownloadClicked }
+									onCitySelected={ this. onCitySelected }
+									onStateSelected={ this.onStateSelected }
 								/> :
 								''
 							}
@@ -595,6 +589,7 @@ export default class App extends React.Component {
 									thumbnailUrl={ AreaDescriptionsStore.getThumbnailUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
 									formId={ CityStore.getFormId() } 
 									cityId={ this.state.selectedCity }
+									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
 									onCategoryClick={ this.onCategoryClick } 
 									onHOLCIDClick={ this.onHOLCIDClick } 
 									onAdImageClicked={ this.onAdImageClicked }
@@ -654,8 +649,10 @@ export default class App extends React.Component {
 								alphebetizedVisibleStateAbbrs.map((theState) => {
 									return <StateStats 
 										stateName={ stateAbbrs[theState] } 
+										stateAbbr={ theState }
 										cities={ visibleStates[theState] } 
 										onCityClick={ this.onCitySelected }
+										onStateClick={ this.onStateSelected }
 										key={ theState }
 									/>;
 								}) :

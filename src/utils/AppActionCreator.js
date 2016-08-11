@@ -24,7 +24,9 @@ export const AppActionTypes = {
 	userLocated: 'userLocated',
 	userRespondedToZoomOffer: 'userRespondedToZoomOffer',
 	onModalClick: 'onModalClick',
-	windowResized: 'windowResized'
+	windowResized: 'windowResized',
+	stateSelected: 'stateSelected',
+	countrySelected: 'countrySelected'
 
 };
 
@@ -157,6 +159,19 @@ export const AppActions = {
 				adsMetadata: AreaDescriptionsStore.getADsMetadata()
 			});
 		}
+	},
+
+	stateSelected: (abbr) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.stateSelected,
+			abbr: abbr
+		});
+	},
+
+	countrySelected: () => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.countrySelected
+		});
 	},
 
 	windowResized: () => {

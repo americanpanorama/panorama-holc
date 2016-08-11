@@ -277,6 +277,17 @@ export default class HOLCMap extends React.Component {
 					null
 				}
 
+				{/* button for national view*/}
+				{ (this.props.onCountryClick) ?
+					<button
+						className='nationalView'
+						onClick={ this.props.onCountryClick }
+					>
+						CV
+					</button> :
+					''
+				}
+
 				{ (aboveThreshold) ?
 					<div className='opacitySlider' ref='slider'>
 						<Slider 

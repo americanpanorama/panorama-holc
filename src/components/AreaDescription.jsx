@@ -79,10 +79,19 @@ export default class AreaDescription extends React.Component {
 
 				{ renderForm() }
 
-				<figure className='adThumbnail'>
-					<img src={ this.props.thumbnailUrl } onClick={ this.props.onAdImageClicked } />
-					<figcaption>Click on the thumbnail to see a zoomable version.</figcaption>
-				</figure>
+				{ (this.props.hasADImages) ? 
+					<figure className='adThumbnail'>
+						<img src={ this.props.thumbnailUrl } onClick={ this.props.onAdImageClicked } />
+						<figcaption>Click on the thumbnail to see a zoomable version.</figcaption>
+					</figure> : 
+					''
+				}
+
+				{ (!this.props.hasADImages && !this.props.formId) ? 
+					<div>The area description has not yet been added for { this.props.areaId }.</div> :
+					''
+				}
+
 			</div>
 		);
 

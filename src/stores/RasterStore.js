@@ -236,6 +236,11 @@ const RasterStore = {
 		return [ this.getSelectedCityMetadata('centerLat'), this.getSelectedCityMetadata('centerLng')];
 	},
 
+	getCenterForCountry: function() {
+		let bounds = this.getMapBoundsForCountry();
+		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+	},
+
 	getCenterForState: function(state) {
 		let bounds = this.getMapBoundsForState(state);
 		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
@@ -246,9 +251,7 @@ const RasterStore = {
 		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
 	},
 
-	getCitiesForState: function (state) {
-		return this.getCitiesList().filter(function(cityData) { return (cityData.state == state); });
-	},
+	getCitiesForState: function (state) { return this.getCitiesList().filter(function(cityData) { return (cityData.state == state); }); },
 
 	// return a flat list of the HOLC maps for rendering
 	getCitiesList: function() { 
@@ -297,6 +300,19 @@ const RasterStore = {
 			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
 			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
 		];
+	},
+
+	getMapBoundsForCountry: function () {
+		let minLat = 90, minLng = 0, maxLat = 0, maxLng = -180;
+
+		this.getCitiesList().forEach((cityData) => {
+			minLat = (cityData.minLat && cityData.minLat < minLat) ? cityData.minLat : minLat;
+			maxLat = (cityData.maxLat && cityData.maxLat > maxLat) ? cityData.maxLat : maxLat;
+			minLng = (cityData.minLng && cityData.minLng < minLng) ? cityData.minLng : minLng;
+			maxLng = (cityData.maxLng && cityData.maxLng > maxLng) ? cityData.maxLng : maxLng;
+		});
+
+		return [[ minLat, minLng ],[ maxLat, maxLng ]];
 	},
 
 	getMapBoundsForState: function (state) {

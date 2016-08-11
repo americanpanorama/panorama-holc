@@ -680,6 +680,10 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 			CityStore.setSelectedRingGrade(action.value);
 			break;
 
+		case AppActionTypes.stateSelected:
+			CityStore.loadData(null);
+			break;
+
 		case AppActionTypes.mapMoved:
 			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
 

@@ -203,6 +203,24 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			}, 100);
 			break;
 
+		case AppActionTypes.stateSelected: 
+			if (MapStateStore.getTheMap() !== null) {
+				const bounds = RasterStore.getMapBoundsForState(action.abbr),
+					newZoom = MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newCenter = RasterStore.getCenterForState(action.abbr)
+				MapStateStore.setView(newZoom, newCenter);
+			}
+			break;
+
+		case AppActionTypes.countrySelected: 
+			if (MapStateStore.getTheMap() !== null) {
+				const bounds = RasterStore.getMapBoundsForCountry(),
+					newZoom = MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newCenter = RasterStore.getCenterForCountry()
+				MapStateStore.setView(newZoom, newCenter);
+			}
+			break;
+
 		case AppActionTypes.ADImageOpened:
 		case AppActionTypes.neighborhoodSelected:
 			if (action.type == AppActionTypes) {
