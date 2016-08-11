@@ -559,7 +559,8 @@ export default class App extends React.Component {
 									openBurgess={ this.onModalClick }
 									burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 									toggleBurgessDiagram={ this.toggleBurgessDiagram } 
-									hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
+									hasADData={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
+									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
 									onDownloadClicked={ this.onDownloadClicked }
 								/> :
 								''

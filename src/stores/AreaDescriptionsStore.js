@@ -22,7 +22,7 @@ const AreaDescriptionsStore = {
 
 		this.dataLoader.query([
 			{
-				query: "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id) SELECT holc_polygons.ad_id, city, state, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930 as asian_pacific_islander_1930, asian_pacific_1940 as asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id group by holc_polygons.ad_id, city, state, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930, asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc",
+				query: "WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id), has_ads as (select count(data), ad_id from holc_ad_data join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id group by ad_id)SELECT holc_polygons.ad_id, city, state, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930 as asian_pacific_islander_1930, asian_pacific_1940 as asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, images, case when has_ads.ad_id is not null then true else false end as has_ads, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax FROM holc_polygons join holc_ads on holc_polygons.ad_id = holc_ads.city_id join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id left join has_ads on has_ads.ad_id = holc_ads.city_id group by holc_polygons.ad_id, city, state, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930, asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, images, has_ads, bbxmin, bbymin, bbxmax, bbymax  order by ad_id desc",
 				format: 'JSON'
 			}
 		]).then((responses) => {
@@ -37,6 +37,9 @@ const AreaDescriptionsStore = {
 							centerLat: response.looplat,
 							centerLng: response.looplng,
 							bounds: [[response.bbymin, response.bbxmin], [response.bbymax, response.bbxmax]],
+							hasImages: response.images,
+							hasADs: response.has_ads,
+
 
 							population:  {
 								1930: {
@@ -93,7 +96,6 @@ const AreaDescriptionsStore = {
 							white_pop_1930: response.white_pop_1930,
 							white_pop_1940: response.white_pop_1940,
 							hasPolygons: true,
-							hasADs: false,
 							area : {
 								total: response.total_area,
 								a: response.area_a,
@@ -518,9 +520,7 @@ const AreaDescriptionsStore = {
 
 	getDisplayPopStats: function(adId) { return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].displayPop : null },
 
-	getFormId: function(adId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null;
-	},
+	getFormId: function(adId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null; },
 
 	getGeoJsonForGrade: function(adId, grade) {
 		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],
@@ -553,21 +553,13 @@ const AreaDescriptionsStore = {
 		return geojson;
 	},
 
-	getName: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null;
-	},
+	getName: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].name : null; },
 
-	getMaps: function(adId) {
-		return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].maps : [];
-	},
+	getMaps: function(adId) { return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].maps : []; },
 
-	getNeighborhoodBoundingBox: function (adId, holcId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].boundingBox : null;
-	},
+	getNeighborhoodBoundingBox: function (adId, holcId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].boundingBox : null; },
 
-	getNeighborhoodCenter: function (adId, holcId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null;
-	},
+	getNeighborhoodCenter: function (adId, holcId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null; },
 
 	getNeighborhoodNames: function (adId) {
 		let names = {};
@@ -635,13 +627,9 @@ const AreaDescriptionsStore = {
 		}
 	},
 
-	getSheets: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : null;
-	},
+	getSheets: function(adId, HOLCId) { return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : null; },
 
-	getThumbnailUrl: function(adId, HOLCId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null;
-	},
+	getThumbnailUrl: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null; },
 
 	getVisible: function() {
 		let ADs = {};
@@ -653,17 +641,13 @@ const AreaDescriptionsStore = {
 		return ADs;
 	},
 
-	getVisibleMapIds: function() {
-		return this.data.adIds;
-	},
+	getVisibleMapIds: function() { return this.data.adIds; },
 
-	hasLoaded: function () {
-		return this.data.hasLoaded;
-	},
+	hasLoaded: function () { return this.data.hasLoaded; },
 
-	hasADData: function(adId) {
-		return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood);
-	},
+	hasADData: function(adId) { return (this.data.adsMetadata[adId] && this.data.adsMetadata[adId].hasADs); },
+
+	hasADImages: function(adId) { return (this.data.adsMetadata [adId] && this.data.adsMetadata[adId].hasImages); },
 
 	/* alphanum.js (C) Brian Huisman * Based on the Alphanum Algorithm by David Koelle * The Alphanum Algorithm is discussed at http://www.DaveKoelle.com * * Distributed under same license as original * * This library is free software; you can redistribute it and/or * modify it under the terms of the GNU Lesser General Public * License as published by the Free Software Foundation; either * version 2.1 of the License, or any later version. * * This library is distributed in the hope that it will be useful, * but WITHOUT ANY WARRANTY; without even the implied warranty of * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU * Lesser General Public License for more details. * * You should have received a copy of the GNU Lesser General Public * License along with this library; if not, write to the Free Software * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */ 
 	alphanumCase: function(a, b) {

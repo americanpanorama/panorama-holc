@@ -35,16 +35,28 @@ export default class CitySnippet extends React.Component {
 	}
 
 	render () {
+
 		return (
 			<div 
 				className='city-snippet' 
 				onClick={ this.props.onCityClick } 
 				id={ this.props.cityData.ad_id }
 			>
-				{ (this.props.cityData.hasADs) ?
-					<h4>area descriptions available</h4> : 
+				{ (this.props.cityData.hasADs && this.props.cityData.hasImages) ?
+					<h4>area descriptions data &amp; scans</h4> : 
 					''
 				}
+
+				{ (!this.props.cityData.hasADs && this.props.cityData.hasImages) ?
+					<h4>area descriptions scans</h4> : 
+					''
+				}
+
+				{ (this.props.cityData.hasADs && !this.props.cityData.hasImages) ?
+					<h4>area descriptions data</h4> : 
+					''
+				}
+
 				{ (this.props.cityData.hasPolygons) ?
 					<div className='barchart' ref='barchart'></div> :
 					null

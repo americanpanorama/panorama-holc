@@ -134,7 +134,7 @@ export default class CityStats extends React.Component {
 					<div className='downloadicon' onClick={ this.props.onDownloadClicked }></div>
 				</h2>
 
-				{ (this.props.hasADs) ?
+				{ (this.props.hasADData || this.props.hasADImages) ?
 					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 
 					<div className='adInstructions'>area descriptions aren't available for this city, but will be soon</div>
 				}
