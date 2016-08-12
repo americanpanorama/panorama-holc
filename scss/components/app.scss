@@ -12,6 +12,7 @@ body {
 		stroke-width: 1;
 		stroke: #ddd;
 		stroke-dasharray: 5,5;
+
 	}
 	
 	.ringArea {
@@ -43,23 +44,12 @@ body {
 	
 	.selectedGradedNeighborhoods,
 	.neighborhoodPolygonInverted {
-		&.gradeA {
-			stroke: $gradeA;
-		}
-		&.gradeB {
-			stroke: $gradeB;
-		}
-		&.gradeC {
-			stroke: $gradeCDark;
-		}
-		&.gradeD {
-			stroke: $gradeD;
-		}
-	
-		fill-opacity: 0.75;
+		stroke: black;
+
+		fill-opacity: 0.5;
 		stroke-opacity: 1;
-		fill: #000;
-		stroke-width : 2;
+		fill: $background;
+		stroke-width : 2.5;
 	}
 	
 	.simpleDonut {
@@ -86,4 +76,8 @@ body {
 		fill-opacity: .3;
 		fill: silver;
 	}
+}
+
+.nav_header h2 {
+	background-color: transparent;
 }

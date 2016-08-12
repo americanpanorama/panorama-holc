@@ -9,7 +9,7 @@ const TextsStore = {
 			open: false,
 			subject: null
 		},
-		about: [
+		intro: [
 			"<h2>Introduction</h2>",
 			"<p><cite>Mapping Inequality</cite> updates the study of New Deal America, the federal government, housing, and inequality for the twenty-first century. It offers unprecedented online access to the national collection of \"	security maps\" and area descriptions produced between 1935 and 1940 by one of the New Deal's most important agencies, the Home Owners' Loan Corporation or HOLC (pronounced \"holk\"). </p>",
 			"<p>HOLC recruited mortgage lenders, developers, and real estate appraisers in nearly 250 cities to create maps that color-coded credit worthiness and risk on neighborhood and metropolitan levels. These maps and their accompanying documentation helped set the rules for nearly a century of real estate practice. They have also served as critical evidence in countless urban studies in the fields of history, sociology, economics, and law.  Indeed, more than a half-century of research has shown housing to be for the twentieth century what slavery was to the antebellum period, namely the broad foundation of both American prosperity and racial inequality.  Through offering a digital library of the state's role in housing development, Mapping Inequality illustrates vividly the interplay between racism, administrative culture, economics, and the built environment.</p>",
@@ -48,9 +48,10 @@ const TextsStore = {
 			"<ul>",
 			"<li>David M. P. Freund, <cite>Colored Property: State Policy and White Racial Politics in Suburban America</cite> (Chicago: University of Chicago Press, 2007).</li>",
 			"<li>Margaret Garb, <cite>City of American Dreams: A History of Home Ownership and Housing Reform in Chicago, 1871-1919</cite>.&nbsp; (Chicago: University of Chicago Press, 2005).</li>",
-			"<li>Amy E. Hillier, &ldquo;Redlining and the Home Owners&rsquo; Loan Corporation,&rdquo; <cite>Journal of Urban History</cite> 29, no. 4 (May 2003): 394-420.</li>",
+			"<li>Amy E. Hillier, &ldquo;Redlining and the Home Owners&rsquo; Loan Corporation,&rdquo; <cite>Journal of Urban History</cite> 29 (May 2003): 394-420.</li>",
 			"<li>Amy E. Hillier, &ldquo;Residential Security Maps and Neighborhood Appraisals: The Home Owners&rsquo; Loan Corporation and the Case of Philadelphia,&rdquo; <cite>Social Science History</cite> 29, no. 2 (Summer 2005): XXXX</li>",
 			"<li>Amy E. Hillier, &ldquo;Searching for Red Lines: Spatial Analysis of Lending Patterns in Philadelphia, 1940-1960,&rdquo; <cite>Pennsylvania History</cite> 72, no. 1 (Winter 2005): XXX</li>",
+			"<li>Hillier, Amy (2003), &ldquo;Who Received Loans? Home Owners' Loan Corporation Lending and Discrimination in Philadelphiain the 1930s,&rdquo; <cite>Journal of Planning History</cite> 2(1): 3-24.</li>",
 			"<li>Arnold R. Hirsch, &ldquo;Containment on the Home Front: Race and Federal Housing Policy from the New Deal to the Cold War,&rdquo; <cite>Journal of Urban History</cite> 26, no. 2 (January 2000): 158-189</li>",
 			"<li>Kenneth T. Jackson, &ldquo;Race Ethnicity, and Real Estate Appraisal: The Home Owners Loan Corporation and the Federal Housing Administration,&rdquo; <cite>Journal of Urban History</cite> 6, no. 4 (August, 1980): 419-452.</li>",
 			"<li>Kenneth T. Jackson, <cite>Crabgrass Frontier: The Suburbanization of the United States</cite> (Oxford: Oxford University Press, 1985).</li>",
@@ -80,6 +81,15 @@ const TextsStore = {
 			"<p>Burgess's model, in addition to reflecting the homes of real estate investor communities, served as an extension of wider segregationist thinking driving both sociology as a discipline and administrative practice during the progressive era.  Obsession with cities as \"organisms\" of society, they believed in what the sociologist Louis Wirth benignly described as the \"eugenics of the city.\"</p>",
 			"<p>Many of the HOLC maps reflected both the categorical impulse and spatial organization of Burgess model with D and C neighborhoods more likely to be located around central business districts and A and B neighborhoods in increasingly suburban peripheries. The diagram visualizes the relative distribution of HOLC grades in relation to the center of the city. The opacity of the rings reflects the relative density of zoned areas on the map. Hovering over the rings will highlight areas for that grade.</p>",
 			"<p>Our adaptation of Burgess diagrams is not meant to resuscitate his discredited theory.  Rather, we aim to show just how profoundly segregationist practices of redlining actually shaped American cities to resemble a roundly discredited social theory.  Segregation was not natural.  Quite the contrary, redlining greatly impeded the natural flows of people and capital.  Through federal action and local manipulation, life was made to imitate art.</p>"
+		],
+		"credits": [
+			"<p><cite>Mapping Inequality</cite> was created through the collaboration of three teams at four universities.</p>",
+			"<p>At the <a href='//dsl.richmond.edu'>University of Richmond's Digital Scholarship Lab</a>, <strong>Justin Madron</strong> managed the data and metadata for the project and <strong>Nathaniel Ayers</strong> co-designed the map. The DSL's student interns contributed an enormous amount of labor to georeferencing HOLC maps, creating polygons, and transcribing area descriptions. They are <strong>Lily Calaycay</strong>, <strong>Beaumont Smith</strong>, <strong>Rebecca Tribble</strong>, <strong>Erica Ott</strong>, <strong>Barbie Savani</strong>, <strong>Radha Zanza</strong>, <strong>Zach Halaschak</strong>, <strong>Gavin Hosman</strong>, <strong>Stefan St. John</strong>, <strong>Donald Edmonds</strong>, <strong>Haley Fortner</strong>, <strong>Max Hoffman</strong>, <strong>Amanda Lineberry</strong>. <strong>Robert K. Nelson</strong> led the DSL team; he developed the application for <cite>Mapping Inequality</cite>, co-designed it, and contributed to its explanatory and interpretative text.</p>",
+			"<p>At the University of Maryland, professor <strong>Richard Marciano</strong> from the <a href='http://dcic.umd.edu'>Digital Curation Innovation Center (DCIC)</a> at the College of Information Studies (\"Maryland's iSchool\"), leads a <a href='http://dcicblog.umd.edu/mapping-inequality/our-team/'>team of students</a>.  This work builds on an earlier IMLS-funded project called <a href=''http://salt.umd.edu/T-RACES/>T-RACES (Testbed for the Redlining Archives of California's Exclusionary Spaces)</a>, which digitized, georeferenced, vectorized, and datafied the neighborhood descriptions for all the cities of California.</p>",
+			"<p>At Virginia Tech, assistant professor of history <strong>LaDale Winling</strong> led a team of graduate and undergraduate students who conducted research at the National Archives; georeferenced maps and created polygons; and transcribed area descriptions.  These included <strong>Mason Ailstock</strong>, <strong>Carmen Bolt</strong>, <strong>Victoria Fowler</strong>, <strong>Claire Gogan</strong>, <strong>Jordan Hill</strong>, <strong>Andrea Ledesma</strong>, <strong>Rachel Snyder</strong>, <strong>Sydney Vaile</strong>, and <strong>Rebecca Williams</strong>, along with students in two classes.  Winling is an urban and digital historian and his forthcoming book, <cite>Building the Ivory Tower</cite>, will be published by the University of Pennsylvania Press.</p>",
+			"<p>[paragraphs for VT, UMD, and Hopkins (or just Nathan)]</p>",
+			"<p>We would like to thank a number of individuals and groups. <strong>Bobby Allen</strong>, <strong>Pam Lach</strong>, and <strong>Claire Clements</strong> with Nelson and Marciano inventoried the HOLC files at the National Archives at College Park. <a href='//stamen.com/'>Stamen Design</a> developed the <a href='//github.com/americanpanorama/panorama'>Panorama toolkit</a>, components of which are used in <cite>Mapping Inequality</cite>.</p>",
+			"<p>The <a href='//mellon.org'>Andrew W. Mellon Foundation</a> provided the DSL generous funding to work on this and the other initial maps of <cite><a href='//dsl.richmond.edu/panorama'>American Panorama</a></cite>. The Virginia Tech College of Liberal Arts and Human Sciences also provided some funding for site development.</p>"
 
 		]
 	},
@@ -94,6 +104,10 @@ const TextsStore = {
 
 	getModalContent: function() {
 		return (this.data.modal.open) ? this.parseModalCopy(this.data[this.data.modal.subject]) : null;
+	},
+
+	getSubject: function () {
+		return this.data.modal.subject;
 	},
 
 	mainModalIsOpen: function() {
@@ -127,8 +141,15 @@ AppDispatcher.register((action) => {
 
 	switch (action.type) {
 
+		case AppActionTypes.loadInitialData:
+			if (action.hashState.text) {
+				TextsStore.setShow(action.hashState.text);
+			}
+			break;
+
 		case AppActionTypes.onModalClick:
-			TextsStore.setShow(action.subject);
+			// toggle of when the same text is requested
+			TextsStore.setShow((action.subject !== TextsStore.getSubject()) ? action.subject : null);
 			break;
 
 	}

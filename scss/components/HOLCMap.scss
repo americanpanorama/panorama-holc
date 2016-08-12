@@ -1,0 +1,11 @@
+.nationalView {
+  position: absolute;
+  top: 75px;
+  left: 10px;
+  z-index: 1001;
+  height: 25px;
+  width: 25px; 
+  pointer-events: auto;
+  background: white;
+  padding: 0;
+}

@@ -1,5 +1,6 @@
 import AppDispatcher from './AppDispatcher';
 import RasterStore from '../stores/RasterStore';
+import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
 
 export const AppActionTypes = {
 
@@ -9,6 +10,7 @@ export const AppActionTypes = {
 	storeChanged: 'storeChanged',
 
 	ADCategorySelected: 'ADCategorySelected',
+	ADImageOpened: 'ADImageOpened',
 	loadInitialData: 'loadInitialData',
 	initialDataLoaded: 'initialDataLoaded',
 	getInitialData: 'getInitialData',
@@ -21,7 +23,10 @@ export const AppActionTypes = {
 	mapMoved: 'mapMoved',
 	userLocated: 'userLocated',
 	userRespondedToZoomOffer: 'userRespondedToZoomOffer',
-	onModalClick: 'onModalClick'
+	onModalClick: 'onModalClick',
+	windowResized: 'windowResized',
+	stateSelected: 'stateSelected',
+	countrySelected: 'countrySelected'
 
 };
 
@@ -50,6 +55,14 @@ export const AppActions = {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.initialDataLoaded,
 			state: state
+		});
+	},
+
+	ADImageOpened: (holcId, adId) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.ADImageOpened,
+			holcId: holcId,
+			adId: adId
 		});
 	},
 
@@ -129,7 +142,8 @@ export const AppActions = {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.mapInitialized,
 			theMap: theMap,
-			rasters: RasterStore.getAllRasters() 
+			rasters: RasterStore.getAllRasters(),
+			adsMetadata: AreaDescriptionsStore.getADsMetadata()
 		});
 	},
 
@@ -141,9 +155,29 @@ export const AppActions = {
 			AppDispatcher.dispatch({
 				type: AppActionTypes.mapMoved,
 				theMap: theMap,
-				rasters: RasterStore.getAllRasters()
+				rasters: RasterStore.getAllRasters(),
+				adsMetadata: AreaDescriptionsStore.getADsMetadata()
 			});
 		}
+	},
+
+	stateSelected: (abbr) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.stateSelected,
+			abbr: abbr
+		});
+	},
+
+	countrySelected: () => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.countrySelected
+		});
+	},
+
+	windowResized: () => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.windowResized
+		});
 	}
 };
 

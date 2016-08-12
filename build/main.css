@@ -1149,6 +1149,18 @@ header {
         width: 20px;
         height: 20px;
         background-image: url("static/area-desc-2.svg"); }
+  .panorama.legend.adClose {
+    top: 10px;
+    right: 10px;
+    left: auto;
+    width: auto; }
+    .panorama.legend.adClose ul li:nth-child(1) {
+      padding: 4px 10px;
+      background-color: #444;
+      color: white; }
+      .panorama.legend.adClose ul li:nth-child(1) span:before {
+        border: none;
+        background-color: rgba(235, 63, 63, 0); }
 
 header .header-main, header .header-sub {
   font-family: 'Lora', serif;
@@ -1217,10 +1229,10 @@ body {
 
 .leaflet-container .selectedGradedNeighborhoods,
 .leaflet-container .neighborhoodPolygonInverted {
-  fill-opacity: 0.75;
+  fill-opacity: 0.5;
   stroke-opacity: 1;
-  fill: #000;
-  stroke-width: 2; }
+  fill: white;
+  stroke-width: 5; }
   .leaflet-container .selectedGradedNeighborhoods.gradeA,
   .leaflet-container .neighborhoodPolygonInverted.gradeA {
     stroke: #418e41; }

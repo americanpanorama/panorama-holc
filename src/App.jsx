@@ -4,6 +4,7 @@ import * as React from 'react';
 // stores
 import AreaDescriptionsStore from './stores/AreaDescriptionsStore';
 import CityStore from './stores/CityStore';
+import DimensionsStore from './stores/DimensionsStore';
 import MapStateStore from './stores/MapStateStore';
 import RasterStore from './stores/RasterStore';
 import UserLocationStore from './stores/UserLocationStore';
@@ -12,27 +13,21 @@ import TextsStore from './stores/TextsStore';
 // components (views)
 import ADCat from './components/ADCat.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
-import AreaPolygon from './components/AreaPolygon.jsx';
 import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
-import Donut from './components/Donut/Donut.jsx';
-import Downloader from './components/Downloader.jsx';
 import { icon } from 'leaflet';
-import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImagePath } from 'react-leaflet';
+import { Map, TileLayer, LayerGroup, setIconDefaultImagePath } from 'react-leaflet';
 import Modal from 'react-modal';
 import Slider from 'rc-slider';
 import StateStats from './components/StateStats.jsx';
 import { Typeahead } from 'react-typeahead';
 import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
+import HOLCMap from './components/HOLCMap.jsx';
+import SidebarMap from './components/SidebarMap.jsx';
 
 // utils
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
-
-// config
-import cartodbConfig from '../basemaps/cartodb/config.json';
-import cartodbLayers from '../basemaps/cartodb/basemaps.json';
-import tileLayers from '../basemaps/tileLayers.json';
 
 // data
 import panoramaNavData from '../data/panorama_nav.json';
@@ -50,32 +45,32 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash','downloadGeojson','onCountrySelected'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
 	/* Lifecycle methods */
 
 	componentWillMount () {
-		this.computeComponentDimensions();
 		AppActions.loadInitialData(this.state, HashManager.getState());
+		
 
 		//try to retrieve the users location
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition((position) => {
-				AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
-			}, (error) => {
-				console.warn('Geolocation error occurred. Error code: ' + error.code);
-			});
-		}
+		// if (navigator.geolocation) {
+		// 	navigator.geolocation.getCurrentPosition((position) => {
+		// 		AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
+		// 	}, (error) => {
+		// 		console.warn('Geolocation error occurred. Error code: ' + error.code);
+		// 	});
+		// }
 	}
 
 	componentDidMount () {
-		this.computeComponentDimensions();
 
 		window.addEventListener('resize', this.onWindowResize);
 		AreaDescriptionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		DimensionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		MapStateStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		RasterStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		UserLocationStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
@@ -83,18 +78,20 @@ export default class App extends React.Component {
 
 		// you have to wait until there's a map to query to get the visible maps
 		const waitingId = setInterval(() => {
-			if (RasterStore.hasLoaded()) {
+			if (RasterStore.hasLoaded() && AreaDescriptionsStore.hasLoaded()) {
 				clearInterval(waitingId);
 
 				// emit mapped moved event to initialize map state
-				AppActions.mapInitialized(this.refs.the_map.leafletElement);
+				AppActions.mapInitialized(this.getLeafletElementForMap());
 			}
 		}, 100);
 	}
 
 	componentWillUnmount () { }
 
-	componentDidUpdate () {}
+	componentDidUpdate () {
+		this.changeHash();
+	}
 
 	/* setState methods */
 
@@ -116,7 +113,8 @@ export default class App extends React.Component {
 			highlightedNeighborhood: null,
 			burgessDiagramVisible: false,
 			downloadOpen: false,
-			adImageOpen: false,
+			adImageOpen: (hashState.adimage),
+			text: (hashState.text) ? hashState.text : null,
 			map: {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
 				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
@@ -145,116 +143,47 @@ export default class App extends React.Component {
 			map: {
 				center: MapStateStore.getCenter(),
 				zoom: MapStateStore.getZoom()
-			}
-		}, this.changeHash); 
+			},
+			adImageOpen: ((MapStateStore.isAboveZoomThreshold() == false || !CityStore.getSelectedHolcId() || !CityStore.getId()) && CityStore.hasLoaded() && MapStateStore.hasLoaded()) ? false : this.state.adImageOpen,
+			text: TextsStore.getSubject()
+		}); 
 	}
 
-	onMapMoved (event) {
-		AppActions.mapMoved(this.refs.the_map.leafletElement);
+	/* action handler functions */
+
+	onAdImageClicked () {
+		AppActions.ADImageOpened(this.state.selectedNeighborhood, this.state.selectedCity);
+		this.setState({
+			adImageOpen: !this.state.adImageOpen
+		});
 	}
 
-	onCitySelected (event) {
-		AppActions.citySelected(event.target.id, true);
-	}
+	onAreaChartHover (grade) { AppActions.gradeSelected(grade); }
 
-	onCityMarkerSelected (event) {
-		AppActions.citySelected(event.target.options.id, true);
-	}
+	onAreaChartOff () { AppActions.gradeSelected(null); }
 
-	onNeighborhoodPolygonClick (event) {
-		let neighborhoodId = event.target.options.neighborhoodId,
-			adId = parseInt(event.target.options.adId);
+	onBurgessChartHover (ringId, grade) { AppActions.ringGradeSelected({ringId: ringId, grade: grade}); }
 
-		// clicking on a selected neighborhood deselects it
-		neighborhoodId = (neighborhoodId == this.state.selectedNeighborhood && adId == this.state.selectedCity) ? null : neighborhoodId
-
-		AppActions.neighborhoodSelected(neighborhoodId, adId);
-	}
-
-	onNeighborhoodClose() {
-		AppActions.neighborhoodSelected(null, this.state.selectedCity);
-	}
-
-	onHOLCIDClick (event) {
-		AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity);
-	}
-
-	neighborhoodHighlighted (event) {
-		AppActions.neighborhoodHighlighted(event.target.id);
-	}
-
-	neighborhoodsUnhighlighted () {
-		AppActions.neighborhoodHighlighted(null);
-	}
+	onBurgessChartOff () { AppActions.ringGradeSelected({ringId: -1, grade: null}); }
 
 	onCategoryClick (event) {
+		this.closeADImage();
 		AppActions.ADCategorySelected(event.target.id);
 	}
 
-	onCategoryClose (event) {
-		AppActions.ADCategorySelected(null);
+	onCategoryClose (event) {AppActions.ADCategorySelected(null); }
+
+	onCityMarkerSelected (event) {
+		this.closeADImage();
+		AppActions.citySelected(event.target.options.id, true);
 	}
 
-	onBurgessChartHover (ringId, grade) {
-		AppActions.ringGradeSelected({ringId: ringId, grade: grade});
+	onCitySelected (event) {
+		this.closeADImage();
+		AppActions.citySelected(event.target.id, true);
 	}
 
-	onBurgessChartOff () {
-		AppActions.ringGradeSelected({ringId: -1, grade: null});
-	}
-
-	onAreaChartHover (grade) {
-		AppActions.gradeSelected(grade);
-	}
-
-	onAreaChartOff () {
-		AppActions.gradeSelected(null);
-	}
-
-	onLegendSelect (legendText) {
-
-	}
-
-	onGradeHover (event) {
-		AppActions.gradeSelected(event.target.grade);
-	}
-
-	onGradeUnhover () {
-		AppActions.gradeSelected(null);
-	}
-
-	categorySelected (id) {
-		this.setState({
-			selectedNeighborhood: null,
-			selectedCategory: id
-		}, this.changeHash);
-	}
-
-	onWindowResize (event) {
-		this.computeComponentDimensions();
-	}
-
-	onStateSelected (value, index) {
-		// for click on state name in sidebar
-		value = (value.target) ? value.target : value;
-				
-		this.setState({
-			selectedCity: null,
-			selectedNeighborhood: null,
-			map: {
-				zoom: this.refs.the_map.leafletElement.getBoundsZoom(RasterStore.getMapBoundsForState(value.id)),
-				center: RasterStore.getCenterForState(value.id)
-			}
-		}, this.changeHash());
-	}
-
-	onSliderChange (value) {
-		this.setState({
-			raster: {
-				opacity: value / 100
-			}
-		}, this.changeHash);
-	}
+	onCountrySelected () { AppActions.countrySelected(); }
 
 	onDownloadClicked () {
 		this.setState({
@@ -262,16 +191,55 @@ export default class App extends React.Component {
 		});
 	}
 
-	onAdImageClicked () {
-		this.setState({
-			adImageOpen: !this.state.adImageOpen
-		});
+	onGradeHover (event) { AppActions.gradeSelected(event.target.grade); }
+
+	onGradeUnhover () { AppActions.gradeSelected(null); }
+
+	onHOLCIDClick (event) { AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity); }
+
+	onLegendSelect (legendText) { }
+
+	onMapMoved (event) { AppActions.mapMoved(this.getLeafletElementForMap()); }
+
+	onModalClick (event) {
+		const subject = (event.target.id) ? (event.target.id) : null;
+		AppActions.onModalClick(subject);
+	}
+
+	onNeighborhoodClose() { AppActions.neighborhoodSelected(null, this.state.selectedCity); }
+
+	onNeighborhoodPolygonClick (event) {
+		let neighborhoodId = event.target.options.neighborhoodId,
+			adId = parseInt(event.target.options.adId);
+
+		// clicking on a selected neighborhood deselects it and closeds the adImage if it's open
+		if (neighborhoodId == this.state.selectedNeighborhood && adId == this.state.selectedCity) {
+			neighborhoodId = null;
+			this.closeADImage();
+		} 
+
+		AppActions.neighborhoodSelected(neighborhoodId, adId);
 	}
 
 	onPanoramaMenuClick () {
 		this.setState({
 			show_panorama_menu: !this.state.show_panorama_menu
 		});
+	}
+
+	onSliderChange (value) {
+		this.setState({
+			raster: {
+				opacity: value / 100
+			}
+		});
+	}
+
+	onStateSelected (value, index) {
+		// for click on state name in sidebar
+		value = (value.target) ? value.target : value;
+		const abbr = value.id;
+		AppActions.stateSelected(abbr);
 	}
 
 	onUserCityResponse(event) {
@@ -281,16 +249,64 @@ export default class App extends React.Component {
 		AppActions.userRespondedToZoomOffer();
 	}
 
+	onWindowResize (event) { AppActions.windowResized(); }
+
+
+
+	neighborhoodHighlighted (event) {
+		AppActions.neighborhoodHighlighted(event.target.id);
+	}
+
+	neighborhoodsUnhighlighted () {
+		AppActions.neighborhoodHighlighted(null);
+	}
+
+
+	categorySelected (id) {
+		this.setState({
+			selectedNeighborhood: null,
+			selectedCategory: id
+		});
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 	toggleBurgessDiagram () {
 		this.setState({
 			burgessDiagramVisible: !this.state.burgessDiagramVisible
 		});
 	}
 
-	onModalClick (event) {
-		const subject = (event.target.id) ? (event.target.id) : null;
-		AppActions.onModalClick(subject);
+
+
+	closeADImage() {
+		this.setState({
+			adImageOpen: false
+		});
 	}
+
+	getLeafletElementForMap() {
+		if (this.refs.holc_map) {
+			return this.refs.holc_map.refs.the_map.leafletElement;
+		} 
+		if (this.refs.sidebar_map) {
+			return this.refs.sidebar_map.refs.holc_map.refs.the_map.leafletElement;
+		}
+		return false;
+	}
+
+
+
 
 	/* manage hash */
 
@@ -303,56 +319,63 @@ export default class App extends React.Component {
 			loc: {
 				zoom: this.state.map.zoom,
 				center: this.state.map.center
-			}
+			},
+			adimage: (this.state.adImageOpen) ? this.formatADHashState() : null,
+			text: this.state.text
 		});
 	}
 
-	/* helper methods */
+	formatADHashState () {
+		if (!this.state.adImageOpen) {
+			return null;
+		}
 
-	computeComponentDimensions () {
-		// based off of sizes stored within _variables.scss --
-		// if you change them there, change them here.
-		var containerPadding = 20,
-			headerHeight = 100,
-			bottomRowHeight = 300,
-			sidebarWidth = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : 0,
-			sidebarHeight = (document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetHeight : 0,
-			mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : 0,
-			adNavHeight = 20,
-			dimensions = {};
+		const adLE = this.getLeafletElementForAD(),
+			zoom = adLE.getZoom(),
+			center = adLE.getCenter(),
+			x = Math.round(center.lng),
+			y = Math.round(center.lat);
 
-		dimensions.search = {
-			width: window.innerWidth / 3 - 2 * containerPadding,
-			height: window.innerHeight - 2 * containerPadding
-		};
+		return zoom + '/' + y + '/' + x;
+	}
 
-		dimensions.areaChart = {
-			width: window.innerWidth / 3 - 4 * containerPadding,
-		};
+	getADZoom() {
+		const hashState = HashManager.getState();
+		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[0]) : 3;
+	}
 
-		dimensions.bottom = {
-			height: window.innerHeight - headerHeight - 2 * containerPadding
-		};
+	getADX() {
+		const hashState = HashManager.getState();
+		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[2]) : -125;
+	}
 
-		dimensions.adNav = {
-			width: sidebarHeight,
-			next: {
-				top: (sidebarHeight + containerPadding) / 2 + headerHeight,
-				right: containerPadding * 1.5 - sidebarHeight / 2
-			},
-			previous: {
-				top: (sidebarHeight + containerPadding) / 2 + headerHeight,
-				right: containerPadding * 1.5 - sidebarHeight / 2 + sidebarWidth - adNavHeight
-				
-			}
-		};
+	getADY() {
+		const hashState = HashManager.getState();
+		return (hashState.adimage) ? parseInt(hashState.adimage.split('/')[1]) : 75;
+	}
 
-		dimensions.adViewer = {
-			height: (sidebarHeight - containerPadding * 2) + 'px',
-			width: (mainPaneWidth - containerPadding * 2) + 'px'
-		};
+	getADMaxBounds() {
+		const sheets = AreaDescriptionsStore.getSheets(this.state.selectedCity, this.state.selectedNeighborhood);
+		switch (sheets) {
+			case 1:
+				return [[-10,-180],[90,-60]];
+			case 2:
+				return [[-10,-180],[90,70]];
+		}
+		
+	}
 
-		this.setState({ dimensions: dimensions });
+	getLeafletElementForAD() { return (this.refs.the_ad_tiles) ? this.refs.the_ad_tiles.leafletElement : null; }
+
+	downloadGeojson () {
+		let geojson = AreaDescriptionsStore.getADsAsGeojson(this.state.selectedCity);
+		let blob = new Blob([JSON.stringify(geojson)]); 
+
+		let geojsonURL = window.URL.createObjectURL(blob);
+		let tempLink = document.createElement('a');
+		tempLink.href = geojsonURL;
+		tempLink.setAttribute('download', 'areadescription.geojson');
+		tempLink.click();
 	}
 
 	searchDisplay () {
@@ -370,18 +393,6 @@ export default class App extends React.Component {
 			}
 		});
 	}
-
-	/* render and display methods */
-     
-	// renderSidebar() {
-	// 	if (this.state.downloadOpen) {
-	// 		title = 	<h2>
-	// 						{ (typeof(RasterStore.getSelectedCityMetadata()) != 'undefined') ? RasterStore.getSelectedCityMetadata().name : '' }
-	// 						<div className='downloadicon' href='#' onClick={ this.onDownloadClicked }></div>
-	// 					</h2>;
-	// 		content = <Downloader mapurl={ RasterStore.getMapUrl() } name={ RasterStore.getSelectedCityMetadata().name } />;
-	// 	} 
-	// }
 
 	render () {
 
@@ -411,22 +422,13 @@ export default class App extends React.Component {
 			catNum = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[0] : null,
 			catLetter = (this.state.selectedCategory) ? this.state.selectedCategory.split('-')[1] : null,
 			visibleMaps = MapStateStore.getVisibleHOLCMaps(),
-			visibleStates = MapStateStore.getVisibleHOLCMapsByState();
-
-
-		let legendData = {
-			items: [
-				'A First Grade',
-				'B Second Grade',
-				'C Third Grade',
-				'D Fourth Grade',
-			]
-		};
-		if (!MapStateStore.isAboveZoomThreshold()) {
-			legendData.items.push('Proportion of Each Grade');
-		}
-
-		//setIconDefaultImagePath('./static');
+			visibleStates = MapStateStore.getVisibleHOLCMapsByState(),
+			alphebetizedVisibleStateAbbrs = Object.keys(visibleStates)
+				.map(abbr => stateAbbrs[abbr])
+				.sort()
+				.map(fullName => { 
+					return Object.keys(visibleStates).filter(abbr => (fullName == stateAbbrs[abbr]))[0]
+				});
 
 		return (
 			<div className='container full-height'>
@@ -434,6 +436,11 @@ export default class App extends React.Component {
 					show_menu={ this.state.show_panorama_menu } 
 					on_hamburger_click={ this.onPanoramaMenuClick } 
 					nav_data={ panoramaNavData.filter((item, i) => item.url.indexOf('holc') === -1) } 
+					links={ [
+						{ name: 'Digital Scholarship Lab', url: '//dsl.richmond.edu' },
+						{ name: 'University of Richmond', url: '//www.richmond.edu' }
+					] }
+					link_separator=', '
 				/>
 				<div className='row full-height'>
 					<div className='columns eight full-height'>
@@ -442,234 +449,56 @@ export default class App extends React.Component {
 								<span className='header-main'>Mapping Inequality</span>
 								<span className='header-sub'>Redlining in New Deal America</span>
 							</h1>
-							<h4 onClick={ this.onModalClick } id={ 'about' }>Introduction</h4>
+							<h4 onClick={ this.onModalClick } id={ 'intro' }>Introduction</h4>
 							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
 							<h4 onClick={ this.onModalClick } id={ 'credits' }>Credits</h4>
 							<hr className='style-eight' />
 						</header>
-						<div className='row template-tile leaflet-container main-pane' style={{height: this.state.dimensions.bottom.height + 'px'}}>
-							<Map 
-								ref='the_map' 
-								center={ this.state.map.center } 
-								zoom={ this.state.map.zoom }  
-								onMoveend={ this.onMapMoved } 
-								className='the_map'
-							>
+						<div 
+							className='row template-tile leaflet-container main-pane' 
+							style={ DimensionsStore.getMainPaneStyle() }
+						>
 
-								{ tileLayers.layers.map((item, i) => {
-									return (this.state.map.zoom < 10 ) ?
-										<TileLayer
-											key='noLabels'
-											url={ item.urlNoLabels }
-											zIndex={ -1 }
-										/> : 
-										<TileLayer
-											key='labels'
-											url={ item.urlLabels }
-											zIndex={ -1 }
-										/>
-								}) } 
+							{ (!this.state.adImageOpen) ?
+								<HOLCMap
+									ref='holc_map'
+									state={ this.state }
+									onMapMoved={ this.onMapMoved }
+									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
+									onCityMarkerSelected= { this.onCityMarkerSelected }
+									onSliderChange={ this.onSliderChange }
+									onCountryClick={ this.onCountrySelected }
+								/> :
+								<Map 
+									ref='the_ad_tiles' 
+									center={ [this.getADY(),this.getADX()] } 
+									zoom={ this.getADZoom() }
+									minZoom={ 3 }
+									maxZoom={ 5 }
+									maxBounds={ this.getADMaxBounds() }
+									className='the_ad'
+									style={ DimensionsStore.getADViewerStyle() }
+									onMoveend={ this.changeHash }
+								>
 
-								{ RasterStore.getMapsList().map((item, i) => {
-									let mapBounds = this.refs.the_map.leafletElement.getBounds();
-									if (mapBounds.intersects(item.bounds)) {
-										return (
-											<TileLayer
-												key={ 'holctiles' + i}
-												className={ 'tilesForCity' + item.cityId }
-												url={ item.url }
-												minZoom={ item.minZoom }
-												bounds= { item.bounds }
-												opacity={ this.state.raster.opacity }
-												zIndex={ (item.cityId == this.state.selectedCity) ? 1 : null }
-											/>
-										);
+									{ (AreaDescriptionsStore.hasADImages(this.state.selectedCity)) ? 
+										<TileLayer
+											key='AD'
+											url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
+											zIndex={ 1000 }
+										/>:
+										null
 									}
-								}) }
 
-								{ (!aboveThreshold) ?
-									cartodbLayers.layergroup.layers.map((item, i) => {
-										return (
-											<CartoDBTileLayer
-												key={ 'cartodb-tile-layer-' + i }
-												userId={ cartodbConfig.userId }
-												sql={ item.options.sql }
-												cartocss={ item.options.cartocss }
-												zIndex={1000}
-											/>
-										);
-									}) :
-									null
-								}
+									<Legend 
+										items={ [ 'Close' ] }
+										className='adClose' 
+										onItemSelected={ this.onAdImageClicked } 
+									/>
 
-								{/* rings: donut holes */}
-								{ (aboveThreshold && outerRadius > 0) ?
-									<Circle 
-										center={ CityStore.getLoopLatLng() } 
-										radius={ outerRadius / 7 } 
-										fillOpacity={ (this.state.selectedRingGrade.ringId >= 2) ? 0.75 : 0 } 
-										fillColor= { '#000' } 
-										clickable={ false } 
-										className={ 'donuthole' } 
-										key={ 'donuthole' } 
-									/> :
-									null
-								}
-							
-								{/* rings: donuts */}
-								{ (aboveThreshold && outerRadius > 0) ?
-									[2,3,4,5].map((ringNum) => {
-										return (
-											<Donut 
-												center={ CityStore.getLoopLatLng() } 
-												innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
-												outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
-												clickable={ false } 
-												fillOpacity={ (this.state.selectedRingGrade.ringId > 0 && ringNum !== this.state.selectedRingGrade.ringId) ? 0.75 : 0 } 
-												fillColor= { '#000' } 
-												weight={ 1 }
-												className={ 'donut' } 
-												key={ 'donut' + String(ringNum) } 
-											/>
-										);
-									}) :
-									null
-								}
-
-								{/* rings: selected ring */}
-								{ (aboveThreshold && this.state.selectedRingGrade.ringId > 0) ?
-									<LayerGroup>
-										<GeoJson 
-											data={ CityStore.getInvertedGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ringId, this.state.selectedRingGrade.grade) }
-											clickable={ false }
-											key={ 'invertedRingStroke'} 
-											fillColor={ '#000'}
-											fillOpacity={ 0.6 }
-											color={ '#fff' }
-											weight={ 2 }
-											opacity={ 0.9 }
-											className={ 'invertedRingGradedArea' }
-										/>
-										<GeoJson 
-											data={ CityStore.getGeoJsonForSelectedRingArea(this.state.selectedRingGrade.ringId, this.state.selectedRingGrade.grade) }
-											clickable={ false }
-											key={ 'ringStroke'} 
-											fillOpacity={ (1 - this.state.raster.opacity) / 2 }
-											weight={ 2 }
-											opacity={ 0.9 }
-											className={ 'ringGradedArea grade' + this.state.selectedRingGrade.grade}
-										/>
-									</LayerGroup> :
-									null
-								}
-
-								{/* selected grade */}
-								{ (aboveThreshold && this.state.selectedGrade) ?
-									<AreaPolygon 
-										data={ AreaDescriptionsStore.getGeoJsonForGrade(this.state.selectedCity, this.state.selectedGrade) }
-										key={ 'selectedGradedNeighborhoods' } 
-										className={ 'selectedGradedNeighborhoods grade' + this.state.selectedGrade } 
-									/> :
-									null
-								}
-
-								{ (aboveThreshold && this.state.highlightedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.highlightedNeighborhood] && ADs[this.state.selectedCity][this.state.highlightedNeighborhood].area_geojson_inverted) ?
-									<AreaPolygon
-										data={ ADs[this.state.selectedCity][this.state.highlightedNeighborhood].area_geojson_inverted } 
-										clickable={ false }
-										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedCity][this.state.highlightedNeighborhood].holc_grade } 
-										key={ 'neighborhoodPolygonInverted' + this.state.highlightedNeighborhood }
-									/> :
-									null
-								}
-
-								{/* selected neighborhood */}
-								{ (aboveThreshold && this.state.selectedNeighborhood && ADs[this.state.selectedCity] && ADs[this.state.selectedCity][this.state.selectedNeighborhood] && ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted) ?
-									<AreaPolygon
-										data={ ADs[this.state.selectedCity][this.state.selectedNeighborhood].area_geojson_inverted } 
-										clickable={ false }
-										className={ 'neighborhoodPolygonInverted grade' + ADs[this.state.selectedCity][this.state.selectedNeighborhood].holc_grade } 
-										key={ 'neighborhoodPolygonInverted' + this.state.selectedNeighborhood }
-									/> :
-									null
-								}
-
-								{/* neighborhood polygons: shown on zoom level 10 and higher */}
-								{ (aboveThreshold) ?
-									Object.keys(ADs).map(adId => {
-										return (
-											Object.keys(ADs[adId]).map((areaId) => {
-												return (
-													<AreaPolygon
-														data={ ADs[adId][areaId].area_geojson }
-														className={ 'neighborhoodPolygon grade' + ADs[adId][areaId].holc_grade }
-														key={ 'neighborhoodPolygon' + adId + '-' + areaId } 
-														onClick={ this.onNeighborhoodPolygonClick }
-														adId={ adId }
-														neighborhoodId={ areaId } 
-														//fillOpacity={ (id == this.state.selectedNeighborhood) ? 1 : 0 }
-														style={{
-															opacity:(this.state.selectedRingGrade.ringId > 0) ? (1 - this.state.raster.opacity) / 5 : (1 - this.state.raster.opacity) / 2,
-															fillOpacity: (this.state.selectedRingGrade.ringId > 0) ? 0 : (1 - this.state.raster.opacity) / 5
-														}}
-													/>
-												);
-											})
-										)
-									}) :
-									null
-								}
-
-								{/* cartogram marker for city: shown below zoom level 10 */}
-								{ (!aboveThreshold) ?
-									RasterStore.getMapsList().map((item, i) => {
-										return ((item.radii) ?
-											Object.keys(item.radii).map((grade) => {
-												return (item.radii[grade].inner == 0) ?
-													<Circle
-														center={ [item.centerLat, item.centerLng] }
-														radius={ item.radii[grade].outer }
-														id={ item.cityId }
-														onClick={ this.onCityMarkerSelected }
-														key={ 'clickableDonut' + item.cityId + grade }
-														className={ 'simpleDonut grade_' + grade }
-													/> :
-													<Donut
-														center={ [item.centerLat, item.centerLng] }
-														innerRadius={ item.radii[grade].inner }
-														outerRadius={ item.radii[grade].outer }
-														id={ item.cityId }
-														onClick={ this.onCityMarkerSelected }
-														key={ 'clickableDonut' + item.cityId + grade }
-														className={ 'simpleDonut grade_' + grade }
-													/>
-											}) :
-											(!item.parent_id) ?
-												<Circle
-													center={ [item.centerLat, item.centerLng] }
-													radius={ 25000 }
-													id={ item.cityId }
-													onClick={ this.onCityMarkerSelected }
-													key={ 'clickableMap' + item.cityId }
-													className={ 'cityCircle '}
-												/> :
-												null
-											
-										);
-									}) :
-									null
-								}
-
-								{/* marker for user's location */}
-								{ (this.state.userLocation) ?
-									<Marker position={ this.state.userLocation } /> :
-									null
-								}
-
-								<Legend { ...legendData } onItemSelected={ this.onGradeHover } />
-
-
-							</Map>
+									
+								</Map> 
+							}
 
 							{ TextsStore.mainModalIsOpen() ?
 								<div className='longishform'>
@@ -679,72 +508,42 @@ export default class App extends React.Component {
 								null
 							}
 
-							{ (false) ?
-								<div className='longishform'>
-									<button className='close' onClick={ this.onAdImageClicked}><span>×</span></button>
-									<img src={ AreaDescriptionsStore.getAdUrl(this.state.selectedCity, this.state.selectedNeighborhood) } />
-								</div> :
-								null
-							}
-
-							{ (this.state.adImageOpen) ?
-								<Map 
-									ref='the_ad_tiles' 
-									center={ [75,-125] } 
-									zoom={ 3 }  
-									className='the_ad'
-									style={ this.state.dimensions.adViewer }
-								>
-
-									<TileLayer
-										key='AD'
-										url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
-										zIndex={ 1000 }
-									/>
-
-									
-								</Map> :
-								null
-							}
-
 						</div>
 					</div>
 
-					<div className='opacitySlider'>
-						<Slider 
-							vertical={ true }
-							defaultValue={ this.state.raster.opacity * 100 }
-							onAfterChange={ this.onSliderChange }
-						/>
-					</div>
 
 					<div className='columns four full-height'>
-						<div className='row template-tile city-selector' style={{height: this.state.dimensions.search.height + 'px', width: this.state.dimensions.search.width + 'px'}}>
+
+						<div 
+							className='row template-tile city-selector' 
+							style={ DimensionsStore.getSearchStyle() }
+						>
 							<Typeahead
-								options={ RasterStore.getMapsList() }
+								options={ AreaDescriptionsStore.getADsList() }
 								placeholder={ 'Search by city or state' }
 								filterOption={ 'searchName' }
-								displayOption={(city, i) => city.cityId }
+								displayOption={(city, i) => city.ad_id }
 								onOptionSelected={ this.onCitySelected }
 								customListComponent={ TypeAheadCitySnippet }
 								maxVisible={ 8 }
 							/>
 						</div>
 
-
-
-
-
-						<div className='row full-height template-tile dataViewer' style={{height: this.state.dimensions.bottom.height + 'px'}}>
+						<div 
+							className='row full-height template-tile dataViewer' 
+							style={ DimensionsStore.getSidebarHeightStyle() }
+						>
 
 							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && !this.state.downloadOpen && this.state.selectedCity) ?
 								<CityStats 
+									adId={ this.state.selectedCity }
 									name={ CityStore.getName() }
 									state={ CityStore.getState() }
 									cityData={ CityStore.getCityData() } 
 									area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
 									gradeStats={ CityStore.getGradeStats() } 
 									ringStats={ CityStore.getRingStats() } 
+									popStats={ AreaDescriptionsStore.getDisplayPopStats(this.state.selectedCity) }
 									areaSelected={ this.onBurgessChartHover } 
 									areaUnselected={ this.onBurgessChartOff } 
 									gradeSelected={ this.onAreaChartHover } 
@@ -752,8 +551,11 @@ export default class App extends React.Component {
 									openBurgess={ this.onModalClick }
 									burgessDiagramVisible={ this.state.burgessDiagramVisible } 
 									toggleBurgessDiagram={ this.toggleBurgessDiagram } 
-									hasADs={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
+									hasADData={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
+									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
 									onDownloadClicked={ this.onDownloadClicked }
+									onCitySelected={ this. onCitySelected }
+									onStateSelected={ this.onStateSelected }
 								/> :
 								''
 							}
@@ -777,7 +579,7 @@ export default class App extends React.Component {
 							}
 							
 
-							{ (this.state.selectedNeighborhood) ? 
+							{ (this.state.selectedNeighborhood && !this.state.adImageOpen) ? 
 								<AreaDescription 
 									areaId={ this.state.selectedNeighborhood } 
 									previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
@@ -787,12 +589,36 @@ export default class App extends React.Component {
 									thumbnailUrl={ AreaDescriptionsStore.getThumbnailUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
 									formId={ CityStore.getFormId() } 
 									cityId={ this.state.selectedCity }
+									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
 									onCategoryClick={ this.onCategoryClick } 
 									onHOLCIDClick={ this.onHOLCIDClick } 
 									onAdImageClicked={ this.onAdImageClicked }
 									onClose={ this.onNeighborhoodClose }
 									ref={'areadescription' + this.state.selectedNeighborhood } 
-									positioning={ this.state.dimensions.adNav }
+									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
+									nextStyle={ DimensionsStore.getADNavNextStyle() }
+								/> : 
+								''
+							}
+
+							{ (this.state.selectedNeighborhood && this.state.adImageOpen) ? 
+								<SidebarMap
+									ref='sidebar_map'
+									state={ this.state }
+									onMapMoved={ this.onMapMoved }
+									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
+									onCityMarkerSelected= { this.onCityMarkerSelected }
+									areaId={ this.state.selectedNeighborhood } 
+									previousAreaId={ AreaDescriptionsStore.getPreviousHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+									nextAreaId={ AreaDescriptionsStore.getNextHOLCId(this.state.selectedCity, this.state.selectedNeighborhood) }
+									neighborhoodNames={ neighborhoodNames }
+									onHOLCIDClick={ this.onHOLCIDClick } 
+									onSliderChange={ this.onSliderChange }
+									onClose={ this.onNeighborhoodClose }
+									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
+									nextStyle={ DimensionsStore.getADNavNextStyle() }
+									mapStyle={ DimensionsStore.getSidebarMapStyle() }
+									
 								/> : 
 								''
 							}
@@ -812,34 +638,85 @@ export default class App extends React.Component {
 									onCategoryClick={ this.onCategoryClick } 
 									onNeighborhoodHover={ this.neighborhoodHighlighted } 
 									onNeighborhoodOut={ this.neighborhoodsUnhighlighted } 
-									positioning={ this.state.dimensions.adNav }
+									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
+									nextStyle={ DimensionsStore.getADNavNextStyle() }
 									onClose={ this.onCategoryClose }
 								/> :
 								''
 							}
 
-							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory && visibleStates) ?
-								Object.keys(visibleStates).map((theState) => {
+							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory && alphebetizedVisibleStateAbbrs.length > 0) ?
+								alphebetizedVisibleStateAbbrs.map((theState) => {
 									return <StateStats 
 										stateName={ stateAbbrs[theState] } 
+										stateAbbr={ theState }
 										cities={ visibleStates[theState] } 
 										onCityClick={ this.onCitySelected }
+										onStateClick={ this.onStateSelected }
 										key={ theState }
-										areaChartWidth={ this.state.dimensions.areaChart.width }
 									/>;
 								}) :
 								''
 							}
 
 							{ (this.state.downloadOpen) ?
-								<Downloader 
-									mapurl={ RasterStore.getMapUrl() } 
-									thumbnail={ RasterStore.getMapThumbnail() }
-									name={ RasterStore.getSelectedCityMetadata().name } 
-									state={ CityStore.getState() }
-									adGeojson={ AreaDescriptionsStore.getADsAsGeojson(this.state.selectedCity) }
-									onDownloadClicked={ this.onDownloadClicked }
-								/> : 
+								<div>
+									<ul>
+										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
+											if (!RasterStore.isInset(map.id)) {
+												return <li key={ 'ungeorectifiedDownload' + map.id }>
+													<h3>
+														<a 
+															href={ RasterStore.getMapUrl(map.id) } 
+															download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
+														>
+															Download map of { map.name } (.jpg)
+														</a>
+													</h3>
+											</li>
+											}
+										}) }
+
+										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
+											return <li key={ 'georectifiedDownload' + map.id }>
+												<h3>
+													<a 
+														href={ RasterStore.getRectifiedUrl(map.id) } 
+														download={ map.name.replace(/\s+/g, '') + '_rectified.zip'}
+													>
+														Download georeferenced map of { map.name } (.zip)
+													</a>
+												</h3>
+											</li>
+										}) }
+
+										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+											<li>
+												<h3>
+													<a onClick={ this.downloadGeojson }>
+														Download area description (.geojson)
+													</a>
+												</h3>
+											</li> :
+											''
+										}
+
+										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+											<li>
+												<h3>
+													<a 
+														href={ CityStore.getBucketPath(this.state.selectedCity) + 'area_descriptions.zip' }
+														download={ CityStore.getName().replace(/\s+/g, '') + '_area_descriptions.zip' }
+													>
+														Download area description (.shp)
+													</a>
+												</h3>
+											</li> : 
+											''
+										}
+									</ul>
+
+								</div> : 
 								null
 							}
 

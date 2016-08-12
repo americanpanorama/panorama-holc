@@ -16,13 +16,18 @@ export default class StateStats extends React.Component {
 	render () {
 		return (
 			<div>
-				<h2>{ this.props.stateName }</h2>
+				<h2
+					onClick={ this.props.onStateClick } 
+					id={ this.props.stateAbbr }
+				>
+					{ this.props.stateName }
+				</h2>
+
 				{ this.props.cities.map((cityData) => {
 					return <CitySnippet 
 						cityData={ cityData } 
 						onCityClick={ this.props.onCityClick } 
-						key={ 'city' + cityData.cityId } 
-						areaChartWidth={ this.props.areaChartWidth }
+						key={ 'city' + cityData.ad_id } 
 					/>
 				}) }
 			</div>

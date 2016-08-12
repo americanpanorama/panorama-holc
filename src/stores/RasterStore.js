@@ -53,7 +53,7 @@ const RasterStore = {
 
 		this.dataLoader.query([
 			{
-				query: 'SELECT population_1940, population_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_ilslander_1930 as asian_pacific_islander_1930, asian_pacific_ilslander_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, ad_id, holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps join holc_maps_ads_join hmaj on hmaj.map_id = holc_maps.map_id join holc_ads on holc_ads.city_id = hmaj.ad_id order by parent_id desc',
+				query: 'SELECT total_pop_1930, total_pop_1940, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930 as asian_pacific_islander_1930, asian_pacific_1940 as asian_pacific_islander_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, ad_id, holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps join holc_maps_ads_join hmaj on hmaj.map_id = holc_maps.map_id join holc_ads on holc_ads.city_id = hmaj.ad_id order by parent_id desc',
 				format: 'JSON'
 			},
 			{
@@ -84,183 +84,6 @@ const RasterStore = {
 		});
 	},
 
-	/**
-	 * The selected city for the whole application to display.
-	 */
-	setSelectedCity: function (cityId) {
-		this.data.selectedCity = cityId;  
-	},
-
-	setSelectedState: function (state) {
-		if (typeof(state) !== 'undefined' && state !== this.data.selectedState) {
-			this.data.selectedCity = undefined;
-			this.emit(AppActionTypes.storeChanged);
-		}
-	},
-
-	getAllRasters: function () { return this.data.maps; },
-
-	getSelectedCity: function () { return this.data.selectedCity; },
-
-	getAllCitiesWithPolygons: function() { return this.data.citiesWithPolygons; },
-
-	// returns everything or a specified attribute
-	getSelectedCityMetadata: function(key=null) { 
-		if (!this.getSelectedCity()) {
-			return null;
-		}
-		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
-	},
-
-	getCityMetadata: function(city_id, key=null) {
-		return (this.data.maps[city_id]) ? (key && this.data.maps[city_id][key]) ? this.data.maps[city_id][key] : this.data.maps[city_id] : null;
-	},
-
-	getSelectedState () {
-		return this.data.selectedState;
-	},
-
-	getMapBounds: function () {
-		return [ 
-			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
-			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
-		];
-	},
-
-	getMapBoundsByAdId: function(adId) {
-		return [ 
-			[ this.data.maps[adId].minLat, this.data.maps[adId].minLng ], 
-			[ this.data.maps[adId].maxLat, this.data.maps[adId].maxLng ] 
-		];
-	},
-
-	getCityNames: function () {
-		return Object.keys(this.data.maps).map((id) => this.data.maps[id].city + ', ' +stateAbbrs[this.data.maps[id].state]);
-	},
-
-	getCityIdsWithNames: function () {
-		let idsAndNames = {};
-
-		Object.keys(this.data.maps).forEach((id) => {
-			idsAndNames[id] = this.data.maps[id].city + ', ' +stateAbbrs[this.data.maps[id].state]
-		});
-
-		return idsAndNames;
-	},
-
-	getCityIdsAndNames: function () {
-		return Object.keys(this.data.maps).map((id) => {
-			return {
-				id: parseInt(id),
-				cityName: this.data.maps[id].city + ', ' + stateAbbrs[this.data.maps[id].state]
-			}
-		});
-	},
-
-	getCenter: function() {
-		return [ this.getSelectedCityMetadata('centerLat'), this.getSelectedCityMetadata('centerLng')];
-	},
-
-	getCenterOld: function() {
-		let bounds = this.getMapBounds();
-		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
-	},
-
-	getMapBoundsForState: function (state) {
-		let minLat = 90, minLng = 0, maxLat = 0, maxLng = -180;
-		let citiesForState = this.getCitiesForState(state);
-
-		citiesForState.forEach((cityData) => {
-			minLat = (cityData.minLat && cityData.minLat < minLat) ? cityData.minLat : minLat;
-			maxLat = (cityData.maxLat && cityData.maxLat > maxLat) ? cityData.maxLat : maxLat;
-			minLng = (cityData.minLng && cityData.minLng < minLng) ? cityData.minLng : minLng;
-			maxLng = (cityData.maxLng && cityData.maxLng > maxLng) ? cityData.maxLng : maxLng;
-		});
-
-		return [[ minLat, minLng ],[ maxLat, maxLng ]];
-	},
-
-	getCenterForState: function(state) {
-		let bounds = this.getMapBoundsForState(state);
-		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
-	},
-
-	getCitiesForState: function (state) {
-		return this.getCitiesList().filter(function(cityData) { return (cityData.state == state); });
-	},
-
-	getMapUrl: function () {
-		return this.getSelectedCityMetadata('mapurl');
-	},
-
-	getMapThumbnail: function () {
-		return this.getSelectedCityMetadata('mapThumbnail');
-	},
-
-	// return a flat list of the HOLC maps for rendering
-	getCitiesList: function() { 
-		let cities = this.combineCitiesLists();
-		return Object.keys(cities).map(cityId => cities[cityId]); 
-	},
-
-	getStatesObject: function() {
-		let statesObject = {};
-		Object.keys(this.data.maps).map(cityId => {
-			statesObject[this.data.maps[cityId].state] = {
-				id: this.data.maps[cityId].state,
-				name: stateAbbrs[this.data.maps[cityId].state],
-				citiesIds: this.getCitiesForState(this.data.maps[cityId].state).map((cityData) => cityData.id)
-			};
-		});
-		return statesObject;
-	},
-
-	getStatesList: function() {
-		let states = this.getStatesObject();
-		return Object.keys(states).map(stateAbbr => states[stateAbbr]);
-	},
-
-	getStatesWithFirstCities: function() {
-		let states = [],
-			  cities = this.combineCitiesLists(),
-			  stateInList = function(state) {
-				  let inList = false;
-				  states.map((cityData) => {
-					  if (cityData.state == state) {
-						  inList = true;
-					  }
-				  });
-				  return inList;
-			  };
-
-		Object.keys(cities).map((cityId) => {
-			if (!stateInList(this.data.maps[cityId].state)) {
-				states.push(Object.assign({}, this.data.maps[cityId]));
-			}
-		}); 
-
-		states.map((cityData) => { cityData.name = stateAbbrs[cityData.state]; });
-
-		return states;
-	},
-
-	getFirstCityOfState: function(state) {
-		let statesWithFirstCities = this.getStatesWithFirstCities();
-		for (let i in statesWithFirstCities) {
-			if (statesWithFirstCities[i].state == state) {
-				return statesWithFirstCities[i];
-			}
-		}
-	},
-
-	hasLoaded: function() {
-		return this.data.loaded;
-	},
-
-	selectedHasPolygons: function() {
-		return (this.data.maps[this.data.selectedCity]) ? this.data.maps[this.data.selectedCity].hasPolygons : false;
-	},
-
 	calculateSimpleRingsRadii: function (areaData) {
 		let furthestRadius = 25000,
 			fullArea = Math.PI * furthestRadius * furthestRadius,
@@ -284,28 +107,9 @@ const RasterStore = {
 		return radii;
 	},
 
-	getSelectedMaps: function (requestedMapIds, selectedAd = null) {
-		let selectedMaps = [];
-		const allMaps = this.getMapsList();
 
-		allMaps.forEach(map => {
-			if (requestedMapIds.indexOf(map.ad_id) !== -1 && map.ad_id !== selectedAd) {
-				selectedMaps.push(map);
-			}
-		});
-
-		allMaps.forEach(map => {
-			if (requestedMapIds.indexOf(map.ad_id) !== -1 && map.ad_id == selectedAd) {
-				selectedMaps.push(map);
-			}
-		});
-
-
-		return selectedMaps;
-	},
 	
-	// return a flat list of the HOLC maps for rendering
-	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
+
 
 	parseMapData: function (citiesData, citiesWithPolygonsData, citiesWithADs) {
 		let maps = {};
@@ -313,7 +117,7 @@ const RasterStore = {
 		citiesData.forEach(mapData => {
 			maps[mapData.map_id] = {
 				cityId : mapData.ad_id,
-				id: mapData.ad_id,
+				id: mapData.map_id,
 				ad_id: parseInt(mapData.ad_id),
 				parent_id: mapData.parent_id,
 				city: mapData.name,
@@ -329,8 +133,8 @@ const RasterStore = {
 				maxLng: mapData.maxlng,
 				centerLat: mapData.centerlat,
 				centerLng: mapData.centerlng,
-				population_1930: mapData.population_1930,
-				population_1940: mapData.population_1940,
+				population_1930: mapData.total_pop_1930,
+				population_1940: mapData.total_pop_1940,
 				american_indian_eskimo_1930: mapData.american_indian_eskimo_1930,
 				american_indian_eskimo_1940: mapData.american_indian_eskimo_1940,
 				asian_pacific_islander_1930: mapData.asian_pacific_islander_1930,
@@ -341,9 +145,11 @@ const RasterStore = {
 				white_pop_1940: mapData.white_pop_1940,
 				hasPolygons: false,
 				hasADs: false,
-				url: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
-				mapurl: 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData	.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg',
-				mapThumbnail: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg'
+				inset: mapData.inset,
+				url: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
+				mapUrl: (!mapData.inset) ? '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData	.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg' : null,
+				mapThumbnail: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/thumbnail.jpg',
+				rectifiedUrl: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/rectified.zip'
 			}
 		});
 
@@ -402,7 +208,229 @@ const RasterStore = {
 		});
 
 		return combinedList;
-	}
+	},
+
+	/* setters */
+
+	/**
+	 * The selected city for the whole application to display.
+	 */
+	setSelectedCity: function (cityId) {
+		this.data.selectedCity = cityId;  
+	},
+
+	setSelectedState: function (state) {
+		if (typeof(state) !== 'undefined' && state !== this.data.selectedState) {
+			this.data.selectedCity = undefined;
+			this.emit(AppActionTypes.storeChanged);
+		}
+	},
+
+	/* gets */
+
+	getAllCitiesWithPolygons: function() { return this.data.citiesWithPolygons; },
+
+	getAllRasters: function () { return this.data.maps; },
+
+	getCenter: function() {
+		return [ this.getSelectedCityMetadata('centerLat'), this.getSelectedCityMetadata('centerLng')];
+	},
+
+	getCenterForCountry: function() {
+		let bounds = this.getMapBoundsForCountry();
+		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+	},
+
+	getCenterForState: function(state) {
+		let bounds = this.getMapBoundsForState(state);
+		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+	},
+
+	getCenterOld: function() {
+		let bounds = this.getMapBounds();
+		return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+	},
+
+	getCitiesForState: function (state) { return this.getCitiesList().filter(function(cityData) { return (cityData.state == state); }); },
+
+	// return a flat list of the HOLC maps for rendering
+	getCitiesList: function() { 
+		let cities = this.combineCitiesLists();
+		return Object.keys(cities).map(cityId => cities[cityId]); 
+	},
+
+	getCityIdsAndNames: function () {
+		return Object.keys(this.data.maps).map((id) => {
+			return {
+				id: parseInt(id),
+				cityName: this.data.maps[id].city + ', ' + stateAbbrs[this.data.maps[id].state]
+			}
+		});
+	},
+
+	getCityIdsWithNames: function () {
+		let idsAndNames = {};
+
+		Object.keys(this.data.maps).forEach((id) => {
+			idsAndNames[id] = this.data.maps[id].city + ', ' +stateAbbrs[this.data.maps[id].state]
+		});
+
+		return idsAndNames;
+	},
+
+	getCityNames: function () {
+		return Object.keys(this.data.maps).map((id) => this.data.maps[id].city + ', ' +stateAbbrs[this.data.maps[id].state]);
+	},
+
+	getCityMetadata: function(city_id, key=null) {
+		return (this.data.maps[city_id]) ? (key && this.data.maps[city_id][key]) ? this.data.maps[city_id][key] : this.data.maps[city_id] : null;
+	},
+
+	getFirstCityOfState: function(state) {
+		let statesWithFirstCities = this.getStatesWithFirstCities();
+		for (let i in statesWithFirstCities) {
+			if (statesWithFirstCities[i].state == state) {
+				return statesWithFirstCities[i];
+			}
+		}
+	},
+
+	getMapBounds: function () {
+		return [ 
+			[ this.getSelectedCityMetadata('minLat'), this.getSelectedCityMetadata('minLng') ], 
+			[ this.getSelectedCityMetadata('maxLat'), this.getSelectedCityMetadata('maxLng') ] 
+		];
+	},
+
+	getMapBoundsForCountry: function () {
+		let minLat = 90, minLng = 0, maxLat = 0, maxLng = -180;
+
+		this.getCitiesList().forEach((cityData) => {
+			minLat = (cityData.minLat && cityData.minLat < minLat) ? cityData.minLat : minLat;
+			maxLat = (cityData.maxLat && cityData.maxLat > maxLat) ? cityData.maxLat : maxLat;
+			minLng = (cityData.minLng && cityData.minLng < minLng) ? cityData.minLng : minLng;
+			maxLng = (cityData.maxLng && cityData.maxLng > maxLng) ? cityData.maxLng : maxLng;
+		});
+
+		return [[ minLat, minLng ],[ maxLat, maxLng ]];
+	},
+
+	getMapBoundsForState: function (state) {
+		let minLat = 90, minLng = 0, maxLat = 0, maxLng = -180;
+		let citiesForState = this.getCitiesForState(state);
+
+		citiesForState.forEach((cityData) => {
+			minLat = (cityData.minLat && cityData.minLat < minLat) ? cityData.minLat : minLat;
+			maxLat = (cityData.maxLat && cityData.maxLat > maxLat) ? cityData.maxLat : maxLat;
+			minLng = (cityData.minLng && cityData.minLng < minLng) ? cityData.minLng : minLng;
+			maxLng = (cityData.maxLng && cityData.maxLng > maxLng) ? cityData.maxLng : maxLng;
+		});
+
+		return [[ minLat, minLng ],[ maxLat, maxLng ]];
+	},
+
+	getMapBoundsByAdId: function(adId) {
+		return [ 
+			[ this.data.maps[adId].minLat, this.data.maps[adId].minLng ], 
+			[ this.data.maps[adId].maxLat, this.data.maps[adId].maxLng ] 
+		];
+	},
+
+	getMapThumbnail: function () { return this.getSelectedCityMetadata('mapThumbnail'); },
+
+	getMapUrl: function (mapId) { return this.data.maps[mapId].mapUrl; },
+
+	// return a flat list of the HOLC maps for rendering
+	getMapsList: function() { return Object.keys(this.data.maps).map((cityId) => this.data.maps[cityId]); },
+
+	getRectifiedUrl: function (mapId) {
+		return this.data.maps[mapId].rectifiedUrl;
+	},
+
+	getSelectedCity: function () { return this.data.selectedCity; },
+
+	// returns everything or a specified attribute
+	getSelectedCityMetadata: function(key=null) { 
+		if (!this.getSelectedCity()) {
+			return null;
+		}
+		return (key) ? this.data.maps[this.getSelectedCity()][key] : this.data.maps[this.getSelectedCity()]; 
+	},
+
+	getSelectedMaps: function (requestedMapIds, selectedAd = null) {
+		let selectedMaps = [];
+		const allMaps = this.getMapsList();
+
+		allMaps.forEach(map => {
+			if (requestedMapIds.indexOf(map.ad_id) !== -1 && map.ad_id !== selectedAd) {
+				selectedMaps.push(map);
+			}
+		});
+
+		allMaps.forEach(map => {
+			if (requestedMapIds.indexOf(map.ad_id) !== -1 && map.ad_id == selectedAd) {
+				selectedMaps.push(map);
+			}
+		});
+
+
+		return selectedMaps;
+	},
+
+	getSelectedState () { return this.data.selectedState; },
+
+	getStatesList: function() {
+		let states = this.getStatesObject();
+		return Object.keys(states).map(stateAbbr => states[stateAbbr]);
+	},
+
+	getStatesObject: function() {
+		let statesObject = {};
+		Object.keys(this.data.maps).map(cityId => {
+			statesObject[this.data.maps[cityId].state] = {
+				id: this.data.maps[cityId].state,
+				name: stateAbbrs[this.data.maps[cityId].state],
+				citiesIds: this.getCitiesForState(this.data.maps[cityId].state).map((cityData) => cityData.id)
+			};
+		});
+		return statesObject;
+	},
+
+	getStatesWithFirstCities: function() {
+		let states = [],
+			  cities = this.combineCitiesLists(),
+			  stateInList = function(state) {
+				  let inList = false;
+				  states.map((cityData) => {
+					  if (cityData.state == state) {
+						  inList = true;
+					  }
+				  });
+				  return inList;
+			  };
+
+		Object.keys(cities).map((cityId) => {
+			if (!stateInList(this.data.maps[cityId].state)) {
+				states.push(Object.assign({}, this.data.maps[cityId]));
+			}
+		}); 
+
+		states.map((cityData) => { cityData.name = stateAbbrs[cityData.state]; });
+
+		return states;
+	},
+
+	hasLoaded: function() {
+		return this.data.loaded;
+	},
+
+	isInset: function(mapId) { return this.data.maps[mapId].inset; },
+
+	selectedHasPolygons: function() {
+		return (this.data.maps[this.data.selectedCity]) ? this.data.maps[this.data.selectedCity].hasPolygons : false;
+	},
+
+
 
 };
 

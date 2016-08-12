@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
+import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
 import CityStore from '../stores/CityStore';
 import RasterStore from '../stores/RasterStore';
 
@@ -13,12 +14,13 @@ const MapStateStore = {
 		bounds: null,
 		visibleHOLCMaps: {},
 		visibleHOLCMapsIds: [],
+		visibleHOLCMapsByState: {},
 		visibleAdIds: [],
 		adZoomThreshold: 9,
 		hasLoaded: false
 	},
 
-	loadData: function (theMap, rasters) {
+	loadData: function (theMap, rasters, adsMetadata) {
 		const theBounds = theMap.getBounds();
 		let visibleHOLCMaps = {},
 			visibleHOLCMapsIds = [],
@@ -26,19 +28,36 @@ const MapStateStore = {
 			visibleAdIds = [];
 
 		Object.keys(rasters).forEach((id) => {
-			if (theBounds.intersects(rasters[id].bounds) && !rasters[id].parent_id) {
+			if (theBounds.intersects(rasters[id].bounds)) {
 				visibleHOLCMaps[id] = rasters[id];
 				visibleHOLCMapsIds.push(parseInt(id));
-				if (visibleAdIds.indexOf(rasters[id].ad_id) == -1) {
-					visibleAdIds.push(parseInt(rasters[id].ad_id));
+			}
+		});
+
+		Object.keys(adsMetadata).forEach(ad_id => {
+			if (theBounds.intersects(adsMetadata[ad_id].bounds)) {
+				if (visibleAdIds.indexOf(ad_id) == -1) {
+					visibleAdIds.push(parseInt(ad_id));
 				}
 			}
 		});
 
+		// // organize by state
+		// visibleHOLCMapsIds.forEach((id) => {
+		// 	visibleHOLCMapsByState[visibleHOLCMaps[id].state] = (visibleHOLCMapsByState[visibleHOLCMaps[id].state]) ? visibleHOLCMapsByState[visibleHOLCMaps[id].state] : [];
+		// 	visibleHOLCMapsByState[visibleHOLCMaps[id].state].push(visibleHOLCMaps[id]);
+		// });
+		// // alphabetize
+		// Object.keys(visibleHOLCMapsByState).forEach((the_state) => {
+		// 	visibleHOLCMapsByState[the_state].sort((a,b) => a.city > b.city);
+		// });
+
 		// organize by state
-		visibleHOLCMapsIds.forEach((id) => {
-			visibleHOLCMapsByState[visibleHOLCMaps[id].state] = (visibleHOLCMapsByState[visibleHOLCMaps[id].state]) ? visibleHOLCMapsByState[visibleHOLCMaps[id].state] : [];
-			visibleHOLCMapsByState[visibleHOLCMaps[id].state].push(visibleHOLCMaps[id]);
+		visibleAdIds.forEach((id) => {
+			if (adsMetadata[id]) {
+				visibleHOLCMapsByState[adsMetadata[id].state] = (visibleHOLCMapsByState[adsMetadata[id].state]) ? visibleHOLCMapsByState[adsMetadata[id].state] : [];
+				visibleHOLCMapsByState[adsMetadata[id].state].push(adsMetadata[id]);
+			}
 		});
 		// alphabetize
 		Object.keys(visibleHOLCMapsByState).forEach((the_state) => {
@@ -61,6 +80,11 @@ const MapStateStore = {
 		this.emit(AppActionTypes.storeChanged);
 	},
 
+	setTheMap: function (theMap) {
+		this.data.theMap = theMap;
+		this.emit(AppActionTypes.storeChanged);
+	},
+
 	setView: function (zoom, center) {
 		this.data.zoom = zoom;
 		this.data.center = center;
@@ -79,8 +103,16 @@ const MapStateStore = {
 		return this.data.zoom;
 	},
 
+	getBounds: function() {
+		return this.data.bounds;
+	},
+
 	getVisibleHOLCMaps: function() {
 		return this.data.visibleHOLCMaps;
+	},
+
+	getVisibleHOLCMapsList: function() {
+		return Object.keys(this.data.visibleHOLCMaps).map(mapId => this.data.visibleHOLCMaps[mapId]);
 	},
 
 	getVisibleHOLCMapsIds: function() {
@@ -97,6 +129,10 @@ const MapStateStore = {
 
 	isAboveZoomThreshold() {
 		return this.data.zoom >= this.data.adZoomThreshold;
+	},
+
+	hasLoaded() {
+		return this.data.hasLoaded;
 	}
 }
 
@@ -134,7 +170,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.mapInitialized:
-			MapStateStore.loadData(action.theMap, action.rasters);
+			MapStateStore.loadData(action.theMap, action.rasters, action.adsMetadata);
 
 			// if a city has been selected (though the hash), set the new bounds
 			if (CityStore.getId()) {
@@ -146,7 +182,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.mapMoved:
-			MapStateStore.loadData(action.theMap, action.rasters);
+			MapStateStore.loadData(action.theMap, action.rasters, action.adsMetadata);
 			break;
 
 		case AppActionTypes.citySelected:
@@ -165,6 +201,40 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 					}
 				}
 			}, 100);
+			break;
+
+		case AppActionTypes.stateSelected: 
+			if (MapStateStore.getTheMap() !== null) {
+				const bounds = RasterStore.getMapBoundsForState(action.abbr),
+					newZoom = MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newCenter = RasterStore.getCenterForState(action.abbr)
+				MapStateStore.setView(newZoom, newCenter);
+			}
+			break;
+
+		case AppActionTypes.countrySelected: 
+			if (MapStateStore.getTheMap() !== null) {
+				const bounds = RasterStore.getMapBoundsForCountry(),
+					newZoom = MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newCenter = RasterStore.getCenterForCountry()
+				MapStateStore.setView(newZoom, newCenter);
+			}
+			break;
+
+		case AppActionTypes.ADImageOpened:
+		case AppActionTypes.neighborhoodSelected:
+			if (action.type == AppActionTypes) {
+
+			}
+			if (MapStateStore.getTheMap() !== null && action.holcId !== null) {
+				const bounds = AreaDescriptionsStore.getNeighborhoodBoundingBox(action.adId, action.holcId),
+					newZoom = -2 + MapStateStore.getTheMap().getBoundsZoom(bounds),
+					newCenter = AreaDescriptionsStore.getNeighborhoodCenter(action.adId, action.holcId);
+				if (!MapStateStore.getBounds().contains(bounds)) {
+					MapStateStore.getTheMap().panTo(newCenter);
+				}
+			}
+			break;
 	}
 	return true;
 });

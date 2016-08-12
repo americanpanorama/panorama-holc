@@ -435,8 +435,7 @@ header {
 
 	top: 20px;
 	left: 20px;
-	z-index: 10000;
-	background: rgba(243, 243, 243, 0.8);
+	background: #444;
 }
 
 .longishform {
@@ -581,8 +580,31 @@ $colorLightGrey: #b3b3b3;
 
 					}
 				}
-			}
+			
 
+			}
+		}
+	}
+
+	&.adClose {
+		top: 10px;
+		right: 10px;
+		left: auto;
+		width: auto;
+
+		ul {
+			li:nth-child(1) {
+				padding: 4px 10px;
+				background-color: white;
+				color: #444;
+				font-weight: bold;
+				span {
+					&:before {
+						border: none;
+						background-color: rgba($gradeD, 0);
+					}
+				}
+			}
 		}
 	}
 }
