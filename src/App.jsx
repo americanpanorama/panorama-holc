@@ -450,8 +450,8 @@ export default class App extends React.Component {
 								<span className='header-sub'>Redlining in New Deal America</span>
 							</h1>
 							<h4 onClick={ this.onModalClick } id={ 'intro' }>Introduction</h4>
-							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Notes & Bibliography</h4>
-							<h4 onClick={ this.onModalClick } id={ 'credits' }>Credits</h4>
+							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Note & Bibliography</h4>
+							<h4 onClick={ this.onModalClick } id={ 'about' }>About</h4>
 							<hr className='style-eight' />
 						</header>
 						<div 
@@ -660,7 +660,23 @@ export default class App extends React.Component {
 							}
 
 							{ (this.state.downloadOpen) ?
-								<div>
+								<div className='download_menu'>
+									<h2>
+										<span
+											onClick={ this.onCitySelected }
+											id={ this.state.selectedCity }
+										>
+											{ CityStore.getName() + ', '}
+										</span>
+										<span 
+											onClick={ this.onStateSelected } 
+											id={ CityStore.getState() }
+										>
+											{ CityStore.getState() }
+										</span>
+
+										<div onClick={ this.onDownloadClicked }>x</div>
+									</h2>
 									<ul>
 										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
 											if (!RasterStore.isInset(map.id)) {

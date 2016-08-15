@@ -283,7 +283,7 @@ export default class HOLCMap extends React.Component {
 						className='nationalView'
 						onClick={ this.props.onCountryClick }
 					>
-						CV
+						<img src='static/us-outline.svg' />
 					</button> :
 					''
 				}
