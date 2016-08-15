@@ -169,7 +169,10 @@ export default class ADCat extends React.Component {
 		return (
 			<div className='ADCategory'>
 
-				<h2>{this.props.title} <span onClick={ this.props.onClose }>x</span></h2>
+				<h2><span>{this.props.title}</span> 
+					<div className='downloadicon' onClick={ this.props.onClose }>x</div>
+				</h2>
+
 
 				{ (this.props.previousCatIds) ?
 					<div 

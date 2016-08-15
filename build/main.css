@@ -1452,7 +1452,22 @@ body {
   .ADCategory h2 {
     margin: 0px 10px 10px;
     text-align: center;
-    background-color: #d3e0df; }
+    background-color: #d3e0df;
+    font-size: 1.4vmax; }
+  .areaDescription .downloadicon,
+  .ADCategory .downloadicon {
+    margin-left: -30px;
+    margin-top: -2px;
+    float: right;
+    width: 30px;
+    height: 26px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+    cursor: pointer; }
+  .areaDescription .downloadicon:hover,
+  .ADCategory .downloadicon:hover {
+    opacity: 1.0; }
   .areaDescription .adNav,
   .ADCategory .adNav {
     position: fixed;
@@ -1486,7 +1501,8 @@ body {
     .ADCategory ul.ad_cat li {
       list-style: none;
       margin-bottom: 0px;
-      padding-bottom: 3px; }
+      padding-bottom: 3px;
+      min-height: 24px; }
     .areaDescription ul.area_description .catNum, .areaDescription ul.area_description .catLetter,
     .areaDescription ul.ad_cat .catNum,
     .areaDescription ul.ad_cat .catLetter,
@@ -1752,18 +1768,28 @@ h2 {
 .download_menu ul {
   font-family: 'Lato';
   font-size: 12px;
-  color: #0c789a;
+  color: #454545;
   list-style: none;
-  margin: 1em 0 0 0;
+  margin: 0;
   padding: 0; }
-  .download_menu ul li {
+  .download_menu ul li.greentop {
     list-style: none;
-    background-color: #fafafa;
+    background-color: #d9e4e3;
+    height: 100px; }
+  .download_menu ul li.greenmiddle {
+    list-style: none;
+    background-color: #e5edec;
+    height: 100px; }
+  .download_menu ul li.greenbottom {
+    list-style: none;
+    background-color: #eaf1f0;
     height: 100px; }
   .download_menu ul li a {
-    text-decoration: none; }
+    text-decoration: none;
+    color: #454545;
+    font-size: .9em; }
   .download_menu ul h3 {
-    padding: 20px 4px; }
+    padding: 35px 4px; }
   .download_menu ul img {
     float: right;
     margin: 14px 14px 0;
