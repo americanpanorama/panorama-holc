@@ -16,6 +16,7 @@ import AreaDescription from './components/AreaDescription.jsx';
 import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
+import ContactUs from './components/ContactUs.jsx';
 import { icon } from 'leaflet';
 import { Map, TileLayer, LayerGroup, setIconDefaultImagePath } from 'react-leaflet';
 import Modal from 'react-modal';
@@ -45,7 +46,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash','downloadGeojson','onCountrySelected'];
+		const handlers = ['onWindowResize','onModalClick','toggleBurgessDiagram','storeChanged','onBurgessChartOff','onBurgessChartHover','onStateSelected','onCitySelected','onMapMoved','onPanoramaMenuClick','onDownloadClicked','onCategoryClick','neighborhoodHighlighted','neighborhoodsUnhighlighted','onSliderChange','onUserCityResponse','onNeighborhoodPolygonClick','onAreaChartHover','onAreaChartOff','onCityMarkerSelected','onGradeHover','onGradeUnhover','onHOLCIDClick','onNeighborhoodClose','onCategoryClose','onAdImageClicked','changeHash','downloadGeojson','onCountrySelected','onContactUsToggle'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -114,6 +115,7 @@ export default class App extends React.Component {
 			burgessDiagramVisible: false,
 			downloadOpen: false,
 			adImageOpen: (hashState.adimage),
+			contactUs: false,
 			text: (hashState.text) ? hashState.text : null,
 			map: {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
@@ -266,6 +268,12 @@ export default class App extends React.Component {
 		this.setState({
 			selectedNeighborhood: null,
 			selectedCategory: id
+		});
+	}
+
+	onContactUsToggle () {
+		this.setState({
+			contactUs: !this.state.contactUs
 		});
 	}
 
@@ -452,6 +460,7 @@ export default class App extends React.Component {
 							<h4 onClick={ this.onModalClick } id={ 'intro' }>Introduction</h4>
 							<h4 onClick={ this.onModalClick } id={ 'bibliograph' }>Bibliographic Note & Bibliography</h4>
 							<h4 onClick={ this.onModalClick } id={ 'about' }>About</h4>
+							<h4 onClick={ this.onContactUsToggle }>Contact Us</h4>
 							<hr className='style-eight' />
 						</header>
 						<div 
@@ -506,6 +515,11 @@ export default class App extends React.Component {
 									<div className='content' dangerouslySetInnerHTML={ TextsStore.getModalContent() } />
 								</div> :
 								null
+							}
+
+							{ (this.state.contactUs) ?
+								<ContactUs onContactUsToggle={ this.onContactUsToggle }/> :
+								''
 							}
 
 						</div>
