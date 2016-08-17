@@ -91,7 +91,7 @@ export default class HOLCMap extends React.Component {
 							url={ item.url }
 							minZoom={ item.minZoom }
 							bounds= { item.bounds }
-							opacity={ this.props.state.raster.opacity }
+							opacity={ this.props.state.rasterOpacity }
 							zIndex={ (item.ad_id == this.props.state.selectedCity) ? 1 : null }
 						/>
 					);
@@ -119,7 +119,7 @@ export default class HOLCMap extends React.Component {
 						center={ CityStore.getLoopLatLng() } 
 						radius={ outerRadius / 7 } 
 						fillOpacity={ (this.props.state.selectedRingGrade.ringId >= 2) ? 0.75 : 0 } 
-						fillColor= { '#000' } 
+						fillColor= { '#b8cdcb' } 
 						clickable={ false } 
 						className={ 'donuthole' } 
 						key={ 'donuthole' } 
@@ -137,7 +137,7 @@ export default class HOLCMap extends React.Component {
 								outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
 								clickable={ false } 
 								fillOpacity={ (this.props.state.selectedRingGrade.ringId > 0 && ringNum !== this.props.state.selectedRingGrade.ringId) ? 0.75 : 0 } 
-								fillColor= { '#000' } 
+								fillColor= { '#b8cdcb' } 
 								weight={ 1 }
 								className={ 'donut' } 
 								key={ 'donut' + String(ringNum) } 
@@ -154,9 +154,9 @@ export default class HOLCMap extends React.Component {
 							data={ CityStore.getInvertedGeoJsonForSelectedRingArea(this.props.state.selectedRingGrade.ringId, this.props.state.selectedRingGrade.grade) }
 							clickable={ false }
 							key={ 'invertedRingStroke'} 
-							fillColor={ '#000'}
+							fillColor={ '#FFF'}
 							fillOpacity={ 0.6 }
-							color={ '#fff' }
+							color={ '#000' }
 							weight={ 2 }
 							opacity={ 0.9 }
 							className={ 'invertedRingGradedArea' }
@@ -165,7 +165,7 @@ export default class HOLCMap extends React.Component {
 							data={ CityStore.getGeoJsonForSelectedRingArea(this.props.state.selectedRingGrade.ringId, this.props.state.selectedRingGrade.grade) }
 							clickable={ false }
 							key={ 'ringStroke'} 
-							fillOpacity={ (1 - this.props.state.raster.opacity) / 2 }
+							fillOpacity={ (1 - this.props.state.rasterOpacity) / 2 }
 							weight={ 2 }
 							opacity={ 0.9 }
 							className={ 'ringGradedArea grade' + this.props.state.selectedRingGrade.grade}
@@ -220,8 +220,8 @@ export default class HOLCMap extends React.Component {
 										neighborhoodId={ areaId } 
 										//fillOpacity={ (id == this.props.state.selectedNeighborhood) ? 1 : 0 }
 										style={{
-											opacity:(this.props.state.selectedRingGrade.ringId > 0) ? (1 - this.props.state.raster.opacity) / 5 : (1 - this.props.state.raster.opacity) / 2,
-											fillOpacity: (this.props.state.selectedRingGrade.ringId > 0) ? 0 : (1 - this.props.state.raster.opacity) / 5
+											opacity:(this.props.state.selectedRingGrade.ringId > 0) ? (1 - this.props.state.rasterOpacity) / 5 : (1 - this.props.state.rasterOpacity) / 2,
+											fillOpacity: (this.props.state.selectedRingGrade.ringId > 0) ? 0 : (1 - this.props.state.rasterOpacity) / 5
 										}}
 									/>
 								);
@@ -292,7 +292,7 @@ export default class HOLCMap extends React.Component {
 					<div className='opacitySlider' ref='slider'>
 						<Slider 
 							vertical={ true }
-							defaultValue={ this.props.state.raster.opacity * 100 }
+							defaultValue={ this.props.state.rasterOpacity * 100 }
 							onAfterChange={ this.props.onSliderChange }
 						/>
 					</div> :

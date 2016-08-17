@@ -422,9 +422,7 @@ const AreaDescriptionsStore = {
 
 	/* GETS */
 
-	getADs: function(adId) {
-		return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false;
-	},
+	getADs: function(adId) {return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false; },
 
 	getADsAsGeojson (adId) {
 		console.log(adId);
@@ -518,9 +516,13 @@ const AreaDescriptionsStore = {
 		}
 	},
 
+	getCityName: function(adId) { return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].name : null },
+
 	getDisplayPopStats: function(adId) { return (this.data.adsMetadata[adId]) ? this.data.adsMetadata[adId].displayPop : null },
 
 	getFormId: function(adId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].formId : null; },
+
+	getFullCityMetadata: function(adId) { return this.data.adsMetadata[adId]; },
 
 	getGeoJsonForGrade: function(adId, grade) {
 		let polygons = [[[0,0], [0, 90], [-180, 90], [-180, 0], [0,0]]],

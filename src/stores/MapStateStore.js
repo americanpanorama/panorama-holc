@@ -4,6 +4,7 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
 import CityStore from '../stores/CityStore';
 import RasterStore from '../stores/RasterStore';
+import stateAbbrs from '../../data/state_abbr.json';
 
 const MapStateStore = {
 
@@ -91,49 +92,31 @@ const MapStateStore = {
 		this.emit(AppActionTypes.storeChanged);
 	},
 
-	getTheMap: function() {
-		return this.data.theMap;
-	},
+	getBounds: function() { return this.data.bounds; },
 
-	getCenter: function() {
-		return this.data.center;
-	},
+	getCenter: function() { return this.data.center; },
 
-	getZoom: function() {
-		return this.data.zoom;
-	},
+	getTheMap: function() { return this.data.theMap; },
 
-	getBounds: function() {
-		return this.data.bounds;
-	},
+	getVisibleCitiesForState: function(abbr) { return this.data.visibleHOLCMapsByState[abbr]; },
 
-	getVisibleHOLCMaps: function() {
-		return this.data.visibleHOLCMaps;
-	},
+	getVisibleHOLCMaps: function() { return this.data.visibleHOLCMaps; },
 
-	getVisibleHOLCMapsList: function() {
-		return Object.keys(this.data.visibleHOLCMaps).map(mapId => this.data.visibleHOLCMaps[mapId]);
-	},
+	getVisibleHOLCMapsByState() { return this.data.visibleHOLCMapsByState; },
 
-	getVisibleHOLCMapsIds: function() {
-		return this.data.visibleHOLCMapsIds;
-	},
+	getVisibleHOLCMapsIds: function() { return this.data.visibleHOLCMapsIds; },
 
-	getVisibleHOLCMapsByState() {
-		return this.data.visibleHOLCMapsByState;
-	},
+	getVisibleHOLCMapsList: function() { return Object.keys(this.data.visibleHOLCMaps).map(mapId => this.data.visibleHOLCMaps[mapId]); },
 
-	getVisibleAdIds: function() {
-		return this.data.visibleAdIds;
-	},
+	getVisibleAdIds: function() { return this.data.visibleAdIds.sort((aAdId, bAdId) => (AreaDescriptionsStore.getCityName(aAdId) > AreaDescriptionsStore.getCityName(bAdId))); },
 
-	isAboveZoomThreshold() {
-		return this.data.zoom >= this.data.adZoomThreshold;
-	},
+	getVisibleStateAbbrs: function () { return Object.keys(this.data.visibleHOLCMapsByState).map(abbr => stateAbbrs[abbr]).sort().map(fullName => { return Object.keys(this.data.visibleHOLCMapsByState).filter(abbr => (fullName == stateAbbrs[abbr]))[0]}); },
 
-	hasLoaded() {
-		return this.data.hasLoaded;
-	}
+	getZoom: function() { return this.data.zoom; },
+
+	isAboveZoomThreshold() { return this.data.zoom >= this.data.adZoomThreshold; },
+
+	hasLoaded() { return this.data.hasLoaded; }
 }
 
 // Mixin EventEmitter functionality

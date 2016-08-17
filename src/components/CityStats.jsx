@@ -13,8 +13,6 @@ export default class CityStats extends React.Component {
 		areaUnselected: PropTypes.func,
 		gradeSelected: PropTypes.func,
 		gradeUnselected: PropTypes.func,
-		toggleBurgessDiagram: PropTypes.func,
-		burgessDiagramVisible: PropTypes.bool,
 		cityData: PropTypes.object
 	};
 
@@ -44,7 +42,7 @@ export default class CityStats extends React.Component {
 			return true;
 		}
 		// don't know why this is necessary, but the component is updating on mouseover--this prevents that.
-		return (nextProps.burgessDiagramVisible !== this.props.burgessDiagramVisible || nextProps.ringStats !== this.props.ringStats);
+		return (nextProps.ringStats !== this.props.ringStats);
 	};
 	
 	componentWillMount () {};
@@ -92,8 +90,7 @@ export default class CityStats extends React.Component {
 
 	render () {
 
-		let burgessClassName = (this.props.burgessDiagramVisible) ? '' : 'hidden',
-			// population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
+		let // population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
 			// population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
 			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
 

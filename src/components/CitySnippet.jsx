@@ -5,7 +5,9 @@ import * as d3 from 'd3';
 export default class CitySnippet extends React.Component {
 	// property validation
 	static propTypes = {
-		cityData: PropTypes.object
+		cityData: PropTypes.object,
+		displayState: PropTypes.bool,
+		onCityClick: PropTypes.function
 	};
 
 	constructor () {
@@ -61,6 +63,7 @@ export default class CitySnippet extends React.Component {
 					<div className='barchart' ref='barchart'></div> :
 					null
 				}
+
 				<h3 >{this.props.cityData.name + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
 				{ (this.props.cityData.displayPop && this.props.cityData.displayPop[1940].total) ?
 					<div className='populationStats'><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.displayPop[1940].total.toLocaleString() }</span></div> :
