@@ -262,7 +262,6 @@ header {
 	height: 60px;
 } */
 
-
 .city-choice {
 	height: 40px;
 }
@@ -279,7 +278,8 @@ header {
 	background: #444;
 }
 
-.longishform {
+.longishform,
+.contactUs {
 	position: absolute;
 	bottom: 20px;
 	top: 20px;
@@ -290,13 +290,10 @@ header {
 	background: rgba(243, 243, 243, 0.92);
 	text-align: center;
 
-	.content {
+	.content,
+	.contactUsForm {
 		margin: 10px auto;
 		width: 600px;
-		/*padding: 10px 30px;
-		border: 1px solid black;
-*/
-
 	}
 
 	p, ul {
@@ -447,6 +444,34 @@ $colorLightGrey: #b3b3b3;
 					}
 				}
 			}
+		}
+	}
+}
+
+.contactUs {
+
+	input,
+	textarea,
+	submit {
+		display: block;
+		margin: 20px 0 20px 250px;
+		width: 350px;
+	}
+
+	textarea {
+		height: 200px;
+	}
+
+	label {
+		text-align: right;
+		float: left;
+		width: 230px;
+		padding-top: 10px;
+	}
+
+	.contactUsForm {
+		p {
+			margin-left: 250px;
 		}
 	}
 }
