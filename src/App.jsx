@@ -660,25 +660,40 @@ export default class App extends React.Component {
 							}
 
 							{ (this.state.downloadOpen) ?
-								<div>
+								<div className='download_menu'>
+									<h2>
+										<span
+											onClick={ this.onCitySelected }
+											id={ this.state.selectedCity }
+										>
+											{ CityStore.getName() + ', '}
+										</span>
+										<span 
+											onClick={ this.onStateSelected } 
+											id={ CityStore.getState() }
+										>
+											{ CityStore.getState() }
+										</span>
+										<div className='downloadicon' onClick={ this.onDownloadClicked }>x</div>
+									</h2>
 									<ul>
 										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
 											if (!RasterStore.isInset(map.id)) {
-												return <li key={ 'ungeorectifiedDownload' + map.id }>
+												return <li className='greentop' key={ 'ungeorectifiedDownload' + map.id }>
 													<h3>
 														<a 
 															href={ RasterStore.getMapUrl(map.id) } 
 															download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
 														>
 															Download map of { map.name } (.jpg)
+															<img src={this.props.thumbnail } />
 														</a>
 													</h3>
 											</li>
 											}
 										}) }
-
 										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
-											return <li key={ 'georectifiedDownload' + map.id }>
+											return <li className='greenmiddle' key={ 'georectifiedDownload' + map.id }>
 												<h3>
 													<a 
 														href={ RasterStore.getRectifiedUrl(map.id) } 
@@ -689,9 +704,8 @@ export default class App extends React.Component {
 												</h3>
 											</li>
 										}) }
-
 										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
-											<li>
+											<li className='greenbottom'>
 												<h3>
 													<a onClick={ this.downloadGeojson }>
 														Download area description (.geojson)
@@ -700,9 +714,8 @@ export default class App extends React.Component {
 											</li> :
 											''
 										}
-
 										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
-											<li>
+											<li className='greensubbottom'>
 												<h3>
 													<a 
 														href={ CityStore.getBucketPath(this.state.selectedCity) + 'area_descriptions.zip' }
@@ -715,7 +728,6 @@ export default class App extends React.Component {
 											''
 										}
 									</ul>
-
 								</div> : 
 								null
 							}

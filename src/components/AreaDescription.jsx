@@ -86,12 +86,12 @@ export default class AreaDescription extends React.Component {
 					</figure> : 
 					''
 				}
-
+				<div className='cityStats'>
 				{ (!this.props.hasADImages && !this.props.formId) ? 
-					<div>The area description has not yet been added for { this.props.areaId }.</div> :
+					<div className='adInstructions'>The area description has not yet been added for { this.props.areaId }.</div> :
 					''
 				}
-
+				</div>
 			</div>
 		);
 
