@@ -1,0 +1,141 @@
+$bulletSize: 10px;
+$bulletBorder: 0.1px;
+$colorLightGrey: #b3b3b3;
+$legendBorderColor: #a6b9b7;
+$legendBorderWidth: 1px;
+
+.panorama.legend {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	z-index: 100;
+	width: 180px;
+
+	ul {
+		margin: 0;
+		padding: 0;
+
+		li {
+			position: relative;
+			opacity: 1;
+			list-style-type: none;
+			background-color: rgba(#b8cdcb, 0.8);
+			border-radius: 0;
+			border-left: $legendBorderWidth solid $legendBorderColor;
+			border-right: $legendBorderWidth solid $legendBorderColor;
+			border-bottom: 0;
+			border-top: 0;
+			padding: 6px;
+			padding-left: 32px;
+
+			&:first-child {
+				border-top: 1px solid $colorLightGrey;
+				border-top-left-radius: 4px;
+				border-top-right-radius: 4px;
+			}
+
+			&:last-child {
+				border-bottom: 1px solid $colorLightGrey;
+				border-bottom-left-radius: 4px;
+				border-bottom-right-radius: 4px;
+			}
+
+			span:before {
+				display: inline-block;
+				position: absolute;
+				top: calc(50% - 0.5 * #{$bulletSize + 2*$bulletBorder});
+				left: calc(0.5 * #{$bulletSize});
+				content: "";
+				width: $bulletSize;
+				height: $bulletSize;
+			}
+
+			&:nth-child(1) span:before {
+				background-color: rgba($gradeA, 1);
+				border: solid $bulletBorder darken($gradeA, 20%);
+				border-radius: 0;
+			}
+
+			&:nth-child(2) span:before {
+				background-color: rgba($gradeB, 1);
+				border: solid $bulletBorder darken($gradeB, 20%);
+			}
+
+			&:nth-child(3) span:before {
+				background-color: rgba($gradeCDark, 1);
+				border: solid $bulletBorder darken($gradeCDark, 20%);
+			}
+
+			&:nth-child(4) span:before {
+				border-color: $gradeD;
+				background-color: rgba($gradeD, 1);
+				border: solid $bulletBorder darken($gradeD, 20%);
+			}
+
+
+		}
+	}
+
+	&.adClose {
+		top: 10px;
+		right: 10px;
+		left: auto;
+		width: auto;
+
+		ul {
+			li:nth-child(1) {
+				padding: 4px 10px;
+				background-color: white;
+				color: #444;
+				font-weight: bold;
+				span {
+					&:before {
+						border: none;
+						background-color: rgba($gradeD, 0);
+					}
+				}
+			}
+		}
+	}
+}
+
+.panorama.legend.withCityMarker {
+
+	ul {
+		li {
+
+			&:nth-child(1) span:before {
+				background-color: transparent;
+				border-color: transparent;
+				top: 2px;
+				left: -2px;
+				width: 22px;
+				height: 20px;
+				background-image: url('static/area-desc-3.svg');
+			}
+
+			&:nth-child(2) span:before {
+				background-color: rgba($gradeA, 1);
+				border: solid $bulletBorder darken($gradeA, 20%);
+				border-radius: 0;
+			}
+
+			&:nth-child(3) span:before {
+				background-color: rgba($gradeB, 1);
+				border: solid $bulletBorder darken($gradeB, 20%);
+			}
+
+			&:nth-child(4) span:before {
+				background-color: rgba($gradeCDark, 1);
+				border: solid $bulletBorder darken($gradeCDark, 20%);
+			}
+
+			&:nth-child(5) span:before {
+				border-color: $gradeD;
+				background-color: rgba($gradeD, 1);
+				border: solid $bulletBorder darken($gradeD, 20%);
+			}
+		}
+	}
+}
+

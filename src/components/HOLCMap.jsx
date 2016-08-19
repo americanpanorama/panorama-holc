@@ -62,7 +62,7 @@ export default class HOLCMap extends React.Component {
 			};
 
 		if (!aboveThreshold) {
-			legendData.items.push('Area for each grade')
+			legendData.items.unshift('Area for each grade')
 		}
 
 		return (
@@ -299,7 +299,11 @@ export default class HOLCMap extends React.Component {
 					''
 				}
 
-				<Legend { ...legendData } onItemSelected={ this.onGradeHover } />
+				<Legend 
+					{ ...legendData } 
+					onItemSelected={ this.onGradeHover } 
+					className={ (!aboveThreshold) ? 'withCityMarker' : '' }
+				/>
 
 			</Map>
 		);

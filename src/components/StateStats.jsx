@@ -6,7 +6,8 @@ import CitySnippet from './CitySnippet.jsx';
 export default class StateStats extends React.Component {
 	// property validation
 	static propTypes = {
-		stateName: PropTypes.string
+		stateName: PropTypes.string,
+		onCityClick: PropTypes.func
 	};
 
 	constructor () {

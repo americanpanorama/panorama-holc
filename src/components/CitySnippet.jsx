@@ -7,7 +7,7 @@ export default class CitySnippet extends React.Component {
 	static propTypes = {
 		cityData: PropTypes.object,
 		displayState: PropTypes.bool,
-		onCityClick: PropTypes.function
+		onCityClick: PropTypes.func
 	};
 
 	constructor () {
