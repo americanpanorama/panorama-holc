@@ -49,7 +49,7 @@ const DimensionsStore = {
 
 	getSearchStyle: function() {
 		return {
-			width: (window.innerWidth / 3 - 2 * this.data.containerPadding) + 'px',
+			width: (window.innerWidth * 0.3233333 - window.innerWidth * 0.0075) + 'px',
 			height: (window.innerHeight - 2 * this.data.containerPadding) + 'px'
 		}
 	},

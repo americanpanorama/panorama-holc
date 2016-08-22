@@ -3,7 +3,7 @@ import { AppActionTypes } from '../utils/AppActionCreator';
 import CitySnippet from './CitySnippet.jsx';
 
 
-export default class StateStats extends React.Component {
+export default class MapList extends React.Component {
 	// property validation
 	static propTypes = {
 		stateName: PropTypes.string,
@@ -16,7 +16,7 @@ export default class StateStats extends React.Component {
 
 	render () {
 		return (
-			<div>
+			<div className='stateList'>
 				<h2
 					onClick={ this.props.onStateClick } 
 					id={ this.props.stateAbbr }

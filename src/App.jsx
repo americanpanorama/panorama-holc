@@ -21,7 +21,7 @@ import { icon } from 'leaflet';
 import { Map, LayerGroup, TileLayer } from 'react-leaflet';
 import Modal from 'react-modal';
 import Slider from 'rc-slider';
-import StateStats from './components/StateStats.jsx';
+import StateList from './components/StateList.jsx';
 import { Typeahead } from 'react-typeahead';
 import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 import HOLCMap from './components/HOLCMap.jsx';
@@ -555,7 +555,7 @@ export default class App extends React.Component {
 
 							{ (!this.state.selectedCity && !this.state.selectedNeighborhood && !this.state.selectedCategory) ?
 								MapStateStore.getVisibleStateAbbrs().map((abbr) => {
-									return <StateStats 
+									return <StateList 
 										stateName={ stateAbbrs[abbr] } 
 										stateAbbr={ abbr }
 										cities={ MapStateStore.getVisibleCitiesForState(abbr) } 
