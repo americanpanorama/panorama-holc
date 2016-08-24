@@ -531,16 +531,25 @@ const CityStore = {
 		}); */
 
 		//format for D3
+		console.log(ringStats);
 		let formattedStats = [];
 		for (let ringId = 1; ringId <= 4; ringId++) {
-			formattedStats.push({ 
-				percents: [ 
-					{ percent: ringStats[ringId].A.percent, overallPercent: ringStats[ringId].A.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'A' }, 
-					{ percent: ringStats[ringId].B.percent, overallPercent: ringStats[ringId].B.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'B' }, 
-					{ percent: ringStats[ringId].C.percent, overallPercent: ringStats[ringId].C.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'C' }, 
-					{ percent: ringStats[ringId].D.percent, overallPercent: ringStats[ringId].D.overallPercent, ringId: ringId, opacity: ringStats[ringId].density, grade: 'D' } 
-				] });
+			let percents = [];
+			['A','B','C','D'].forEach(grade => {
+				if (ringStats[ringId][grade].overallPercent > 0) {
+					percents.push({ 
+						percent: ringStats[ringId][grade].percent, 
+						overallPercent: ringStats[ringId][grade].overallPercent, 
+						opacity: ringStats[ringId].density, 
+						ringId: ringId, 
+						grade: grade 
+					});
+				}
+			});
+			formattedStats.push({percents: percents});
 		}
+
+		console.log(formattedStats);
 
 		return formattedStats;
 	},

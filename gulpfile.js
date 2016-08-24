@@ -70,7 +70,8 @@ function browserifyTask (options) {
 				.pipe($.notify({
 					'onLast': true,
 					'message': function () { return 'APP bundle built in ' + (Date.now() - start) + 'ms'; }
-				}));
+				}))
+				.pipe($.connect.reload());
 		} else {
 			appBundler.bundle()
 				.on('error', $.util.log)
@@ -146,7 +147,8 @@ function cssTask(options) {
 					'title': 'CSS bundle',
 					'message': function () { return 'built in ' + (Date.now() - start) + 'ms'; },
 					'notifier': function () {}
-				}));
+				}))
+				.pipe($.connect.reload());
 		};
 		run();
 		gulp.watch(options.watchfiles, run);
@@ -176,7 +178,7 @@ function lintTask(options) {
 			'title': 'Lint task',
 			'message': function () { return 'Linted.'; },
 			'notifier': function () {}
-		}));
+		})); 
 }
 
 function webserverTask(options) {
@@ -186,7 +188,7 @@ function webserverTask(options) {
 	return $.connect.server({
 		root: './build/',
 		port: port,
-		livereload: false
+		livereload: true
 	});
 }
 
@@ -254,6 +256,7 @@ gulp.task('default', function () {
 	});
 
 });
+
 
 // NOTE: not yet fully set up, due to an uglify failure.
 // see browserifyTask for more info.

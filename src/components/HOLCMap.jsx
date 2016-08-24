@@ -83,19 +83,21 @@ export default class HOLCMap extends React.Component {
 				/>
 
 				{/* holc tiles */}
-				{ visibleMapsList.map((item, i) => {
-					return (
-						<TileLayer
-							key={ 'holctiles' + item.id}
-							className='holctiles'
-							url={ item.url }
-							minZoom={ item.minZoom }
-							bounds= { item.bounds }
-							opacity={ this.props.state.rasterOpacity }
-							zIndex={ (item.ad_id == this.props.state.selectedCity) ? 1 : null }
-						/>
-					);
-				}) }
+				{ (aboveThreshold) ?
+					visibleMapsList.map((item, i) => {
+						return (
+							<TileLayer
+								key={ 'holctiles' + item.id}
+								url={ item.url }
+								minZoom={ item.minZoom }
+								bounds= { item.bounds }
+								opacity={ this.props.state.rasterOpacity }
+								zIndex={ (item.ad_id == this.props.state.selectedCity) ? 1 : null }
+							/>
+						);
+					}) :
+					''
+				}
 
 				{/* text labels for cities */}
 				{ (!aboveThreshold) ?

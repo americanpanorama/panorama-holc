@@ -212,6 +212,17 @@ export default class CityStats extends React.Component {
 				return gradeColors[grade];
 			};
 
+			var barPercents = [];
+			ringstats.forEach(aRingStats => {
+				barPercents = barPercents.concat(aRingStats.percents.map(aRingAndGradeStats => aRingAndGradeStats));
+			});
+			barPercents.sort((a,b) => { return (a.grade < b.grade) ? -1 : (a.grade > b.grade) ? 1 : (a.ringId < b.ringId) ? -1 : 1; });
+			var xOffset = 0;
+			barPercents.forEach((slice, i) => {
+				barPercents[i].xOffset = xOffset;
+				xOffset += slice.overallPercent;
+			});
+
 			var pie = d3.layout.pie()
 				.value((d) => d.percent)
 				.sort(null);
@@ -222,6 +233,7 @@ export default class CityStats extends React.Component {
 				.innerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH)
 				.outerRadius((d) => (d.data.ringId - 0.5) * scope.DONUTWIDTH);
 			var percent = d3.format(',%');
+			var stack = d3.layout.stack();
 	
 			// <g> for each ring
 			let ringNodes = d3.select(node)
@@ -348,25 +360,15 @@ export default class CityStats extends React.Component {
 
 			ringNodes
 			  .selectAll('rect')
-			  .data(ringstats)
+			  .data(barPercents)
 			  .enter().append('rect')
-			  .attr('class', (d,i,j) => 'areaBar barGrade' + d.percents[j].grade + ' ring' + (i + 1))
+			  .attr('class', (d,i) => 'areaBar barGrade' + d.grade + ' ring' + d.ringId)
 			  .attr('height', scope.STATSHEIGHT)
-			  .attr('width', (d,i,j) => Math.round(d.percents[j].overallPercent * scope.WIDTH))
+			  .attr('width', (d,i) => Math.round(d.overallPercent * scope.WIDTH))
 			  .attr('opacity', .7)
 			  .attr('y', scope.HEADER + scope.MARGIN)
-			  .attr('x', (d,i,j) => {
-				let x = 0;
-				for (let j0 = 0; j0 <= 3; j0++) {
-					for (let i0 = 0; i0 <= 3; i0++) {
-						if (ringstats[j0].percents[i0].grade < d.percents[j].grade || (ringstats[j0].percents[i0].grade == d.percents[j].grade && ringstats[j0].percents[i0].ringId < d.percents[j].ringId)) {
-							x+= Math.round(ringstats[j0].percents[i0].overallPercent * scope.WIDTH);
-						}
-					}
-				}
-				return x;
-			  })
-			  .attr('fill', (d,i,j) => color(j))
+			  .attr('x', d => Math.round(d.xOffset * scope.WIDTH))
+			  .attr('fill', d => colorGrade(d.grade))
 			  .on('mouseover', function(d,i,j) {
 				let grade = ['A','B','C','D'][j];
 				d3.selectAll('.areaBar')
@@ -408,29 +410,18 @@ export default class CityStats extends React.Component {
 			// percents for each of these slices in the area chart
 			ringNodes
 			  .selectAll('text.slicePercent')
-			  .data(ringstats)
+			  .data(barPercents)
 			  .enter().append('text')
-			  .attr('x', (d,i,j) => {
-				let x = 0;
-				for (let j0 = 0; j0 <= 3; j0++) {
-					for (let i0 = 0; i0 <= 3; i0++) {
-						if (ringstats[j0].percents[i0].grade < d.percents[j].grade || (ringstats[j0].percents[i0].grade == d.percents[j].grade && ringstats[j0].percents[i0].ringId < d.percents[j].ringId)) {
-							x+= Math.round(ringstats[j0].percents[i0].overallPercent * scope.WIDTH);
-						}
-					}
-				}
-				x += Math.round(d.percents[j].overallPercent * scope.WIDTH / 2);
-				return x;
-			  })
+			  .attr('x', d => Math.round(d.xOffset * scope.WIDTH + d.overallPercent / 2 * scope.WIDTH))
 			  .attr('y', scope.HEADER + scope.MARGIN + 13)
-			  .attr('class', (d,i,j) => 'areaBarPercent barGradePercent' + d.percents[j].grade + ' ring' + (i + 1))
+			  .attr('class', d => 'areaBarPercent barGradePercent' + d.grade + ' ring' + d.ringId)
 			  .attr('pointer-events', 'none')
 			  .attr('text-anchor', 'middle')
 			  .attr('font-family', 'sans-serif')
 			  .attr('font-size', '10px')
-			  .attr('fill', (d,i,j) => (d.percents[j].grade == 'C') ? 'black' : 'white')
+			  .attr('fill', d => (d.grade == 'C') ? 'black' : 'white')
 			  .attr('opacity', 0)
-			  .text((d,i,j) => percent(d.percents[j].overallPercent));
+			  .text(d => percent(d.overallPercent));
 
 			ringNodes
 			  .selectAll('text.overallPercent')
