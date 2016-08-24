@@ -34,6 +34,7 @@ const AreaDescriptionsStore = {
 							state: response.state,
 							name: response.city,
 							searchName: response.city + ', ' + stateAbbrs[response.state],
+							slug: response.city.replace(/ /g,'') + response.state, 
 							centerLat: response.looplat,
 							centerLng: response.looplng,
 							bounds: [[response.bbymin, response.bbxmin], [response.bbymax, response.bbxmax]],
@@ -421,6 +422,10 @@ const AreaDescriptionsStore = {
 	},
 
 	/* GETS */
+
+	getADIdFromSlug(slug) { 
+		return (this.data.adsMetadata) ? Object.keys(this.data.adsMetadata).filter(adId => (this.data.adsMetadata[adId].slug == slug))[0] : null; 
+	},
 
 	getADs: function(adId) {return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false; },
 

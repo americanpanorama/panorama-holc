@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
-import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
-import CityStore from '../stores/CityStore';
-import RasterStore from '../stores/RasterStore';
+import AreaDescriptionsStore from './AreaDescriptionsStore';
+import CityStore from './CityStore';
+import RasterStore from './RasterStore';
 import stateAbbrs from '../../data/state_abbr.json';
 
 const MapStateStore = {
@@ -149,7 +149,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 
 					MapStateStore.setView(zoom, center);
 				}
-			}, 100);
+			}, 10);
 			break;
 
 		case AppActionTypes.mapInitialized:

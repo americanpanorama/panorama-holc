@@ -3,7 +3,8 @@ import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
 import formsMetadata from '../../data/formsMetadata.json';
-import MapStateStore from '../stores/MapStateStore';
+import MapStateStore from './MapStateStore';
+import AreaDescriptionsStore from './AreaDescriptionsStore';
 
 /* City Store is responsible for maintaining most of the important state
 variables: e.g. selected city, neighborhood, category, ring, grade, etc. */
@@ -14,6 +15,7 @@ const CityStore = {
 		name: null,
 		state: null,
 		year: null,
+		slug: null,
 		selectedRingGrade: {
 			ringId: -1,
 			grade: null
@@ -124,6 +126,7 @@ const CityStore = {
 			this.data.id = null;
 			this.data.selectedHolcId = null;
 			this.data.selectedCategory = null;
+			this.data.slug = null;
 			this.emit(AppActionTypes.storeChanged);
 			return;
 		}
@@ -165,6 +168,7 @@ const CityStore = {
 			this.data.name = cityData.city;
 			this.data.state = cityData.state;
 			this.data.year = cityData.year;
+			this.data.slug = cityData.city.replace(/ /g,'') + cityData.state,
 			this.data.form_id = cityData.form_id;
 			this.data.cityData = cityData;
 			this.data.bucketPath = 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + cityData.state + '/' + cityData.city.replace(/\s+/g, '')  + '/' + cityData.year + '/';
@@ -299,97 +303,52 @@ const CityStore = {
 
 	getHighlightedHolcId: function() { return this.data.highlightedHolcId; },
 
-	getId: function() {
-		return this.data.id;
-	},
+	getId: function() { return this.data.id; },
+	getSelectedCategory: function() { return this.data.selectedCategory; },
 
-	getSelectedCategory: function() {
-		return this.data.selectedCategory;
-	},
+	getSelectedHolcId: function() { return this.data.selectedHolcId; },
 
-	getSelectedHolcId: function() {
-		return this.data.selectedHolcId;
-	},
+	getSelectedGrade: function() { return this.data.selectedGrade; },
 
-	getSelectedGrade: function() {
-		return this.data.selectedGrade;
-	},
+	getSelectedRingGrade: function() { return this.data.selectedRingGrade; },
 
-	getSelectedRingGrade: function() {
-		return this.data.selectedRingGrade;
-	},
+	getName: function() { return this.data.name; },
 
-	getName: function() {
-		return this.data.name;
-	},
+	getState: function() { return this.data.state; },
 
-	getState: function() {
-		return this.data.state;
-	},
+	getFormId: function() { return this.data.form_id; },
 
-	getFormId: function() {
-		return this.data.form_id;
-	},
+	getRingStats: function() { return this.data.ringStats; },
 
-	getRingStats: function() {
-		return this.data.ringStats;
-	},
+	getRingAreasGeometry: function() { return this.data.ringAreasGeometry; },
 
-	getRingAreasGeometry: function() {
-		return this.data.ringAreasGeometry;
-	},
+	getGradeStats: function() { return this.data.gradeStats; },
 
-	getGradeStats: function() {
-		return this.data.gradeStats;
-	},
+	getCityData: function() { return this.data.cityData; },
 
-	getCityData: function() {
-		return this.data.cityData;
-	},
+	getSelectedGrade: function() { return this.data.selectedGrade; },
 
-	getSelectedGrade: function() {
-		return this.data.selectedGrade;
-	},
+	getGeoJsonForSelectedRingArea: function(ring, grade) { return this.data.ringAreasGeometry[ring][grade].the_geojson; },
 
-	getGeoJsonForSelectedRingArea: function(ring, grade) {
-		return this.data.ringAreasGeometry[ring][grade].the_geojson;
-	},
+	getInvertedGeoJsonForSelectedRingArea: function(ring, grade) { return this.data.ringAreasGeometry[ring][grade].inverted_geojson; },
 
-	getInvertedGeoJsonForSelectedRingArea: function(ring, grade) {
-		return this.data.ringAreasGeometry[ring][grade].inverted_geojson;
-	},
+	getOuterRingRadius: function() { return this.data.outerRingRadius; },
 
-	getOuterRingRadius: function() {
-		return this.data.outerRingRadius;
-	},
+	getLoopLatLng: function() { return this.data.loopLatLng; },
 
-	getLoopLatLng: function() {
-		return this.data.loopLatLng;
-	},
+	getPolygonsBounds: function() { return this.data.polygonBoundingBox; },
 
-	getPolygonsBounds: function() {
-		return this.data.polygonBoundingBox;
-	},
+	getPolygonsCenter: function() { return this.data.polygonsCenter; },
 
-	getPolygonsCenter: function() {
-		return this.data.polygonsCenter;
-	},
+	getSelectedByUser: function() { return this.data.selectedByUser; },
 
-	getSelectedByUser: function() {
-		return this.data.selectedByUser;
-	},
+	getSlug: function() { return this.data.slug; },
 
-	getUsersCity: function() {
-		return this.data.users.city;
-	},
+	getUsersCity: function() { return this.data.users.city; },
 
-	getUsersAdId: function() {
-		return this.data.users.adId;
-	},
+	getUsersAdId: function() { return this.data.users.adId; },
 
-	getUsersNeighborhood: function() {
-		return this.data.users.neighborhood;
-	},
+	getUsersNeighborhood: function() { return this.data.users.neighborhood; },
 
 	getADsByCat: function(cat, subcat) {
 		if (!cat) {
@@ -531,7 +490,6 @@ const CityStore = {
 		}); */
 
 		//format for D3
-		console.log(ringStats);
 		let formattedStats = [];
 		for (let ringId = 1; ringId <= 4; ringId++) {
 			let percents = [];
@@ -548,8 +506,6 @@ const CityStore = {
 			});
 			formattedStats.push({percents: percents});
 		}
-
-		console.log(formattedStats);
 
 		return formattedStats;
 	},
@@ -652,15 +608,23 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.loadInitialData:
-			if (action.state.selectedCity) {
-				CityStore.loadData(action.state.selectedCity, true);
-			}
-			if (action.state.selectedNeighborhood) {
-				CityStore.setSelectedHolcId(action.state.selectedNeighborhood);
-			}
-			if (action.state.selectedCategory) {
-				CityStore.setSelectedCategory(action.state.selectedCategory);
-			}
+
+			// you have to wait for initial load of appDescription before you can use the slug to get the city
+			const waitingADsId = setInterval(() => {
+				if (AreaDescriptionsStore.hasLoaded()) {
+					clearInterval(waitingADsId);
+
+					if (action.hashState.city && AreaDescriptionsStore.getADIdFromSlug(action.hashState.city)) {
+						CityStore.loadData(AreaDescriptionsStore.getADIdFromSlug(action.hashState.city), true);
+						if (action.state.selectedNeighborhood) {
+							CityStore.setSelectedHolcId(action.state.selectedNeighborhood);
+						} else if (action.state.selectedCategory) {
+							CityStore.setSelectedCategory(action.state.selectedCategory);
+						}
+					}
+					
+				}
+			}, 10);
 			break;
 
 		case AppActionTypes.citySelected:
@@ -717,7 +681,7 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 				else if (visibleAdIds.length > 1 && !MapStateStore.isAboveZoomThreshold()) {
 					CityStore.loadData(null);
 				} 
-			}, 100);
+			}, 10);
 			break;
 	}
 

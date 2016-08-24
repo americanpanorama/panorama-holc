@@ -104,7 +104,7 @@ export default class App extends React.Component {
 			},
 			rasterOpacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 0.8,
 			selectedCategory: (hashState.category) ? hashState.category : null,
-			selectedCity: (hashState.city) ? parseInt(hashState.city) : null, 
+			selectedCity: null, 
 			selectedGrade: null,
 			selectedNeighborhood: (hashState.area) ? hashState.area : null,
 			selectedRingGrade: { 
@@ -260,15 +260,15 @@ export default class App extends React.Component {
 
 	changeHash () {
 		HashManager.updateHash({ 
-			city: this.state.selectedCity,
+			adimage: (this.state.adImageOpen) ? this.formatADHashState() : null,
 			area: this.state.selectedNeighborhood,
 			category: this.state.selectedCategory,
-			opacity: this.state.rasterOpacity,
+			city: CityStore.getSlug(),
 			loc: {
 				zoom: this.state.map.zoom,
 				center: this.state.map.center
 			},
-			adimage: (this.state.adImageOpen) ? this.formatADHashState() : null,
+			opacity: this.state.rasterOpacity,
 			text: this.state.text
 		});
 	}

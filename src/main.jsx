@@ -4,4 +4,3 @@ import ReactDOMServer from 'react-dom/server';
 import App from './App.jsx';
 
 ReactDOM.render(<App/>, document.getElementById('app-container'));
-console.log(ReactDOMServer.renderToString(<App />));
