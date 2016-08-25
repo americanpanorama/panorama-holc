@@ -4,6 +4,7 @@ import { PropTypes } from 'react';
 
 // stores
 import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
+import CitiesStore from '../stores/CitiesStore';
 import CityStore from '../stores/CityStore';
 import MapStateStore from '../stores/MapStateStore';
 import RasterStore from '../stores/RasterStore';
@@ -235,7 +236,7 @@ export default class HOLCMap extends React.Component {
 
 				{/* cartogram marker for city: shown below zoom level 10 */}
 				{ (!aboveThreshold) ?
-					AreaDescriptionsStore.getADsList().map((item, i) => {
+					CitiesStore.getADsList().map((item, i) => {
 						return ((item.radii && item.centerLat) ?
 							Object.keys(item.radii).map((grade) => {
 								return (item.radii[grade].inner == 0) ?

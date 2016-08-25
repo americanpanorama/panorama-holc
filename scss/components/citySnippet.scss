@@ -6,10 +6,15 @@
 		pointer-events: none;
 	}
 
-	h3 {
+	h1 {
 		border-bottom: 1px solid #d72e2a;
 		font-size: 1.3em;
 		margin: 0 0 0 100px;
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
 	}
 
     h4 {

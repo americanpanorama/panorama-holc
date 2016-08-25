@@ -64,7 +64,15 @@ export default class CitySnippet extends React.Component {
 					null
 				}
 
-				<h3 >{this.props.cityData.name + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }</h3>
+				<h1>
+					{/* href for indexing */}
+					<a 
+						href={ 'http://dsl.richmond.edu/panorama/redlining/#city=' + this.props.cityData.slug }
+						onClick={ ()=>false }
+					>
+						{ this.props.cityData.name + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }
+					</a>
+				</h1>
 				{ (this.props.cityData.displayPop && this.props.cityData.displayPop[1940].total) ?
 					<div className='populationStats'><span className='catName'>Population (1940):</span> <span className='subcatData'>{ this.props.cityData.displayPop[1940].total.toLocaleString() }</span></div> :
 					''

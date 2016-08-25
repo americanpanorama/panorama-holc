@@ -54,6 +54,7 @@ export default class AreaDescription extends React.Component {
 				<SidebarNeighborhoodTitle
 					areaId={ this.props.areaId }
 					name={ this.props.neighborhoodNames[this.props.areaId] }
+					citySlug={ this.props.citySlug }
 					onClose={ this.props.onClose }
 				/>
 

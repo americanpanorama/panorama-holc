@@ -3,6 +3,7 @@ import * as React from 'react';
 
 // stores
 import AreaDescriptionsStore from './stores/AreaDescriptionsStore';
+import CitiesStore from './stores/CitiesStore';
 import CityStore from './stores/CityStore';
 import DimensionsStore from './stores/DimensionsStore';
 import MapStateStore from './stores/MapStateStore';
@@ -38,7 +39,7 @@ import stateAbbrs from '../data/state_abbr.json';
 export default class App extends React.Component {
 
 	static defaultProps = {
-		somethingRequested: Object.keys(HashManager.getState()).reduce((a,b) => (typeof a !== 'undefined' && typeof HashManager.getState()[a] !== 'undefined') || (typeof b !== 'undefined' && typeof HashManager.getState()[b] !== 'undefined'), '')
+		initialHashState: HashManager.getState()
 	};
 
 	constructor (props) {
@@ -46,7 +47,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['changeHash', 'downloadGeojson', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onUserCityResponse', 'onWindowResize', 'storeChanged'];
+		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onUserCityResponse', 'onWindowResize', 'storeChanged'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -68,6 +69,7 @@ export default class App extends React.Component {
 	componentDidMount () {
 		window.addEventListener('resize', this.onWindowResize);
 		AreaDescriptionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
+		CitiesStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		CityStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		DimensionsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		MapStateStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
@@ -75,13 +77,15 @@ export default class App extends React.Component {
 		UserLocationStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 		TextsStore.addListener(AppActionTypes.storeChanged, this.storeChanged);
 
-		// you have to wait until there's a map to query to get and initialize the visible maps
-		const waitingId = setInterval(() => {
-			if (RasterStore.hasLoaded() && AreaDescriptionsStore.hasLoaded()) {
-				clearInterval(waitingId);
-				AppActions.mapInitialized(this.getLeafletElementForMap());
-			}
-		}, 100);
+		AppActions.mapInitialized(this.getLeafletElementForMap(), this.props.initialHashState);
+
+		// // you have to wait until there's a map to query to get and initialize the visible maps
+		// const waitingId = setInterval(() => {
+		// 	if (RasterStore.hasLoaded() && AreaDescriptionsStore.hasLoaded()) {
+		// 		clearInterval(waitingId);
+		// 		AppActions.mapInitialized(this.getLeafletElementForMap(), this.props.requestedZoom);
+		// 	}
+		// }, 10);
 	}
 
 	componentWillUnmount () { }
@@ -99,8 +103,8 @@ export default class App extends React.Component {
 			downloadOpen: false,
 			highlightedNeighborhood: null,
 			map: {
-				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
-				center: (hashState.loc && hashState.loc.center) ? [hashState.loc.center[0], hashState.loc.center[1]] : [39.8333333,-98.585522]
+				zoom: 5,
+				center: [39.1045,-94.5832]
 			},
 			rasterOpacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 0.8,
 			selectedCategory: (hashState.category) ? hashState.category : null,
@@ -130,7 +134,7 @@ export default class App extends React.Component {
 			selectedNeighborhood: CityStore.getSelectedHolcId(),
 			selectedRingGrade: CityStore.getSelectedRingGrade(),
 			text: TextsStore.getSubject(),
-			unselectedVisibleCities: MapStateStore.getVisibleAdIds().map(adId => AreaDescriptionsStore.getFullCityMetadata(adId)).filter(cityMetadata => (cityMetadata.ad_id !== CityStore.getId()))
+			unselectedVisibleCities: MapStateStore.getVisibleAdIds().map(adId => CitiesStore.getFullCityMetadata(adId)).filter(cityMetadata => (cityMetadata.ad_id !== CityStore.getId()))
 		}); 
 	}
 
@@ -164,6 +168,7 @@ export default class App extends React.Component {
 	}
 
 	onCitySelected (event) {
+		event.preventDefault(); /* important as this is sometimes used in an a href there only for indexing */
 		this.closeADImage();
 		AppActions.citySelected(event.target.id, true);
 	}
@@ -433,7 +438,7 @@ export default class App extends React.Component {
 							style={ DimensionsStore.getSearchStyle() }
 						>
 							<Typeahead
-								options={ AreaDescriptionsStore.getADsList() }
+								options={ CitiesStore.getADsList() }
 								placeholder={ 'Search by city or state' }
 								filterOption={ 'searchName' }
 								displayOption={(city, i) => city.ad_id }
@@ -453,18 +458,19 @@ export default class App extends React.Component {
 									adId={ this.state.selectedCity }
 									name={ CityStore.getName() }
 									state={ CityStore.getState() }
+									slug={ CityStore.getSlug() }
 									cityData={ CityStore.getCityData() } 
 									area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
 									gradeStats={ CityStore.getGradeStats() } 
 									ringStats={ CityStore.getRingStats() } 
-									popStats={ AreaDescriptionsStore.getDisplayPopStats(this.state.selectedCity) }
+									popStats={ CitiesStore.getDisplayPopStats(this.state.selectedCity) }
 									areaSelected={ this.onBurgessChartHover } 
 									areaUnselected={ this.onBurgessChartOff } 
 									gradeSelected={ this.onAreaChartHover } 
 									gradeUnselected={ this.onAreaChartOff } 
 									openBurgess={ this.onModalClick }
-									hasADData={ AreaDescriptionsStore.hasADData(this.state.selectedCity) }
-									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
+									hasADData={ CitiesStore.hasADData(this.state.selectedCity) }
+									hasADImages={ CitiesStore.hasADImages(this.state.selectedCity) }
 									onDownloadClicked={ this.onDownloadClicked }
 									onCitySelected={ this. onCitySelected }
 									onStateSelected={ this.onStateSelected }
@@ -498,7 +504,8 @@ export default class App extends React.Component {
 									thumbnailUrl={ AreaDescriptionsStore.getThumbnailUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
 									formId={ CityStore.getFormId() } 
 									cityId={ this.state.selectedCity }
-									hasADImages={ AreaDescriptionsStore.hasADImages(this.state.selectedCity) }
+									citySlug={ CityStore.getSlug() }
+									hasADImages={ CitiesStore.hasADImages(this.state.selectedCity) }
 									onCategoryClick={ this.onCategoryClick } 
 									onHOLCIDClick={ this.onHOLCIDClick } 
 									onAdImageClicked={ this.onAdImageClicked }
@@ -587,7 +594,7 @@ export default class App extends React.Component {
 
 									</h2>
 									<ul>
-										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
+										{ CitiesStore.getMaps(this.state.selectedCity).map(map => {
 											if (!RasterStore.isInset(map.id)) {
 												return <li className='greentop' key={ 'ungeorectifiedDownload' + map.id }>
 													<h3>
@@ -602,7 +609,7 @@ export default class App extends React.Component {
 											</li>
 											}
 										}) }
-										{ AreaDescriptionsStore.getMaps(this.state.selectedCity).map(map => {
+										{ CitiesStore.getMaps(this.state.selectedCity).map(map => {
 											return <li className='greenmiddle' key={ 'georectifiedDownload' + map.id }>
 												<h3>
 													<a 
@@ -614,7 +621,7 @@ export default class App extends React.Component {
 												</h3>
 											</li>
 										}) }
-										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+										{ (CitiesStore.hasADData(this.state.selectedCity)) ?
 											<li className='greenbottom'>
 												<h3>
 													<a onClick={ this.downloadGeojson }>
@@ -624,7 +631,7 @@ export default class App extends React.Component {
 											</li> :
 											''
 										}
-										{ (AreaDescriptionsStore.hasADData(this.state.selectedCity)) ?
+										{ (CitiesStore.hasADData(this.state.selectedCity)) ?
 											<li className='greensubbottom'>
 												<h3>
 													<a 

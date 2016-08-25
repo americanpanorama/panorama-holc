@@ -5,6 +5,7 @@ import CartoDBLoader from '../utils/CartoDBLoader';
 import formsMetadata from '../../data/formsMetadata.json';
 import MapStateStore from './MapStateStore';
 import AreaDescriptionsStore from './AreaDescriptionsStore';
+import CitiesStore from './CitiesStore';
 
 /* City Store is responsible for maintaining most of the important state
 variables: e.g. selected city, neighborhood, category, ring, grade, etc. */
@@ -127,6 +128,7 @@ const CityStore = {
 			this.data.selectedHolcId = null;
 			this.data.selectedCategory = null;
 			this.data.slug = null;
+			this.data.hasLoaded = true;
 			this.emit(AppActionTypes.storeChanged);
 			return;
 		}
@@ -168,7 +170,7 @@ const CityStore = {
 			this.data.name = cityData.city;
 			this.data.state = cityData.state;
 			this.data.year = cityData.year;
-			this.data.slug = cityData.city.replace(/ /g,'') + cityData.state,
+			this.data.slug = cityData.city.toLowerCase().replace(/ +/g,'-') + '-' + cityData.state.toLowerCase(),
 			this.data.form_id = cityData.form_id;
 			this.data.cityData = cityData;
 			this.data.bucketPath = 'http://holc.s3-website-us-east-1.amazonaws.com/tiles/' + cityData.state + '/' + cityData.city.replace(/\s+/g, '')  + '/' + cityData.year + '/';
@@ -609,22 +611,23 @@ CityStore.dispatchToken = AppDispatcher.register((action) => {
 
 		case AppActionTypes.loadInitialData:
 
-			// you have to wait for initial load of appDescription before you can use the slug to get the city
-			const waitingADsId = setInterval(() => {
-				if (AreaDescriptionsStore.hasLoaded()) {
-					clearInterval(waitingADsId);
+			// you have to wait for initial load of CitiesStore before you can use the slug to get the city if one's requested
+			if (action.hashState.city) {
+				const waitingADsId = setInterval(() => {
+					if (CitiesStore.hasLoaded()) {
+						clearInterval(waitingADsId);
 
-					if (action.hashState.city && AreaDescriptionsStore.getADIdFromSlug(action.hashState.city)) {
-						CityStore.loadData(AreaDescriptionsStore.getADIdFromSlug(action.hashState.city), true);
-						if (action.state.selectedNeighborhood) {
-							CityStore.setSelectedHolcId(action.state.selectedNeighborhood);
-						} else if (action.state.selectedCategory) {
-							CityStore.setSelectedCategory(action.state.selectedCategory);
+						if (action.hashState.city && CitiesStore.getADIdFromSlug(action.hashState.city)) {
+							CityStore.loadData(CitiesStore.getADIdFromSlug(action.hashState.city), true);
+							if (action.state.selectedNeighborhood) {
+								CityStore.setSelectedHolcId(action.state.selectedNeighborhood);
+							} else if (action.state.selectedCategory) {
+								CityStore.setSelectedCategory(action.state.selectedCategory);
+							}
 						}
 					}
-					
-				}
-			}, 10);
+				}, 10);
+			}
 			break;
 
 		case AppActionTypes.citySelected:

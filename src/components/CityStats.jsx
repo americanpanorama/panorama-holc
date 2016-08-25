@@ -119,13 +119,15 @@ export default class CityStats extends React.Component {
 			
 		return (
 			<div className='cityStats'>
-				<h2>
-					<span
+				<h1>
+					{/* href for indexing */}
+					<a 
+						href={ 'http://dsl.richmond.edu/panorama/redlining/#city=' + this.props.slug }
 						onClick={ this.props.onCitySelected }
-						id={ this.props.adId}
+						id={ this.props.adId }
 					>
 						{this.props.name + ', '}
-					</span>
+					</a>
 					<span 
 						onClick={ this.props.onStateSelected } 
 						id={ this.props.state }
@@ -133,8 +135,8 @@ export default class CityStats extends React.Component {
 						{ this.props.state }
 					</span>
 
-					<div className='downloadicon' onClick={ this.props.onDownloadClicked }></div>
-				</h2>
+					<span className='downloadicon' onClick={ this.props.onDownloadClicked }></span>
+				</h1>
 
 				{ (this.props.hasADData || this.props.hasADImages) ?
 					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 
