@@ -103,10 +103,6 @@ export default class CitySnippet extends React.Component {
 
 			let scope = this;
 
-			if (width) {
-				//scope.WIDTH = width;
-			}
-
 			var color = function(i) { return ['#418e41', '#4a4ae4', '#f4f570', '#eb3f3f'][i]; };
 			var colorBorder = function(i) { return ['#418e41', '#4a4ae4', '#A3A34B', '#eb3f3f'][i]; };
 			var colorGrade = function(grade) {
@@ -128,7 +124,6 @@ export default class CitySnippet extends React.Component {
 				.append('svg')
 				.attr('width', scope.WIDTH)
 				.attr('height', scope.HEIGHT + scope.MARGIN)
-				.attr('id', 'barchart')
 				.selectAll('g')
 				.data(gradeStats)
 				.enter().append('g');

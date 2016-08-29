@@ -481,7 +481,6 @@ const CityStore = {
 			areaOfRings[ring.ring_id] = ring.ring_area;
 			totalGradedArea += ring.area;
 		});
-		console.log(totalGradedArea);
 		Object.keys(ringCumulative).map((ring_id) => {
 			Object.keys(ringCumulative[ring_id]).map((grade) => {
 				ringStats[ring_id][grade] = (ringStats[ring_id][grade]) ? ringStats[ring_id][grade] : {};

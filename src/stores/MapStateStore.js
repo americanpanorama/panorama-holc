@@ -29,17 +29,18 @@ const MapStateStore = {
 		let visibleHOLCMaps = {},
 			visibleHOLCMapsIds = [],
 			visibleHOLCMapsByState = {},
-			visibleAdIds = [];
+			visibleAdIds = []; 
 
 		Object.keys(rasters).forEach((id) => {
-			if (theBounds.intersects(rasters[id].bounds)) {
+			if (rasters[id].bounds && theBounds.intersects(rasters[id].bounds)) {
 				visibleHOLCMaps[id] = rasters[id];
 				visibleHOLCMapsIds.push(parseInt(id));
 			}
 		});
 
 		Object.keys(adsMetadata).forEach(ad_id => {
-			if (theBounds.intersects(adsMetadata[ad_id].bounds)) {
+			let cityBounds = (adsMetadata[ad_id].bounds) ? adsMetadata[ad_id].bounds : RasterStore.calculateMapsBounds(adsMetadata[ad_id].mapIds);
+			if (cityBounds && theBounds.intersects(cityBounds)) {
 				if (visibleAdIds.indexOf(ad_id) == -1) {
 					visibleAdIds.push(parseInt(ad_id));
 				}
@@ -157,12 +158,11 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 									clearInterval(waitingCityInitialized);
 									
 									const mapIds = CitiesStore.getMapIds(CityStore.getId()),
-										bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.calculateMapBounds(mapIds);
+										bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.calculateMapsBounds(mapIds);
 									MapStateStore.setViewFromBounds(bounds);
 								}
 							}, 10);
 						} else {
-							console.log(RasterStore.getMapBoundsForCountry());
 							MapStateStore.setViewFromBounds(RasterStore.getMapBoundsForCountry());
 						}
 					}
@@ -195,7 +195,7 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 
 					if (action.selectedByUser && MapStateStore.getTheMap() !== null) {
 						const mapIds = CitiesStore.getMapIds(CityStore.getId()),
-							bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.calculateMapBounds(mapIds);
+							bounds = (CityStore.getPolygonsBounds()) ? CityStore.getPolygonsBounds() : RasterStore.calculateMapsBounds(mapIds);
 						MapStateStore.setViewFromBounds(bounds);
 					}
 				}

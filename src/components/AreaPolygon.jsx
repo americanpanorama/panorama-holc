@@ -12,7 +12,6 @@ export default class AreaPolygon extends GeoJson {
 		}
 
 		if (nextProps.fillOpacity !== this.props.fillOpacity) {
-			console.log(this.leafletElement);
 			this.leafletElement.options.fillOpacity = nextProps.fillOpacity;
 		}
 	}

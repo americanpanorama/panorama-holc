@@ -62,6 +62,8 @@ export default class HOLCMap extends React.Component {
 				]
 			};
 
+		console.log(visibleMapsList);
+
 		if (!aboveThreshold) {
 			legendData.items.unshift('Area for each grade')
 		}
@@ -98,22 +100,6 @@ export default class HOLCMap extends React.Component {
 						);
 					}) :
 					''
-				}
-
-				{/* text labels for cities */}
-				{ (!aboveThreshold) ?
-					cartodbLayers.layergroup.layers.map((item, i) => {
-						return (
-							<CartoDBTileLayer
-								key={ 'cartodb-tile-layer-' + i }
-								userId={ cartodbConfig.userId }
-								sql={ item.options.sql }
-								cartocss={ item.options.cartocss }
-								zIndex={1000}
-							/>
-						);
-					}) :
-					null
 				}
 
 				{/* rings: donut holes */}
@@ -235,9 +221,9 @@ export default class HOLCMap extends React.Component {
 				}
 
 				{/* cartogram marker for city: shown below zoom level 10 */}
-				{ (!aboveThreshold) ?
+				{(!aboveThreshold) ?
 					CitiesStore.getADsList().map((item, i) => {
-						return ((item.radii && item.centerLat) ?
+						return ((item.radii && !isNaN(item.centerLat) && !isNaN(item.centerLng)) ?
 							Object.keys(item.radii).map((grade) => {
 								return (item.radii[grade].inner == 0) ?
 									<Circle
@@ -258,17 +244,33 @@ export default class HOLCMap extends React.Component {
 										className={ 'simpleDonut grade_' + grade }
 									/>
 							}) :
-							(!item.parent_id  && item.centerLat) ?
+							(!item.parent_id && !isNaN(item.centerLat) && !isNaN(item.centerLng)) ?
 								<Circle
 									center={ [item.centerLat, item.centerLng] }
 									radius={ 25000 }
 									id={ item.ad_id }
-									onClick={ this.onCityMarkerSelected }
+									onClick={ this.props.onCityMarkerSelected }
 									key={ 'clickableMap' + item.ad_id }
 									className={ 'cityCircle '}
 								/> :
 								null
 							
+						);
+					}) :
+					null
+				}
+
+				{/* text labels for cities */}
+				{ (!aboveThreshold) ?
+					cartodbLayers.layergroup.layers.map((item, i) => {
+						return (
+							<CartoDBTileLayer
+								key={ 'cartodb-tile-layer-' + i }
+								userId={ cartodbConfig.userId }
+								sql={ item.options.sql }
+								cartocss={ item.options.cartocss }
+								zIndex={1000}
+							/>
 						);
 					}) :
 					null

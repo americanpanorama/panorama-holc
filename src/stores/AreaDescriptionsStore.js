@@ -177,7 +177,6 @@ const AreaDescriptionsStore = {
 	getADs: function(adId) {return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood : false; },
 
 	getADsAsGeojson (adId) {
-		console.log(adId);
 		let ADs = this.data.areaDescriptions[adId].byNeighborhood;
 		let features = Object.keys(ADs).map((holcId) => { 
 			let the_geojson = {
@@ -212,8 +211,6 @@ const AreaDescriptionsStore = {
 			type: "FeatureCollection",
 			features: features
 		}
-
-		console.log(geojson);
 
 		return geojson;
 	},

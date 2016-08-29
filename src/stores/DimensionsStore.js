@@ -18,9 +18,9 @@ const DimensionsStore = {
 
 	computeComponentDimensions () {
 		this.data.tilesHeight = window.innerHeight - this.data.headerHeight - 2*this.data.containerPadding;
-		this.data.sidebarWidth =(document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : 0;
-		this.data.mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : 0;
-		this.data.sidebarTitleHeight = (document.getElementsByClassName('sidebarTitle').length > 0) ? document.getElementsByClassName('sidebarTitle')[0].offsetHeight: 0;
+		this.data.sidebarWidth =(document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : window.innerHeight * 0.322 - 2*this.data.containerPadding;
+		this.data.mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : window.innerHeight * 0.644 - 2*this.data.containerPadding;
+		this.data.sidebarTitleHeight = (document.getElementsByClassName('sidebarTitle').length > 0) ? document.getElementsByClassName('sidebarTitle')[0].offsetHeight: 30;
 
 		this.emit(AppActionTypes.storeChanged);
 	},

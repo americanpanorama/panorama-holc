@@ -44,7 +44,6 @@ export const AppActions = {
 	 * Load data needed by the application on init.
 	 */
 	loadInitialData: (state, hashState) => {
-		//console.log(`[1a] A '${ AppActionTypes.loadInitialData }' event is broadcast globally from AppActionCreator.loadInitialData().`);
 		AppDispatcher.dispatch({
 			type: AppActionTypes.loadInitialData,
 			state: state,

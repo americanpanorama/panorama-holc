@@ -61,12 +61,7 @@ const RasterStore = {
 
 	getMapBoundsForState: function (state) { return this.calculateMapsBounds(this.getMapIdsForState(state)); },
 
-	getMapBoundsByAdId: function(adId) {
-		return [ 
-			[ this.data.maps[adId].minLat, this.data.maps[adId].minLng ], 
-			[ this.data.maps[adId].maxLat, this.data.maps[adId].maxLng ] 
-		];
-	},
+	getMapBoundsByAdId: function(adId) { return (this.data.maps[adId].minLat && this.data.maps[adId].minLng && this.data.maps[adId].maxLat && this.data.maps[adId].maxLng) ? [[ this.data.maps[adId].minLat, this.data.maps[adId].minLng ], [ this.data.maps[adId].maxLat, this.data.maps[adId].maxLng ]] : null; },
 
 	getMapIdsForState: function (state) { return this.data.maps.filter(cityData => (cityData.state == state)).map(cityData => cityData.id); },
 
