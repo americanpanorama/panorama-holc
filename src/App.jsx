@@ -103,8 +103,8 @@ export default class App extends React.Component {
 			downloadOpen: false,
 			highlightedNeighborhood: null,
 			map: {
-				zoom: 5,
-				center: [39.1045,-94.5832]
+				zoom: (hashState.loc.zoom) ? hashState.loc.zoom : 5,
+				center: (hashState.loc.center) ? hashState.loc.center : [39.1045,-94.5832] 
 			},
 			rasterOpacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 0.8,
 			selectedCategory: (hashState.category) ? hashState.category : null,
@@ -122,7 +122,7 @@ export default class App extends React.Component {
 
 	storeChanged (options = {}) {
 		this.setState({
-			adImageOpen: ((MapStateStore.isAboveZoomThreshold() == false || !CityStore.getSelectedHolcId() || !CityStore.getId()) && CityStore.hasLoaded() && MapStateStore.hasLoaded()) ? false : this.state.adImageOpen,
+			adImageOpen: ((!CityStore.getSelectedHolcId() || !CityStore.getId()) && CityStore.hasLoaded() && MapStateStore.hasLoaded()) ? false : this.state.adImageOpen,
 			highlightedNeighborhood: CityStore.getHighlightedHolcId(),
 			map: {
 				center: MapStateStore.getCenter(),
@@ -324,12 +324,13 @@ export default class App extends React.Component {
 	getLeafletElementForAD() { return (this.refs.the_ad_tiles) ? this.refs.the_ad_tiles.leafletElement : null; }
 
 	getLeafletElementForMap() {
-		if (this.refs.holc_map) {
-			return this.refs.holc_map.refs.the_map.leafletElement;
-		} 
 		if (this.refs.sidebar_map) {
 			return this.refs.sidebar_map.refs.holc_map.refs.the_map.leafletElement;
 		}
+		if (this.refs.holc_map) {
+			return this.refs.holc_map.refs.the_map.leafletElement;
+		} 
+		
 		return false;
 	}
 
@@ -397,7 +398,7 @@ export default class App extends React.Component {
 									style={ DimensionsStore.getADViewerStyle() }
 									onMoveend={ this.changeHash }
 								>
-									{ (AreaDescriptionsStore.hasADImages(this.state.selectedCity)) ? 
+									{ (CitiesStore.hasADImages(this.state.selectedCity) && AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood)) ? 
 										<TileLayer
 											key='AD'
 											url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
@@ -459,7 +460,6 @@ export default class App extends React.Component {
 									name={ CityStore.getName() }
 									state={ CityStore.getState() }
 									slug={ CityStore.getSlug() }
-									cityData={ CityStore.getCityData() } 
 									area={ AreaDescriptionsStore.getArea(this.state.selectedCity) } 
 									gradeStats={ CityStore.getGradeStats() } 
 									ringStats={ CityStore.getRingStats() } 

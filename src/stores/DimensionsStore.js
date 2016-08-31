@@ -17,9 +17,11 @@ const DimensionsStore = {
 	},
 
 	computeComponentDimensions () {
-		this.data.tilesHeight = window.innerHeight - this.data.headerHeight - 2*this.data.containerPadding;
-		this.data.sidebarWidth =(document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : window.innerHeight * 0.322 - 2*this.data.containerPadding;
-		this.data.mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : window.innerHeight * 0.644 - 2*this.data.containerPadding;
+		this.data.windowHeight = window.innerHeight;
+		this.data.windowWidth = window.innerWidth;
+		this.data.tilesHeight = this.data.windowHeight - this.data.headerHeight - 2*this.data.containerPadding;
+		this.data.sidebarWidth =(document.getElementsByClassName('dataViewer').length > 0) ? document.getElementsByClassName('dataViewer')[0].offsetWidth : this.data.windowWidth * 0.322 - 2*this.data.containerPadding;
+		this.data.mainPaneWidth = (document.getElementsByClassName('main-pane').length > 0) ? document.getElementsByClassName('main-pane')[0].offsetWidth : this.data.windowWidth * 0.644 - 2*this.data.containerPadding;
 		this.data.sidebarTitleHeight = (document.getElementsByClassName('sidebarTitle').length > 0) ? document.getElementsByClassName('sidebarTitle')[0].offsetHeight: 30;
 
 		this.emit(AppActionTypes.storeChanged);
@@ -49,8 +51,8 @@ const DimensionsStore = {
 
 	getSearchStyle: function() {
 		return {
-			width: (window.innerWidth * 0.3233333 - window.innerWidth * 0.0075) + 'px',
-			height: (window.innerHeight - 2 * this.data.containerPadding) + 'px'
+			width: (this.data.windowWidth * 0.3233333 - this.data.windowWidth * 0.0075) + 'px',
+			height: (this.data.windowHeight - 2 * this.data.containerPadding) + 'px'
 		}
 	},
 

@@ -34,6 +34,8 @@ export default class AreaDescription extends React.Component {
 
 	render () {
 
+		console.log(this.props.formId);
+
 		let renderForm = () => null;
 		switch(parseInt(this.props.formId)) {
 			case 19370203:

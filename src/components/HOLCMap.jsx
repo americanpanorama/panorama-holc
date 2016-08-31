@@ -62,8 +62,6 @@ export default class HOLCMap extends React.Component {
 				]
 			};
 
-		console.log(visibleMapsList);
-
 		if (!aboveThreshold) {
 			legendData.items.unshift('Area for each grade')
 		}
@@ -104,21 +102,28 @@ export default class HOLCMap extends React.Component {
 
 				{/* rings: donut holes */}
 				{ (aboveThreshold && outerRadius > 0) ?
-					<Circle 
-						center={ CityStore.getLoopLatLng() } 
-						radius={ outerRadius / 7 } 
-						fillOpacity={ (this.props.state.selectedRingGrade.ringId >= 2) ? 0.75 : 0 } 
-						fillColor= { '#b8cdcb' } 
-						clickable={ false } 
-						className={ 'donuthole' } 
-						key={ 'donuthole' } 
-					/> :
+					[1,2,3,4].map(ringNum => {
+						return (
+							<Circle 
+								center={ CityStore.getLoopLatLng() } 
+								radius={ outerRadius * (ringNum * 2 - 1) / 7 } 
+								fillOpacity={ (ringNum + 1 == this.props.state.selectedRingGrade.ringId) ? 0.75 : 0 } 
+								fillColor= { '#b8cdcb' } 
+
+								clickable={ false } 
+								key={ 'ring' + ringNum } 
+								weight={ 1 }
+								color={ '#555' }
+								dashArray='10,20'
+							/> 
+						);
+					}) :
 					null
 				}
 			
 				{/* rings: donuts */}
-				{ (aboveThreshold && outerRadius > 0) ?
-					[2,3,4,5].map((ringNum) => {
+				{/* (aboveThreshold && outerRadius > 0 && this.props.state.selectedRingGrade.ringId > 0) ?
+					[2,3,4].map((ringNum) => {
 						return (
 							<Donut 
 								center={ CityStore.getLoopLatLng() } 
@@ -134,7 +139,7 @@ export default class HOLCMap extends React.Component {
 						);
 					}) :
 					null
-				}
+				*/}
 
 				{/* rings: selected ring */}
 				{ (aboveThreshold && this.props.state.selectedRingGrade.ringId > 0) ?
@@ -195,7 +200,7 @@ export default class HOLCMap extends React.Component {
 				}
 
 				{/* neighborhood polygons: shown on zoom level 10 and higher */}
-				{ (aboveThreshold) ?
+				{  (aboveThreshold) ?
 					Object.keys(ADs).map(adId => {
 						return (
 							Object.keys(ADs[adId]).map((areaId) => {

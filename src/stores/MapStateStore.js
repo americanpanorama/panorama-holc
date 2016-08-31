@@ -168,9 +168,8 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 					}
 
 					let waitingViewInitialized = setInterval(() => {
-						clearInterval(waitingViewInitialized);
-
 						if (MapStateStore.initialViewLoaded()) {
+							clearInterval(waitingViewInitialized);
 							MapStateStore.loadData(action.theMap, RasterStore.getAllRasters(), CitiesStore.getCitiesMetadata());
 						}
 					}, 10);

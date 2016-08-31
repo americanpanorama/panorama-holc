@@ -12,8 +12,7 @@ export default class CityStats extends React.Component {
 		areaSelected: PropTypes.func,
 		areaUnselected: PropTypes.func,
 		gradeSelected: PropTypes.func,
-		gradeUnselected: PropTypes.func,
-		cityData: PropTypes.object
+		gradeUnselected: PropTypes.func
 	};
 
 	// (instead of ES5-style getDefaultProps)
@@ -90,32 +89,7 @@ export default class CityStats extends React.Component {
 
 	render () {
 
-		let // population1930 = (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930.toLocaleString() : null,
-			// population1940 = (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940.toLocaleString() : null,
-			area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
-
-		let CD = this.props.cityData;
-		// 	aggregated_pop_1930 = CD.white_pop_1930 + CD.black_pop_1930 + CD.asian_pacific_ilslander_1930 + CD.american_indian_eskimo_1930,
-		// 	aggregated_pop_1940 = CD.white_pop_1940 + CD.black_pop_1940 + CD.asian_pacific_ilslander_1940 + CD.american_indian_eskimo_1940,
-		// 	popStats = {
-		// 		1930: {
-		// 			//total: (this.props.cityData.population_1930 && this.props.cityData.population_1930 !== 0) ? this.props.cityData.population_1930 : null,
-		// 			white: CD.white_pop_1930 / aggregated_pop_1930,
-		// 			black: CD.black_pop_1930 / aggregated_pop_1930,
-		// 			asianAmerican: CD.asian_pacific_ilslander_1930 / aggregated_pop_1930,
-		// 			nativeAmerican: CD.american_indian_eskimo_1930 / aggregated_pop_1930
-		// 		},
-		// 		1940: {
-		// 			//total: (this.props.cityData.population_1940 && this.props.cityData.population_1940 !== 0) ? this.props.cityData.population_1940 : null,
-		// 			white: CD.white_pop_1940 / aggregated_pop_1940,
-		// 			black: CD.black_pop_1940 / aggregated_pop_1940,
-		// 			asianAmerican: CD.asian_pacific_ilslander_1940 / aggregated_pop_1940,
-		// 			nativeAmerican: CD.american_indian_eskimo_1940 / aggregated_pop_1940
-		// 		}
-		// 	};
-
-		// let orderedKeys = Object.keys(popStats[1940]).sort((a,b) => (popStats[1940][a] < popStats[1940][b]));
-
+		let area = (this.props.area) ? Math.round(this.props.area * 100) / 100 + 'sq mi' : '';
 			
 		return (
 			<div className='cityStats'>
