@@ -58,6 +58,7 @@ export default class SidebarMap extends React.Component {
 					<HOLCMap
 						ref='holc_map'
 						state={ this.props.state }
+						selectedCity = { this.props.selectedCity }
 						onMapMoved={ this.props.onMapMoved }
 						onNeighborhoodPolygonClick={ this.props.onNeighborhoodPolygonClick }
 						onCityMarkerSelected= { this.props.onCityMarkerSelected }

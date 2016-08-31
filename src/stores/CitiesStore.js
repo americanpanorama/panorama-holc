@@ -249,6 +249,8 @@ const CitiesStore = {
 
 	/* GETS */
 
+	getAdIdsFromMapId(mapId) { return (this.data.cities) ? Object.keys(this.data.cities).filter(adId => this.data.cities[adId].mapIds.indexOf(mapId) != -1).map(adId => parseInt(adId)) : [] },
+
 	getADIdFromSlug(slug) { return (this.data.cities) ? Object.keys(this.data.cities).filter(adId => (this.data.cities[adId].slug == slug))[0] : null; },
 
 	getADsList: function() { return Object.keys(this.data.cities).map((adId) => this.data.cities[adId]); },

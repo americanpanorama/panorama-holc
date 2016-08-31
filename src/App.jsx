@@ -381,6 +381,7 @@ export default class App extends React.Component {
 								<HOLCMap
 									ref='holc_map'
 									state={ this.state }
+									selectedCity = { this.state.selectedCity }
 									onMapMoved={ this.onMapMoved }
 									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
 									onCityMarkerSelected= { this.onCityMarkerSelected }
@@ -521,6 +522,7 @@ export default class App extends React.Component {
 								<SidebarMap
 									ref='sidebar_map'
 									state={ this.state }
+									selectedCity = { this.state.selectedCity }
 									onMapMoved={ this.onMapMoved }
 									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
 									onCityMarkerSelected= { this.onCityMarkerSelected }
