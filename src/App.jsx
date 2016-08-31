@@ -103,8 +103,8 @@ export default class App extends React.Component {
 			downloadOpen: false,
 			highlightedNeighborhood: null,
 			map: {
-				zoom: (hashState.loc.zoom) ? hashState.loc.zoom : 5,
-				center: (hashState.loc.center) ? hashState.loc.center : [39.1045,-94.5832] 
+				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
+				center: (hashState.loc && hashState.loc.center) ? hashState.loc.center : [39.1045,-94.5832] 
 			},
 			rasterOpacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 0.8,
 			selectedCategory: (hashState.category) ? hashState.category : null,

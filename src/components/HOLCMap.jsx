@@ -122,24 +122,20 @@ export default class HOLCMap extends React.Component {
 				}
 			
 				{/* rings: donuts */}
-				{/* (aboveThreshold && outerRadius > 0 && this.props.state.selectedRingGrade.ringId > 0) ?
-					[2,3,4].map((ringNum) => {
-						return (
-							<Donut 
-								center={ CityStore.getLoopLatLng() } 
-								innerRadius={ (ringNum * 2 - 3) / 7 * outerRadius }
-								outerRadius={ (ringNum == 5) ? outerRadius * 100 : (ringNum * 2 - 1) / 7 * outerRadius}
-								clickable={ false } 
-								fillOpacity={ (this.props.state.selectedRingGrade.ringId > 0 && ringNum !== this.props.state.selectedRingGrade.ringId) ? 0.75 : 0 } 
-								fillColor= { '#b8cdcb' } 
-								weight={ 1 }
-								className={ 'donut' } 
-								key={ 'donut' + String(ringNum) } 
-							/>
-						);
-					}) :
+				{ (aboveThreshold && outerRadius > 0 && this.props.state.selectedRingGrade.ringId > 0) ?
+					<Donut 
+						center={ CityStore.getLoopLatLng() } 
+						innerRadius={ (this.props.state.selectedRingGrade.ringId * 2 - 1) / 7 * outerRadius }
+						outerRadius={ outerRadius }
+						clickable={ false } 
+						fillOpacity={ 0.75 } 
+						fillColor= { '#b8cdcb' } 
+						weight={ 1 }
+						className={ 'donut' } 
+						key={ 'donut' } 
+					/> : 
 					null
-				*/}
+				}
 
 				{/* rings: selected ring */}
 				{ (aboveThreshold && this.props.state.selectedRingGrade.ringId > 0) ?
