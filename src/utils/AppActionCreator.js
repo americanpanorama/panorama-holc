@@ -27,7 +27,8 @@ export const AppActionTypes = {
 	onModalClick: 'onModalClick',
 	windowResized: 'windowResized',
 	stateSelected: 'stateSelected',
-	countrySelected: 'countrySelected'
+	countrySelected: 'countrySelected',
+	mapClicked: 'mapClicked'
 
 };
 
@@ -136,6 +137,13 @@ export const AppActions = {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.userRespondedToZoomOffer
 		});
+	},
+
+	mapClicked: (mapId) => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.mapClicked,
+			value: mapId
+		})
 	},
 
 	mapInitialized: (theMap, initialHashState) => {

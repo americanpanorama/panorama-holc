@@ -47,7 +47,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onUserCityResponse', 'onWindowResize', 'storeChanged'];
+		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBringToFrontClick', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onUserCityResponse', 'onWindowResize', 'storeChanged','onMapClick'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -151,6 +151,11 @@ export default class App extends React.Component {
 
 	onAreaChartOff () { AppActions.gradeSelected(null); }
 
+	onBringToFrontClick (event) {
+		console.log(event.target.options.id);
+		AppActions.mapClicked()
+	}
+
 	onBurgessChartHover (ringId, grade) { AppActions.ringGradeSelected({ringId: ringId, grade: grade}); }
 
 	onBurgessChartOff () { AppActions.ringGradeSelected({ringId: -1, grade: null}); }
@@ -193,6 +198,11 @@ export default class App extends React.Component {
 	onGradeUnhover () { AppActions.gradeSelected(null); }
 
 	onHOLCIDClick (event) { AppActions.neighborhoodSelected(event.target.id, this.state.selectedCity); }
+
+	onMapClick (event) { 
+		this.refs.holc_map.refs['holctiles' + event.target.options.id].leafletElement.bringToFront();
+		AppActions.mapClicked(event.target.options.id); 
+	}
 
 	onMapMoved (event) { AppActions.mapMoved(this.getLeafletElementForMap()); }
 
@@ -274,7 +284,8 @@ export default class App extends React.Component {
 				center: this.state.map.center
 			},
 			opacity: this.state.rasterOpacity,
-			text: this.state.text
+			text: this.state.text,
+			sort: (MapStateStore.getSortOrder().length > 0) ? MapStateStore.getSortOrder() : null
 		});
 	}
 
@@ -387,6 +398,7 @@ export default class App extends React.Component {
 									onCityMarkerSelected= { this.onCityMarkerSelected }
 									onSliderChange={ this.onSliderChange }
 									onCountryClick={ this.onCountrySelected }
+									onMapClick={ this.onMapClick }
 								/> :
 								<Map 
 									ref='the_ad_tiles' 

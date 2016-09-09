@@ -8,7 +8,7 @@ import stateAbbrs from '../../data/state_abbr.json';
 const RasterStore = {
 
 	data: {
-		 maps : {},
+		 maps : [],
 		 loaded: false
 	},
 
@@ -17,14 +17,21 @@ const RasterStore = {
 	loadInitialData: function (state) {
 		this.dataLoader.query([
 			{
-				query: 'SELECT holc_maps.*, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps',
+				query: 'SELECT holc_maps.*, ST_asgeojson(holc_maps.the_geom, 4) as the_geojson, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps',
+				format: 'JSON'
+			},
+			{
+				query: 'SELECT distinct(hm1.map_id) FROM digitalscholarshiplab.holc_maps AS hm1, digitalscholarshiplab.holc_maps AS hm2 WHERE hm1.map_id <> hm2.map_id AND ST_Overlaps(hm1.the_geom, hm2.the_geom)',
 				format: 'JSON'
 			}
 		]).then((response) => {
+			let overlaps = response[1].map(overlapObj => overlapObj.map_id);
 			this.data.maps = response[0].map(mapData => {
 				return ({
 					id: mapData.map_id,
 					parent_id: mapData.parent_id,
+					the_geojson: JSON.parse(mapData.the_geojson),
+					overlaps: (overlaps.indexOf(mapData.map_id) !== -1),
 					city: mapData.name,
 					state: mapData.state,
 					name: mapData.name, // + ", " + mapData.state,
@@ -37,6 +44,8 @@ const RasterStore = {
 					maxLng: mapData.maxlng,
 					centerLat: mapData.centerlat,
 					centerLng: mapData.centerlng,
+					sortLat: mapData.sortlat,
+					sortLng: mapData.sortlng,
 					inset: mapData.inset,
 					url: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
 					mapUrl: (!mapData.inset) ? '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData	.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg' : null,
@@ -57,6 +66,8 @@ const RasterStore = {
 
 	getAllRasters: function () { return this.data.maps; },
 
+	getGeoJSON: function (mapId) { return this._getDataForMap(mapId).the_geojson; },
+
 	getMapBoundsForCountry: function () { return this.calculateMapsBounds(this.data.maps.map(cityData => cityData.id)); },
 
 	getMapBoundsForState: function (state) { return this.calculateMapsBounds(this.getMapIdsForState(state)); },
@@ -71,9 +82,18 @@ const RasterStore = {
 
 	getRectifiedUrl: function (mapId) { return this.data.maps[mapId].rectifiedUrl; },
 
+	getSortPoint: function (mapId) { return (this._getDataForMap(mapId) && this._getDataForMap(mapId).sortLat && this._getDataForMap(mapId).sortLng) ? [ this._getDataForMap(mapId).sortLat, this._getDataForMap(mapId).sortLng ] : null; },
+
 	hasLoaded: function() { return this.data.loaded; },
 
+	_getDataForMap: function(mapId) { 
+		let matches = this.data.maps.filter(mapData => (mapData.id == mapId));
+		return (matches) ? matches[0] : false;
+	},
+
 	isInset: function(mapId) { return this.data.maps[mapId].inset; },
+
+	overlapsAnotherMap: function(mapId) { return this._getDataForMap(mapId).overlaps },
 
 	calculateMapsBounds(mapIds) {
 		let minLat = 90, minLng = 0, maxLat = 0, maxLng = -180;

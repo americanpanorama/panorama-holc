@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { PropTypes } from 'react';
-
+import * as L from 'leaflet';
 
 // stores
 import AreaDescriptionsStore from '../stores/AreaDescriptionsStore';
@@ -26,6 +26,8 @@ export default class HOLCMap extends React.Component {
 
 	constructor (props) {
 		super(props);
+
+		this.onBringToFrontClick = this.onBringToFrontClick.bind(this);
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -47,6 +49,10 @@ export default class HOLCMap extends React.Component {
 
 	}
 
+	onBringToFrontClick (event) {
+		this.refs['holctiles' + event.target.options.id].leafletElement.bringToFront();
+	}
+
 	render () {
 
 		const ADs = AreaDescriptionsStore.getVisible(),
@@ -55,10 +61,10 @@ export default class HOLCMap extends React.Component {
 			visibleMapsList = MapStateStore.getVisibleHOLCMapsList(),
 			legendData = {
 				items: [
-					'A First Grade',
-					'B Second Grade',
-					'C Third Grade',
-					'D Fourth Grade',
+					'A "Best"',
+					'B "Still Desireable"',
+					'C "Definitely Declining"',
+					'D "Hazardous"',
 				]
 			};
 
@@ -74,6 +80,7 @@ export default class HOLCMap extends React.Component {
 				zoom={ this.props.state.map.zoom }  
 				onMoveend={ this.props.onMapMoved } 
 				className='the_map'
+				//onClick={ this.props.onMapClick }
 			>
 
 				{/* base map */}
@@ -84,40 +91,41 @@ export default class HOLCMap extends React.Component {
 				/>
 
 				{/* holc tiles */}
-				{/* for unselected maps */}
 				{ (aboveThreshold) ?
 					visibleMapsList.map((item, i) => {
-						if (CitiesStore.getAdIdsFromMapId(item.id).indexOf(this.props.selectedCity) == -1) {
-							return (
-								<TileLayer
-									key={ 'holctiles' + item.id}
-									url={ item.url }
-									minZoom={ item.minZoom }
-									bounds= { item.bounds }
-									opacity={ this.props.state.rasterOpacity }
+						return (
+							<TileLayer
+								ref={ 'holctiles' + item.id } 
+								key={ 'holctiles' + item.id }
+								url={ item.url }
+								minZoom={ item.minZoom }
+								bounds= { item.bounds }
+								opacity={ this.props.state.rasterOpacity }
+							/>
+						);
+					}) :
+					''
+				}
+
+				{/* polygon of map for sorting z level */}
+				{ (aboveThreshold) ? 
+					visibleMapsList.map((item, i) => {
+						if (RasterStore.overlapsAnotherMap(item.id)) {
+							return(
+								<GeoJson
+									data={ RasterStore.getGeoJSON(item.id) }
+									key={ 'sortPolygon' + item.id }
+									id={ item.id }
+									onClick={ this.props.onMapClick }
+									opacity={ 0 }
+									fillOpacity={ 0 }
 								/>
 							);
 						}
 					}) :
-					''
+					null
 				}
-				{/* for selected maps */}
-				{ (aboveThreshold) ?
-					visibleMapsList.map((item, i) => {
-						if (CitiesStore.getAdIdsFromMapId(item.id).indexOf(this.props.selectedCity) !== -1) {
-							return (
-								<TileLayer
-									key={ 'holctiles' + item.id}
-									url={ item.url }
-									minZoom={ item.minZoom }
-									bounds= { item.bounds }
-									opacity={ this.props.state.rasterOpacity }
-								/>
-							);
-						}
-					}) :
-					''
-				}
+
 
 				{/* rings: donut holes */}
 				{ (aboveThreshold && outerRadius > 0) ?

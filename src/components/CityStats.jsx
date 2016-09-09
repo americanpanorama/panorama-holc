@@ -196,7 +196,7 @@ export default class CityStats extends React.Component {
 			var xOffset = 0;
 			barPercents.forEach((slice, i) => {
 				barPercents[i].xOffset = xOffset;
-				xOffset += slice.overallPercent;
+				xOffset += Math.round(scope.WIDTH * slice.overallPercent) / scope.WIDTH;
 			});
 
 			var pie = d3.layout.pie()
@@ -366,7 +366,7 @@ export default class CityStats extends React.Component {
 				  .transition()
 				  .attr('fill', 'black')
 				  .attr('opacity', 1);
-				scope.onGradeHover(grade);
+				scope.onGradeHover(d.grade);
 			  }).
 			  on('mouseout', function(d,i,j) {
 				let grade = ['A','B','C','D'][j];

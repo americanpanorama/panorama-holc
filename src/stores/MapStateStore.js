@@ -21,7 +21,8 @@ const MapStateStore = {
 		visibleAdIds: [],
 		adZoomThreshold: 9,
 		hasLoaded: false,
-		initialViewLoaded: false
+		initialViewLoaded: false,
+		sortOrder: []
 	},
 
 	loadData: function (theMap, rasters, adsMetadata) {
@@ -31,10 +32,10 @@ const MapStateStore = {
 			visibleHOLCMapsByState = {},
 			visibleAdIds = []; 
 
-		Object.keys(rasters).forEach((id) => {
-			if (rasters[id].bounds && theBounds.intersects(rasters[id].bounds)) {
-				visibleHOLCMaps[id] = rasters[id];
-				visibleHOLCMapsIds.push(parseInt(id));
+		rasters.forEach((raster) => {
+			if (raster.bounds && theBounds.intersects(raster.bounds)) {
+				visibleHOLCMaps[raster.id] = raster;
+				visibleHOLCMapsIds.push(parseInt(raster.id));
 			}
 		});
 
@@ -68,8 +69,23 @@ const MapStateStore = {
 		this.data.visibleHOLCMapsByState = visibleHOLCMapsByState;
 		this.data.visibleAdIds = visibleAdIds;
 
+		// prune the sort
+		this.data.sortOrder = this.data.sortOrder.filter(mapId => (this.data.visibleHOLCMapsIds.indexOf(mapId) > -1));
 		this.data.hasLoaded = true;
 
+		this.emit(AppActionTypes.storeChanged);
+	},
+
+	addToSort: function(mapId) {
+		if (this.data.sortOrder.indexOf(mapId) > -1) {
+			this.data.sortOrder.splice(this.data.sortOrder.indexOf(mapId), 1);
+		}
+		this.data.sortOrder.unshift(mapId);
+		this.emit(AppActionTypes.storeChanged);
+	},
+
+	setSortOrder: function(sortOrder) {
+		this.data.sortOrder = sortOrder;
 		this.emit(AppActionTypes.storeChanged);
 	},
 
@@ -97,6 +113,8 @@ const MapStateStore = {
 
 	getCenter: function() { return this.data.center; },
 
+	getSortOrder: function() { return this.data.sortOrder; },
+
 	getTheMap: function() { return this.data.theMap; },
 
 	getVisibleCitiesForState: function(abbr) { return this.data.visibleHOLCMapsByState[abbr]; },
@@ -107,7 +125,33 @@ const MapStateStore = {
 
 	getVisibleHOLCMapsIds: function() { return this.data.visibleHOLCMapsIds; },
 
-	getVisibleHOLCMapsList: function() { return Object.keys(this.data.visibleHOLCMaps).map(mapId => this.data.visibleHOLCMaps[mapId]); },
+	getVisibleHOLCMapsList: function() { 
+		let list = Object.keys(this.data.visibleHOLCMaps).map(mapId => this.data.visibleHOLCMaps[mapId]);
+
+		if (list.length == 0) {
+			return list;
+		}
+
+		let	selectedMaps = CitiesStore.getMapIds(CityStore.getId()),
+			sortedIndices = this.data.sortOrder.map(mapId => list.findIndex(map => (map.id == mapId))).reverse(),
+			selectedIndices = selectedMaps.map(mapId => list.findIndex(map => (map.id == mapId))).filter(mapId => sortedIndices.indexOf(mapId == -1));
+
+		// move the selected and then the sorted maps (which has been reversed) to the end of the list so they appear at the top of the sort order
+		selectedIndices.forEach(i => {
+			list.push(list[i]);
+		}); 
+		selectedIndices.sort((a,b) => b - a).forEach(i => {
+			list.splice(i, 1);
+		});
+		sortedIndices.forEach(i => {
+			list.push(list[i]);
+		}); 
+		sortedIndices.sort((a,b) => b - a).forEach(i => {
+			list.splice(i, 1);
+		});
+
+		return list;
+	},
 
 	getVisibleAdIds: function() { return this.data.visibleAdIds.sort((aAdId, bAdId) => (CitiesStore.getCityName(aAdId) > CitiesStore.getCityName(bAdId))); },
 
@@ -138,6 +182,14 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			} else {
 				MapStateStore.setView(action.state.map.zoom, action.state.map.center);
 			}
+
+			if (action.hashState.sort) {
+				MapStateStore.setSortOrder(action.hashState.sort.split(',').map(Number));
+			}
+			break;
+
+		case AppActionTypes.mapClicked: 
+			MapStateStore.addToSort(action.value);
 			break;
 
 		case AppActionTypes.mapInitialized:
@@ -179,7 +231,8 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			break;
 
 		case AppActionTypes.mapMoved:
-			if (RasterStore.hasLoaded() && CityStore.hasLoaded()) {
+
+			if (RasterStore.hasLoaded() && CitiesStore.hasLoaded()) {
 				MapStateStore.loadData(action.theMap, RasterStore.getAllRasters(), CitiesStore.getCitiesMetadata());
 			}
 			break;
