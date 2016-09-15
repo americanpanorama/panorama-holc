@@ -47,6 +47,16 @@ export default class HOLCMap extends React.Component {
 			});
 		}
 
+		if (this.refs.neighborhoodPolygonInverted) {
+			this.refs.neighborhoodPolygonInverted.leafletElement.bringToBack();
+
+			MapStateStore.getSortOrder().forEach(mapId => {
+				if (this.refs['sortingPolygon' + mapId]) {
+					this.refs['sortingPolygon' + mapId].leafletElement.bringToBack();
+				}
+			});
+		}
+
 	}
 
 	onBringToFrontClick (event) {
@@ -119,6 +129,8 @@ export default class HOLCMap extends React.Component {
 									onClick={ this.props.onMapClick }
 									opacity={ 0 }
 									fillOpacity={ 0 }
+									className='sortingPolygon'
+									ref={ 'sortingPolygon' + item.id }
 								/>
 							);
 						}
@@ -207,6 +219,7 @@ export default class HOLCMap extends React.Component {
 						clickable={ false }
 						className={ 'neighborhoodPolygonInverted grade' + ADs[this.props.state.selectedCity][this.props.state.highlightedNeighborhood].holc_grade } 
 						key={ 'neighborhoodPolygonInverted' + this.props.state.highlightedNeighborhood }
+						
 					/> :
 					null
 				}
@@ -215,9 +228,10 @@ export default class HOLCMap extends React.Component {
 				{ (aboveThreshold && this.props.state.selectedNeighborhood && ADs[this.props.state.selectedCity] && ADs[this.props.state.selectedCity][this.props.state.selectedNeighborhood] && ADs[this.props.state.selectedCity][this.props.state.selectedNeighborhood].area_geojson_inverted) ?
 					<AreaPolygon
 						data={ ADs[this.props.state.selectedCity][this.props.state.selectedNeighborhood].area_geojson_inverted } 
-						clickable={ false }
-						className={ 'neighborhoodPolygonInverted grade' + ADs[this.props.state.selectedCity][this.props.state.selectedNeighborhood].holc_grade } 
+						onClick={ this.props.onNeighborhoodInvertedPolygonClick }
+						className={ 'neighborhoodPolygonInverted' } 
 						key={ 'neighborhoodPolygonInverted' + this.props.state.selectedNeighborhood }
+						ref='neighborhoodPolygonInverted'
 					/> :
 					null
 				}

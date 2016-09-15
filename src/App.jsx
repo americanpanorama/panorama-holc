@@ -214,7 +214,7 @@ export default class App extends React.Component {
 		});
 	}
 
-	onNeighborhoodClose() { AppActions.neighborhoodSelected(null, this.state.selectedCity); }
+	onNeighborhoodClose() { console.log('clicked'); AppActions.neighborhoodSelected(null, this.state.selectedCity); }
 
 	onNeighborhoodHighlighted (event) {
 		AppActions.neighborhoodHighlighted(event.target.id);
@@ -395,6 +395,7 @@ export default class App extends React.Component {
 									selectedCity = { this.state.selectedCity }
 									onMapMoved={ this.onMapMoved }
 									onNeighborhoodPolygonClick={ this.onNeighborhoodPolygonClick }
+									onNeighborhoodInvertedPolygonClick={ this.onNeighborhoodClose }
 									onCityMarkerSelected= { this.onCityMarkerSelected }
 									onSliderChange={ this.onSliderChange }
 									onCountryClick={ this.onCountrySelected }

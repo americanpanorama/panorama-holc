@@ -7,7 +7,6 @@ import CitiesStore from './CitiesStore';
 import MapStateStore from './MapStateStore';
 import stateAbbrs from '../../data/state_abbr.json';
 
-
 const AreaDescriptionsStore = {
 
 	data: {
