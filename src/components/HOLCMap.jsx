@@ -110,7 +110,7 @@ export default class HOLCMap extends React.Component {
 				{/* polygon of map for sorting z level */}
 				{ (aboveThreshold) ? 
 					visibleMapsList.map((item, i) => {
-						if (RasterStore.overlapsAnotherMap(item.id)) {
+						if (RasterStore.overlapsAnotherMap(item.id) && visibleMapsList.length > 1) {
 							return(
 								<GeoJson
 									data={ RasterStore.getGeoJSON(item.id) }

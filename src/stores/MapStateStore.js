@@ -150,7 +150,7 @@ const MapStateStore = {
 			list.splice(i, 1);
 		});
 
-		return list;
+		return list.filter(map => typeof map !== 'undefined');
 	},
 
 	getVisibleAdIds: function() { return this.data.visibleAdIds.sort((aAdId, bAdId) => (CitiesStore.getCityName(aAdId) > CitiesStore.getCityName(bAdId))); },
