@@ -214,7 +214,7 @@ export default class App extends React.Component {
 		});
 	}
 
-	onNeighborhoodClose() { console.log('clicked'); AppActions.neighborhoodSelected(null, this.state.selectedCity); }
+	onNeighborhoodClose() { AppActions.neighborhoodSelected(null, this.state.selectedCity); }
 
 	onNeighborhoodHighlighted (event) {
 		AppActions.neighborhoodHighlighted(event.target.id);

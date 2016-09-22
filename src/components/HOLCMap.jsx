@@ -262,41 +262,19 @@ export default class HOLCMap extends React.Component {
 					null
 				}
 
-				{/* cartogram marker for city: shown below zoom level 10 */}
+				{/* cartogram marker for city: shown below zoom level 10; it's invisible but used for selection */}
 				{(!aboveThreshold) ?
 					CitiesStore.getADsList().map((item, i) => {
-						return ((item.radii && !isNaN(item.centerLat) && !isNaN(item.centerLng)) ?
-							Object.keys(item.radii).map((grade) => {
-								return (item.radii[grade].inner == 0) ?
-									<Circle
-										center={ [item.centerLat, item.centerLng] }
-										radius={ item.radii[grade].outer }
-										id={ item.ad_id }
-										onClick={ this.props.onCityMarkerSelected }
-										key={ 'clickableDonut' + item.ad_id + grade }
-										className={ 'simpleDonut grade_' + grade }
-									/> :
-									<Donut
-										center={ [item.centerLat, item.centerLng] }
-										innerRadius={ item.radii[grade].inner }
-										outerRadius={ item.radii[grade].outer }
-										id={ item.ad_id }
-										onClick={ this.props.onCityMarkerSelected }
-										key={ 'clickableDonut' + item.ad_id + grade }
-										className={ 'simpleDonut grade_' + grade }
-									/>
-							}) :
-							(!item.parent_id && !isNaN(item.centerLat) && !isNaN(item.centerLng)) ?
-								<Circle
-									center={ [item.centerLat, item.centerLng] }
-									radius={ 25000 }
-									id={ item.ad_id }
-									onClick={ this.props.onCityMarkerSelected }
-									key={ 'clickableMap' + item.ad_id }
-									className={ 'cityCircle '}
-								/> :
-								null
-							
+						return (!isNaN(item.centerLat) && !isNaN(item.centerLng) ?
+							<Circle
+								center={ [item.centerLat, item.centerLng] }
+								radius={ 27000 }
+								id={ item.ad_id }
+								onClick={ this.props.onCityMarkerSelected }
+								key={ 'clickableMap' + item.ad_id }
+								className={ 'cityCircle '}
+							/> :
+							null
 						);
 					}) :
 					null

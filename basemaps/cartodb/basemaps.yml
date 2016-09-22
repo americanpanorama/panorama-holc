@@ -4,3 +4,4 @@ maxzoom: 9
 
 layers:
   - labels:
+  - cityMarkers:

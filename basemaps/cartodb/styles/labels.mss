@@ -1,127 +1,251 @@
-
-/** simple visualization */
 #holc_ads::labels {
   text-name: [city];
   text-face-name: 'DejaVu Sans Book';
-  text-size: 10;
+  text-size: 11;
   text-label-position-tolerance: 0;
-  text-fill: #0F3B82;
+  text-fill: #2E5387;
   text-halo-fill: #FFF;
   text-halo-radius: 1;
-  text-dy: -10;
   text-allow-overlap: false;
   text-placement: point;
   text-placement-type: simple;
-  /** west **/
-  [zoom<=6][city='Dayton'],
-  [zoom<=6][city='Hamilton'],
-  [zoom<=6][city='Racine'],
-  [zoom<=6][city='Saginaw'],
-  [zoom<=6][city='Lorain'],
-  [zoom<=6][city='Canton'], 
-  [zoom<=6][city='Poughkeepsie'],
-  [zoom<=6][city='Essex County'], 
-  [zoom<=6][city='Waltham'] {
-    text-dy: 0;
-    text-dx: -10;
+  text-horizontal-alignment: middle;
+  
+  [placement='west'],
+  [placement='northwest'],
+  [placement='southwest'] {
     text-horizontal-alignment: left;
   }
-  
-  /** northwest **/
-  
-  
-  /** southwest **/
-  [zoom<=6][city='San Francisco'],
-  [zoom<=6][city='St.Petersburg'] {
-    text-dy: 6;
-    text-dx: -6;
-    text-horizontal-alignment: left;
-  }
-  
-  
-  /** east **/
-  [zoom<=6][city='Boston'], 
-  [zoom<=6][city='Grand Rapids'],
-  [zoom<=6][city='Battle Creek'],
-  [zoom<=6][city='Pontiac'],
-  [zoom<=6][city='Detroit'], 
-  [zoom<=6][city='New Castle'],
-  [zoom<=6][city='New Haven'], 
-  [zoom<=6][city='Stamford, Darien, and New Canaan'] {
-    text-dy: 0;
-    text-dx: 9;
+  [placement='east'],
+  [placement='northeast'],
+  [placement='southeast']  {
     text-horizontal-alignment: right;
   }
-  
-  /** custom **/
-  [zoom<=6][city='Oakland'] {
-    text-dy: -10;
-    text-dx: 8;
-    text-horizontal-alignment: left;
+  [placement='default'] {
+    text-fill: red;
   }
   
-  [zoom<=6][city='Youngstown'] {
-    text-dy: -7;
-    text-dx: 62;
-    text-horizontal-alignment: left;
-  }
   
-  [zoom<=6][city='New Britain'] {
-    text-dy: 4;
-    text-dx: 62;
-    text-horizontal-alignment: left;
+  [zoom<=6] {
+    text-size: 10;
+    
+    [city='Baltimore'],
+    [city='Chicago'],
+    [city='Five Boroughs of New York'],
+    [city='Philadelphia'],
+    [city='Greater Boston'],
+    [city='Detroit'],
+    [city='Cleveland'],
+    [city='Essex County'],
+    [city='St.Louis'],
+    [city='Pittsburg'],
+    [city='Hudson County'],
+    [city='San Francisco'],
+    [city='Milwaukee Co.'],
+    [city='Buffalo'],
+    [city='Los Angeles'] {
+      text-size: 13;
+    }
+    
+    [city='New Orleans'],
+    [city='Minneapolis'],
+    [city='Greater Kansas City'],
+    [city='Indianapolis'],
+    [city='Seattle'],
+    [city='Rochester'],
+    [city='Denver'],
+    [city='Louisville'],
+    [city='Columbus'],
+    [city='Portland'],
+    [city='Atlanta'],
+    [city='Oakland'],
+    [city='Dallas'],
+    [city='StPaul'],
+    [city='Toledo'],
+    [city='Birmingham'],
+    [city='Akron'],
+    [city='Dayton'],
+    [city='Syracuse'],
+    [city='Oklahoma City'],
+    [city='San Diego'],
+    [city='Richmond'],
+    [city='Staten Island'],
+    [city='Jacksonville'],
+    [city='Miami'],
+    [city='Youngstown'],
+    [city='Grand Rapids'],
+    [city='New Haven'],
+    [city='Flint'],
+    [city='Springfield'],
+    [city='Norfolk'],
+    [city='Albany'],
+    [city='Chattanooga'],
+    [city='Trenton'],
+    [city='Spokane'],
+    [city='Lake County Calumet/Hammond'],
+    [city='Fort wayne'],
+    [city='Camden'],
+    [city='Erie'],
+    [city='Wichita'],
+    [city='Lake County Gary'],
+    [city='Knoxville'],
+    [city='Tacoma'],
+    [city='Canton'],
+    [city='Tampa'],
+    [city='Sacramento'],
+    [city='South Bend'],
+    [city='Duluth'],
+    [city='Charlotte'],
+    [city='Utica'],{
+      text-size: 11;
+    }
   }
-  
-  [zoom>=6][city='Bronx'] {
-    text-dy: 1;
-    text-dx: 42;
-    text-horizontal-alignment: left;
+  [zoom=7] {
+    text-size: 12;
+    
+    [city='Baltimore'],
+    [city='Chicago'],
+    [city='Five Boroughs of New York'],
+    [city='Philadelphia'],
+    [city='Greater Boston'],
+    [city='Detroit'],
+    [city='Cleveland'],
+    [city='Essex County'],
+    [city='St.Louis'],
+    [city='Pittsburg'],
+    [city='Hudson County'],
+    [city='San Francisco'],
+    [city='Milwaukee Co.'],
+    [city='Buffalo'],
+    [city='Los Angeles'] {
+      text-size: 15;
+    }
+    
+    [city='New Orleans'],
+    [city='Minneapolis'],
+    [city='Greater Kansas City'],
+    [city='Indianapolis'],
+    [city='Seattle'],
+    [city='Rochester'],
+    [city='Denver'],
+    [city='Louisville'],
+    [city='Columbus'],
+    [city='Portland'],
+    [city='Atlanta'],
+    [city='Oakland'],
+    [city='Dallas'],
+    [city='StPaul'],
+    [city='Toledo'],
+    [city='Birmingham'],
+    [city='Akron'],
+    [city='Dayton'],
+    [city='Syracuse'],
+    [city='Oklahoma City'],
+    [city='San Diego'],
+    [city='Richmond'],
+    [city='Staten Island'],
+    [city='Jacksonville'],
+    [city='Miami'],
+    [city='Youngstown'],
+    [city='Grand Rapids'],
+    [city='New Haven'],
+    [city='Flint'],
+    [city='Springfield'],
+    [city='Norfolk'],
+    [city='Albany'],
+    [city='Chattanooga'],
+    [city='Trenton'],
+    [city='Spokane'],
+    [city='Lake County Calumet/Hammond'],
+    [city='Fort wayne'],
+    [city='Camden'],
+    [city='Erie'],
+    [city='Wichita'],
+    [city='Lake County Gary'],
+    [city='Knoxville'],
+    [city='Tacoma'],
+    [city='Canton'],
+    [city='Tampa'],
+    [city='Sacramento'],
+    [city='South Bend'],
+    [city='Duluth'],
+    [city='Charlotte'],
+    [city='Utica'],{
+      text-size: 13;
+    }
   }
-  
-  [zoom>=6][city='Manhattan'] {
-    text-dy: -10;
-    text-dx: -2;
-    text-horizontal-alignment: left;
+  [zoom=8] {
+    text-size: 14;
+    [city='Baltimore'],
+    [city='Chicago'],
+    [city='Five Boroughs of New York'],
+    [city='Philadelphia'],
+    [city='Greater Boston'],
+    [city='Detroit'],
+    [city='Cleveland'],
+    [city='Essex County'],
+    [city='St.Louis'],
+    [city='Pittsburg'],
+    [city='Hudson County'],
+    [city='San Francisco'],
+    [city='Milwaukee Co.'],
+    [city='Buffalo'],
+    [city='Los Angeles'] {
+      text-size: 17;
+    }
+    
+    [city='New Orleans'],
+    [city='Minneapolis'],
+    [city='Greater Kansas City'],
+    [city='Indianapolis'],
+    [city='Seattle'],
+    [city='Rochester'],
+    [city='Denver'],
+    [city='Louisville'],
+    [city='Columbus'],
+    [city='Portland'],
+    [city='Atlanta'],
+    [city='Oakland'],
+    [city='Dallas'],
+    [city='StPaul'],
+    [city='Toledo'],
+    [city='Birmingham'],
+    [city='Akron'],
+    [city='Dayton'],
+    [city='Syracuse'],
+    [city='Oklahoma City'],
+    [city='San Diego'],
+    [city='Richmond'],
+    [city='Staten Island'],
+    [city='Jacksonville'],
+    [city='Miami'],
+    [city='Youngstown'],
+    [city='Grand Rapids'],
+    [city='New Haven'],
+    [city='Flint'],
+    [city='Springfield'],
+    [city='Norfolk'],
+    [city='Albany'],
+    [city='Chattanooga'],
+    [city='Trenton'],
+    [city='Spokane'],
+    [city='Lake County Calumet/Hammond'],
+    [city='Fort wayne'],
+    [city='Camden'],
+    [city='Erie'],
+    [city='Wichita'],
+    [city='Lake County Gary'],
+    [city='Knoxville'],
+    [city='Tacoma'],
+    [city='Canton'],
+    [city='Tampa'],
+    [city='Sacramento'],
+    [city='South Bend'],
+    [city='Duluth'],
+    [city='Charlotte'],
+    [city='Utica'],{
+      text-size: 15;
+    }
   }
-  
-  [zoom<=6][city='Boston'] {
-    text-dy: 0;
-    text-dx: 42;
-    text-horizontal-alignment: left;
-  }
-  
-  /** south **/
-  [zoom<=6][city='Montgomery'],
-  [zoom<=6][city='Greensboro'],
-  [zoom<=6][city='Norfolk'],
-  [zoom<=6][city='Roanoke'],
-  [zoom<=6][city='Joliet'],
-  [zoom<=6][city='Kenosha'],
-  [zoom<=6][city='Troy'], 
-  [zoom<=6][city='Johnstown'],
-  [zoom<=6][city='Staten Island'],
-  [zoom<=6][city='Braintree'],
-  [zoom<=6][city='San Jose'],
-  [zoom<=6][city='Tacoma'],
-  [zoom<=6][state='IL'][city='Springfield'],{
-    text-dy: 10;
-    text-dx: 0;
-    text-horizontal-alignment: middle;
-  }
-
-  /** east **/
-  [zoom=5][city='Boston'], 
-  [zoom=5][city='Grand Rapids'],
-  [zoom=5][city='Battle Creek'],
-  [zoom=5][city='Pontiac'],
-  [zoom=5][city='Detroit'], 
-  [zoom=5][city='New Castle'],
-  [zoom=5][city='New Haven'], 
-  [zoom=5][city='Stamford, Darien, and New Canaan'] {
-    text-dy: 0;
-    text-dx: 18;
-    text-horizontal-alignment: right;
-  }
-   
   
 }
