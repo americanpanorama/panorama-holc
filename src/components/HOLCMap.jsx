@@ -13,6 +13,8 @@ import UserLocationStore from '../stores/UserLocationStore';
 // components
 import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImagePath } from 'react-leaflet';
 import { CartoDBTileLayer, Legend } from '@panorama/toolkit';
+//import CartoDBTileLayer from './CartoDBTileLayer.jsx';
+//import { CartoDBTileLayerProd, Legend } from '../../../panorama';
 import AreaPolygon from './AreaPolygon.jsx';
 import Donut from './Donut/Donut.jsx';
 import Slider from 'rc-slider';
@@ -63,6 +65,16 @@ export default class HOLCMap extends React.Component {
 		this.refs['holctiles' + event.target.options.id].leafletElement.bringToFront();
 	}
 
+	_isRetina(){
+		return ((window.matchMedia && (window.matchMedia('only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)').matches || window.matchMedia('only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)').matches)) || (window.devicePixelRatio && window.devicePixelRatio > 1.3));
+	}
+
+	_basemapUrl() {
+		let url = (MapStateStore.isAboveZoomThreshold()) ? tileLayers.layers[0].urlLabels : tileLayers.layers[0].urlNoLabels;
+		url = (this._isRetina()) ? url.replace('0/{z}', '{z}').replace('.png', '@2x.png') : url;
+		return url;
+	}
+
 	render () {
 
 		const ADs = AreaDescriptionsStore.getVisible(),
@@ -96,7 +108,7 @@ export default class HOLCMap extends React.Component {
 				{/* base map */}
 				<TileLayer
 					key={ (aboveThreshold) ? 'labels' : 'noLabels' }
-					url={ (aboveThreshold) ? tileLayers.layers[0].urlLabels : tileLayers.layers[0].urlNoLabels }
+					url={ this._basemapUrl() }
 					zIndex={ -1 }
 				/>
 
@@ -326,7 +338,6 @@ export default class HOLCMap extends React.Component {
 
 				<Legend 
 					{ ...legendData } 
-					onItemSelected={ this.onGradeHover } 
 					className={ (!aboveThreshold) ? 'withCityMarker' : '' }
 				/>
 
