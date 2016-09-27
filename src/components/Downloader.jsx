@@ -26,29 +26,107 @@ export default class Downloader extends React.Component {
 	}
 
 	render () {
-
-
 		return (
 			<div className='download_menu'>
-				<h2>
-					<span>{ this.props.name + ', ' + this.props.state }</span>
-					<div className='downloadicon' onClick={ this.props.onDownloadClicked }>x</div>
-				</h2>
-				<ul>
-					<li className='greentop'>
-						<img src={this.props.thumbnail } />
-						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC map (original)</a></h3>			
-					</li>
-					<li className='greenmiddle'>
-						<img src={this.props.mapThumbnail } />
-						<h3><a onClick={ this.downloadGeojson }>Download HOLC area description</a></h3>
-					</li>
-					<li className='greenbottom'>
-						<img src={this.props.mapThumbnail } />
-						<h3><a href={this.props.mapurl} download={ this.props.name + 'HOLCMap.jpg'}>Download HOLC georeferenced map</a></h3>
-					</li>
-				</ul>
+				<h3>Maps</h3>
+
+				{ (this.props.rasters.length == 1) ?
+					<h4>
+						<a 
+							href={ this.props.rasters[0].mapUrl } 
+							download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_scan.zip'}
+						>
+							Original Scan (.jpg)
+						</a>
+					</h4> :
+					null
+				}
+
+				{ (this.props.rasters.length > 1) ?
+					<div>
+						<h4>Original Scans</h4>
+						<ol>
+							{ this.props.rasters.map(map => {
+								if (!map.inset) {
+									return <li key={ 'ungeorectifiedDownload' + map.id }>
+										<h3>
+											<a 
+												href={ map.mapUrl } 
+												download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
+											>
+												{ map.name } (.jpg)
+											</a>
+										</h3>
+								</li>
+								}
+							}) }
+						</ol>
+					</div> :
+					null
+				}
+
+				{ (this.props.rasters.length == 1) ?
+					<h4>
+						<a 
+							href={ this.props.rasters[0].rectifiedUrl } 
+							download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_rectified.zip'}
+						>
+							Georectified (.zip)
+						</a>
+					</h4> :
+					null
+				}
+
+				{ (this.props.rasters.length > 1) ?
+					<div>
+						<h4>Georectified</h4>
+						<ol>
+							{ this.props.rasters.map(map => {
+								return <li key={ 'georectifiedDownload' + map.id }>
+									<h3>
+										<a 
+											href={ map.rectifiedUrl } 
+											download={ map.name.replace(/\s+/g, '') + '_rectified.zip'}
+										>
+											{ map.name } (.zip)
+										</a>
+									</h3>
+								</li>
+							}) }
+						</ol>
+					</div> :
+					null
+				}
+
+
+				
+
+				{ (this.props.hasADData) ?
+					<div>
+						<h3>Area Descriptions &amp; Polygons</h3>
+						<h4>
+							<a onClick={ this.props.downloadGeojson }>GeoJson</a>
+						</h4> 
+						<h4>
+							<a 
+								href={ this.props.bucketPath + 'area_descriptions.zip' }
+								download={ this.props.name.replace(/\s+/g, '') + '_area_descriptions.zip' }
+							>
+								Shapefile
+							</a>
+						</h4> 
+					</div> :
+					null
+				}
+
+
+
+
 			</div>
+
+				
+
+
 		);
 	}
 }

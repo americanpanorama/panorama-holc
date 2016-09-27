@@ -468,7 +468,7 @@ export default class App extends React.Component {
 							style={ DimensionsStore.getSidebarHeightStyle() }
 						>
 
-							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && !this.state.downloadOpen && this.state.selectedCity) ?
+							{ (!this.state.selectedNeighborhood && !this.state.selectedCategory && this.state.selectedCity) ?
 								<CityStats 
 									adId={ this.state.selectedCity }
 									name={ CityStore.getName() }
@@ -488,6 +488,10 @@ export default class App extends React.Component {
 									onDownloadClicked={ this.onDownloadClicked }
 									onCitySelected={ this. onCitySelected }
 									onStateSelected={ this.onStateSelected }
+									downloadOpen={ this.state.downloadOpen }
+									rasters={ RasterStore.getMapsFromIds(CitiesStore.getMapIds(this.state.selectedCity)) }
+									downloadGeojson = { this.downloadGeojson }
+									bucketPath={ CityStore.getBucketPath(this.state.selectedCity) }
 								/> :
 								''
 							}
@@ -587,81 +591,6 @@ export default class App extends React.Component {
 									/>;
 								}) :
 								''
-							}
-
-							{ (this.state.downloadOpen) ?
-								<div className='download_menu'>
-									<h2>
-										<span
-											onClick={ this.onCitySelected }
-											id={ this.state.selectedCity }
-										>
-											{ CityStore.getName() + ', '}
-										</span>
-										<span 
-											onClick={ this.onStateSelected } 
-											id={ CityStore.getState() }
-										>
-											{ CityStore.getState() }
-										</span>
-
-										<div className='downloadicon' onClick={ this.onDownloadClicked }>x</div>
-
-									</h2>
-									<ul>
-										{ CitiesStore.getMaps(this.state.selectedCity).map(map => {
-											if (!RasterStore.isInset(map.id)) {
-												return <li className='greentop' key={ 'ungeorectifiedDownload' + map.id }>
-													<h3>
-														<a 
-															href={ RasterStore.getMapUrl(map.id) } 
-															download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
-														>
-															Download map of { map.name } (.jpg)
-															<img src={this.props.thumbnail } />
-														</a>
-													</h3>
-											</li>
-											}
-										}) }
-										{ CitiesStore.getMaps(this.state.selectedCity).map(map => {
-											return <li className='greenmiddle' key={ 'georectifiedDownload' + map.id }>
-												<h3>
-													<a 
-														href={ RasterStore.getRectifiedUrl(map.id) } 
-														download={ map.name.replace(/\s+/g, '') + '_rectified.zip'}
-													>
-														Download georeferenced map of { map.name } (.zip)
-													</a>
-												</h3>
-											</li>
-										}) }
-										{ (CitiesStore.hasADData(this.state.selectedCity)) ?
-											<li className='greenbottom'>
-												<h3>
-													<a onClick={ this.downloadGeojson }>
-														Download area description (.geojson)
-													</a>
-												</h3>
-											</li> :
-											''
-										}
-										{ (CitiesStore.hasADData(this.state.selectedCity)) ?
-											<li className='greensubbottom'>
-												<h3>
-													<a 
-														href={ CityStore.getBucketPath(this.state.selectedCity) + 'area_descriptions.zip' }
-														download={ CityStore.getName().replace(/\s+/g, '') + '_area_descriptions.zip' }
-													>
-														Download area description (.shp)
-													</a>
-												</h3>
-											</li> : 
-											''
-										}
-									</ul>
-								</div> : 
-								null
 							}
 
 						</div>

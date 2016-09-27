@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 import { render } from 'react-dom';
 import * as d3 from 'd3';
 import { AppActions } from '../utils/AppActionCreator';
+import Downloader from './Downloader.jsx';
 
 export default class CityStats extends React.Component {
 
@@ -37,7 +38,7 @@ export default class CityStats extends React.Component {
 	};
 
 	shouldComponentUpdate(nextProps, nextState) {
-		if (nextProps.hasADs !== this.props.hasADs || nextProps.popStats !== this.props.popStats) {
+		if (nextProps.hasADs !== this.props.hasADs || nextProps.popStats !== this.props.popStats || nextProps.downloadOpen !== this.props.downloadOpen) {
 			return true;
 		}
 		// don't know why this is necessary, but the component is updating on mouseover--this prevents that.
@@ -111,6 +112,18 @@ export default class CityStats extends React.Component {
 
 					<span className='downloadicon' onClick={ this.props.onDownloadClicked }></span>
 				</h1>
+
+				{ (this.props.downloadOpen) ?
+					<Downloader 
+						rasters={ this.props.rasters }
+						hasADData={ this.props.hasADData }
+						downloadGeojson={ this.props.downloadGeojson }
+						bucketPath={ this.props.bucketPath }
+						name={ this.props.name }
+					/> :
+					null
+				}
+				
 
 				{ (this.props.hasADData || this.props.hasADImages) ?
 					<div className='adInstructions'>click on neighborhoods on the map to read their area description</div> : 

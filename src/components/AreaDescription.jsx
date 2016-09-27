@@ -110,7 +110,6 @@ export default class AreaDescription extends React.Component {
 		return (
 
 			<ul className='area_description NSForm8'>
-
 				<li>
 					<span className='catNum'>1</span>
 					<span className='catName'>Name of City</span>
