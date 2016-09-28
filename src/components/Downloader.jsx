@@ -27,106 +27,103 @@ export default class Downloader extends React.Component {
 
 	render () {
 		return (
-			<div className='download_menu'>
-				<h3>Maps</h3>
+			<div className='downloads'>
 
-				{ (this.props.rasters.length == 1) ?
-					<h4>
-						<a 
-							href={ this.props.rasters[0].mapUrl } 
-							download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_scan.zip'}
-						>
-							Original Scan (.jpg)
-						</a>
-					</h4> :
-					null
-				}
+			<div className='download_menu_right'>
+				<h3>Area Descriptions &amp; Polygons</h3>
+					{ (this.props.hasADData) ?
+						<div>
+							<h4>
+								<a onClick={ this.props.downloadGeojson }>GeoJson</a>
+							</h4> 
+							<h4>
+								<a 
+									href={ this.props.bucketPath + 'area_descriptions.zip' }
+									download={ this.props.name.replace(/\s+/g, '') + '_area_descriptions.zip' }
+								>
+									Shapefile
+								</a>
+							</h4> 
+						</div> :
+						<div>These will be added when the area descriptions have been transcribed.</div>
+					}
+				</div>
+				<div className='download_menu_left'>
+					<h3>Maps</h3>
 
-				{ (this.props.rasters.length > 1) ?
-					<div>
-						<h4>Original Scans</h4>
-						<ol>
-							{ this.props.rasters.map(map => {
-								if (!map.inset) {
-									return <li key={ 'ungeorectifiedDownload' + map.id }>
-										<h3>
-											<a 
-												href={ map.mapUrl } 
-												download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
-											>
-												{ map.name } (.jpg)
-											</a>
-										</h3>
-								</li>
-								}
-							}) }
-						</ol>
-					</div> :
-					null
-				}
-
-				{ (this.props.rasters.length == 1) ?
-					<h4>
-						<a 
-							href={ this.props.rasters[0].rectifiedUrl } 
-							download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_rectified.zip'}
-						>
-							Georectified (.zip)
-						</a>
-					</h4> :
-					null
-				}
-
-				{ (this.props.rasters.length > 1) ?
-					<div>
-						<h4>Georectified</h4>
-						<ol>
-							{ this.props.rasters.map(map => {
-								return <li key={ 'georectifiedDownload' + map.id }>
-									<h3>
-										<a 
-											href={ map.rectifiedUrl } 
-											download={ map.name.replace(/\s+/g, '') + '_rectified.zip'}
-										>
-											{ map.name } (.zip)
-										</a>
-									</h3>
-								</li>
-							}) }
-						</ol>
-					</div> :
-					null
-				}
-
-
-				
-
-				{ (this.props.hasADData) ?
-					<div>
-						<h3>Area Descriptions &amp; Polygons</h3>
-						<h4>
-							<a onClick={ this.props.downloadGeojson }>GeoJson</a>
-						</h4> 
+					{ (this.props.rasters.length == 1) ?
 						<h4>
 							<a 
-								href={ this.props.bucketPath + 'area_descriptions.zip' }
-								download={ this.props.name.replace(/\s+/g, '') + '_area_descriptions.zip' }
+								href={ this.props.rasters[0].mapUrl } 
+								download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_scan.zip'}
 							>
-								Shapefile
+								Original Scan (.jpg)
 							</a>
-						</h4> 
-					</div> :
-					null
-				}
+						</h4> :
+						null
+					}
 
+					{ (this.props.rasters.length > 1) ?
+						<div>
+							<h4>Original Scans</h4>
+							<ol>
+								{ this.props.rasters.map(map => {
+									if (!map.inset) {
+										return <li key={ 'ungeorectifiedDownload' + map.id }>
+											<h3>
+												<a 
+													href={ map.mapUrl } 
+													download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
+												>
+													{ map.name } (.jpg)
+												</a>
+											</h3>
+									</li>
+									}
+								}) }
+							</ol>
+						</div> :
+						null
+					}
 
+					{ (this.props.rasters.length == 1) ?
+						<h4>
+							<a 
+								href={ this.props.rasters[0].rectifiedUrl } 
+								download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_rectified.zip'}
+							>
+								Georectified (.zip)
+							</a>
+						</h4> :
+						null
+					}
 
+					{ (this.props.rasters.length > 1) ?
+						<div>
+						<h4>Georectified</h4>
+							<ol>
+								{ this.props.rasters.map(map => {
+									return <li key={ 'georectifiedDownload' + map.id }>
+										<h3>
+											<a 
+												href={ map.rectifiedUrl } 
+												download={ map.name.replace(/\s+/g, '') + '_rectified.zip'}
+											>
+												{ map.name } (.zip)
+											</a>
+										</h3>
+									</li>
+								}) }
+						</ol>
+						</div> :
+						null
+					}
+				</div>
 
-			</div>
 
 				
 
-
+			</div>
 		);
 	}
 }

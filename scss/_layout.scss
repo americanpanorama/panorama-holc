@@ -252,7 +252,7 @@ header {
 
 #hamburger, #navburger {
 	position: fixed;
-	left: 34px;
+	left: 12px;
 	top: 17px;
 	z-index: 100;
 	cursor: pointer;
@@ -287,11 +287,11 @@ header {
 	right: 20px;
 	z-index: 10000;
 	overflow-y: scroll;
-	background: rgba(243, 243, 243, 0.92);
+	background: rgba(243, 243, 243, 0.95);
 	text-align: center;
 
-	.content,
-	.contactUsForm {
+	.content
+ {
 		margin: 10px auto;
 		width: 600px;
 	}
@@ -300,7 +300,8 @@ header {
 		@extend %lato-light;
 		font-size: 1.5em;
 		text-align: initial;
-		margin-bottom: .6em;
+		margin-bottom: .8em;
+		word-spacing: 4px;
 	}
 
 	h1, h2, h3, h4, h5, h6 {
@@ -344,7 +345,7 @@ header {
 
 	.contactUsForm {
 		p {
-			margin-left: 250px;
+			margin-left: 160px;
 		}
 	}
 }

@@ -7,6 +7,10 @@
 	h1 {
         text-align: center;
         background-color: #d3e0df;
+        font-size: 1.4em;
+        margin-top: 0;
+        padding: 0 40px;
+        position: relative;
 
         a {
         	text-decoration: none;
@@ -15,12 +19,11 @@
     }
 
     .downloadicon {
-        margin-left: -30px;
-        margin-top: 2px;
-        float: right;
+    	position: absolute;
+        right: 5px;
+        bottom: 2px;
+        top: 4px;
         width: 30px;
-        height: 26px;
-        display: inline-block;
         background-image: url(http://dsl.richmond.edu/panorama/static/images/cloud.svg);
         background-repeat: no-repeat;
         opacity: 0.4;
@@ -87,6 +90,7 @@
 		text-align: center;
 		color: #adacac;
 		background-color: #ececec;
+		clear: both;
 	}
 
 	.content {
@@ -112,4 +116,48 @@
 			color: #0c789a;
 		}
 	}
+}
+
+.downloads {
+	clear: both;
+}
+
+.download_menu_left {
+
+	padding-bottom: 10px;
+	float: left;
+	margin-top: -80px;
+
+	h3 {
+		font-size: .9em;
+		line-height: .8;
+		margin-bottom: .5em;
+	}
+
+	h4 {
+		font-size: .9em;
+		line-height: .8;
+		margin-bottom: .5em;
+
+	}
+
+}
+
+.download_menu_right {
+
+	h3 {
+		font-size: .9em;
+		line-height: .8;
+		margin-bottom: .5em;
+	}
+
+	h4 {
+		font-size: .9em;
+		line-height: .8;
+		margin-bottom: .5em;
+	}
+
+	float: right;
+	padding-left: 144px;
+	height: 80px;
 }
