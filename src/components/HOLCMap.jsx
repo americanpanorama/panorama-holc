@@ -119,7 +119,7 @@ export default class HOLCMap extends React.Component {
 							<TileLayer
 								ref={ 'holctiles' + item.id } 
 								key={ 'holctiles' + item.id }
-								url={ item.url }
+								url={ (this._isRetina()) ? item.retinaUrl : item.url }
 								minZoom={ item.minZoom }
 								bounds= { item.bounds }
 								opacity={ this.props.state.rasterOpacity }
