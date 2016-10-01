@@ -11,7 +11,8 @@ const AreaDescriptionsStore = {
 
 	data: {
 		adIds: [],
-		areaDescriptions: {}
+		areaDescriptions: {},
+		showSelection: true
 	},
 
 	dataLoader: CartoDBLoader,
@@ -169,6 +170,20 @@ const AreaDescriptionsStore = {
 		});
 		geojson.coordinates = (holes.length > 0) ? [newLatLngs.concat(holes)] : [newLatLngs]
 		return geojson;
+	},
+
+	/* SETS */
+
+	setShowSelection: function(showSelection) {
+		if (showSelection !== this.data.showSelection) {
+			this.data.showSelection = showSelection;
+			this.emit(AppActionTypes.storeChanged);
+		}
+	},
+
+	toggleView: function() { 
+		this.data.showSelection = !this.data.showSelection; 
+		this.emit(AppActionTypes.storeChanged);
 	},
 
 	/* GETS */
@@ -383,6 +398,8 @@ const AreaDescriptionsStore = {
 
 	hasLoaded: function () { return this.data.hasLoaded; },
 
+	show: function () { return (this.data.showSelection) ? 'selection' : 'full' },
+
 	/* alphanum.js (C) Brian Huisman * Based on the Alphanum Algorithm by David Koelle * The Alphanum Algorithm is discussed at http://www.DaveKoelle.com * * Distributed under same license as original * * This library is free software; you can redistribute it and/or * modify it under the terms of the GNU Lesser General Public * License as published by the Free Software Foundation; either * version 2.1 of the License, or any later version. * * This library is distributed in the hope that it will be useful, * but WITHOUT ANY WARRANTY; without even the implied warranty of * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU * Lesser General Public License for more details. * * You should have received a copy of the GNU Lesser General Public * License along with this library; if not, write to the Free Software * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */ 
 	alphanumCase: function(a, b) {
 		function chunkify(t) {
@@ -425,6 +442,9 @@ AppDispatcher.register((action) => {
 	switch (action.type) {
 
 		case AppActionTypes.loadInitialData:
+			if (action.hashState.adview == 'full') {
+				AreaDescriptionsStore.setShowSelection(false);
+			}
 
 			// you have to wait for initial load of CitiesStore before you can use the slug to get the city if one's requested
 			if (action.hashState.city) {
@@ -438,6 +458,10 @@ AppDispatcher.register((action) => {
 					}
 				}, 10);
 			}
+			break;
+
+		case AppActionTypes.toggleADView:
+			AreaDescriptionsStore.toggleView();
 			break;
 
 		case AppActionTypes.mapMoved:

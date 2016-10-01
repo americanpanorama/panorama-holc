@@ -1,4 +1,3 @@
-
 import React, { PropTypes } from 'react';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import SidebarNeighborhoodNav from './SidebarNeighborhoodNav.jsx';
@@ -23,7 +22,7 @@ export default class AreaDescription extends React.Component {
 		super();
 
 		// bind handlers
-		const handlers = ['renderNSForm8_19370203','renderNSForm8_19371001','render1939'];
+		const handlers = ['renderNSForm8_19370203','renderNSForm8_19371001','render1939','renderNSForm8_19371001_selections', 'renderNSForm8_19370203_selections', 'render1939_selection'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -34,17 +33,19 @@ export default class AreaDescription extends React.Component {
 
 	render () {
 
+		console.log(this.props.show);
+
 		let renderForm = () => null;
 		switch(parseInt(this.props.formId)) {
 			case 19370203:
 			case 19370826:
-				renderForm = this.renderNSForm8_19370203;
+				renderForm = (this.props.show == 'full') ? this.renderNSForm8_19370203 : this.renderNSForm8_19370203_selections;
 				break;
 			case 19371001:
-				renderForm = this.renderNSForm8_19371001;
+				renderForm = (this.props.show == 'full') ? this.renderNSForm8_19371001 : this.renderNSForm8_19371001_selections;
 				break;
 			case 1939:
-				renderForm = this.render1939;
+				renderForm = (this.props.show == 'full') ? this.render1939 : this.render1939_selection;
 				break;
 		}
 
@@ -78,6 +79,16 @@ export default class AreaDescription extends React.Component {
 					''
 				}
 
+				{ (this.props.areaDescriptions && this.props.show == 'selection' ) ?
+					<h4 className='shown' onClick={ this.props.onToggleADView }>Curated Selections from Area Description<br />(click to show full)</h4> :
+					null
+				}
+
+				{ (this.props.areaDescriptions && this.props.show == 'full' ) ?
+					<h4 className='shown' onClick={ this.props.onToggleADView }>Complete Area Description<br />(click to show curated selection)</h4> :
+					null
+				}
+
 				{ renderForm() }
 
 				{ (this.props.hasADImages) ? 
@@ -95,8 +106,46 @@ export default class AreaDescription extends React.Component {
 				</div>
 			</div>
 		);
+	}
 
+	renderNSForm8_19370203_selections() {
+		let AD = this.props.areaDescriptions;
 
+		if (AD === false) {
+			return;
+		}
+
+		return (
+
+			<ul className='area_description NSForm8'>
+				{ this.renderSimpleCategory(14, 'Clarifying Remarks') }
+
+			<li>
+					<span className='catNum'>5</span>
+					<span className='catName'>Inhabitants</span>
+					<ul>
+						{ this.renderSimpleSubcategory(5, 'e', 'Infiltration of') }
+						{ this.renderSimpleSubcategory(5, 'f', 'Relief families') }
+						<li>
+							<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id='5-c'>c</span>
+							<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id='5-c'>Foreign-born</span>
+							<span className='subcatData'>{ (AD[5] && AD[5]['c']['1'] ) ? AD[5]['c']['1'] : <span className='empty'>empty</span> }; { (AD[5] && AD[5]['c']['2'] ) ? AD[5]['c']['2'] : <span className='empty'>empty</span> }</span>
+						</li>
+						<li>
+							<span className='catLetter catSelectable' onClick={ this.props.onCategoryClick } id='5-d'>d</span>
+							<span className='subcatName catSelectable' onClick={ this.props.onCategoryClick } id='5-d'>Negro</span>
+							<span className='subcatData'>{ (AD[5] && AD[5]['d']['1'] ) ? AD[5]['d']['1'] : <span className='empty'>empty</span> }; { (AD[5] && AD[5]['d']['2'] ) ? AD[5]['d']['2'] : <span className='empty'>empty</span> }</span>
+						</li>
+						{ this.renderSimpleSubcategory(5, 'a', 'Type') }
+						{ this.renderSimpleSubcategory(5, 'b', 'Estimated annual family income') }
+					</ul>
+				</li>
+				
+				{ this.renderSimpleCategory(3, 'Favorable Influences') }
+				{ this.renderSimpleCategory(4, 'Detrimental Influences') }
+				{ this.renderSimpleCategory(2, 'Description of Terrain') }
+			</ul>
+		);
 	}
 
 
@@ -308,6 +357,57 @@ export default class AreaDescription extends React.Component {
 					</li> :
 					''
 				}
+			</ul>
+		);
+	}
+
+	renderNSForm8_19371001_selections() {
+		let AD = this.props.areaDescriptions;
+
+		if (AD === false) {
+			return;
+		}
+
+		return (
+			<ul className='area_description NSForm8'>
+					{ this.renderSimpleCategory(5, 'Clarifying Remarks') }
+					<li>
+						<span className='catNum'>2</span>
+						<span className='catName'>Inhabitants</span>
+						<ul>
+							{ this.renderSimpleSubcategory(2, 'e', 'Infiltration of') }
+							<li>
+								<span className='catLetter'>c</span>
+								<span className='catName'>Foreign-born families</span>
+								<span className='subcatData'>{ this.renderSimpleData(2, 'c', 1) }</span>
+								<span className='catName'>%;</span>
+								<span className='subcatData'> { this.renderSimpleData(2, 'c', 2) }</span>
+								<span className='catName'>  predominating</span>
+							</li>
+							<li>
+								<span className='catLetter'>d</span>
+								<span className='catName'>Negro</span>
+								<span className='subcatData'>{ this.renderSimpleData(2, 'd', 1) }</span>
+								<span className='catName'>%;</span>
+								<span className='subcatData'> { this.renderSimpleData(2, 'd', 2) }</span>
+								<span className='catName'>  predominating</span>
+							</li>
+							{ this.renderSimpleSubcategory(2, 'f', 'Relief families') }
+							{ this.renderSimpleSubcategory(2, 'a', 'Occupation') }
+							{ this.renderSimpleSubcategory(2, 'b', 'Estimated Annual Family Income') }
+						</ul>
+					</li>
+					<li>
+						<span className='catNum'>1</span>
+						<span className='catName'>Area Characteristics</span>
+						<ul>
+							{ this.renderSimpleSubcategory(1, 'a', 'Description of Terrain') }
+							{ this.renderSimpleSubcategory(1, 'b', 'Favorable Influences') }
+							{ this.renderSimpleSubcategory(1, 'c', 'Detrimental Influences') }
+							{ this.renderSimpleSubcategory(1, 'd', 'Percentage of land improved') }
+							{ this.renderSimpleSubcategory(1, 'e', 'Trend of desireability next 10-15 yrs.') }
+						</ul>
+					</li>
 			</ul>
 		);
 	}
@@ -553,6 +653,36 @@ export default class AreaDescription extends React.Component {
 					<span className='subcatData'>{ (AD[6] && AD[6][2] ) ? AD[6][2] : <span className='empty'>empty</span> }</span>
 					<span className='catName'>Area No.</span>
 					<span className='subcatData'>{ (AD[6] && AD[6][3] ) ? AD[6][3] : <span className='empty'>empty</span> }</span>
+				</li>
+			</ul>
+		);
+	}
+
+	render1939_selection() {
+		let AD = this.props.areaDescriptions;
+
+		if (AD === false) {
+			return;
+		}
+
+		return (
+			<ul className='area_description'>
+				{ this.renderSimpleCategory(8, 'Description and Characteristics of Area') }
+				<li>
+					<span className='catNum'>1</span>
+					<span className='catName'>Population</span>
+					<ul>
+						{ this.renderSimpleSubcategory(1, 'e', 'Shifting or Infiltration') }
+						<li>
+							<span className='catLetter'>c</span>
+							<span className='catName'>Foreign Families</span>
+							<span className='subcatData'>{ this.renderSimpleData(1, 'c', 1) }</span><br />
+							<span className='catName'> Nationalities</span>
+							<span className='subcatData'> { this.renderSimpleData(1, 'c', 2) }</span>
+						</li>
+						{ this.renderSimpleSubcategory(2, 'd', 'Negro') }
+						{ this.renderSimpleSubcategory(1, 'b', 'Class and Occupation') }
+					</ul>
 				</li>
 			</ul>
 		);
