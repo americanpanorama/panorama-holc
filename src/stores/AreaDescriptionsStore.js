@@ -26,7 +26,7 @@ const AreaDescriptionsStore = {
 		adIds.forEach(adId => {
 			if (!this.data.areaDescriptions[adId]) {
 				queries.push({
-					query: 'SELECT holc_ads.city_id as ad_id, holc_maps.file_name, holc_ads.year, holc_ads.state, holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, round(st_xmin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmin, round(st_ymin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymin, round(st_xmax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmax, round(st_ymax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymax, round(st_y(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlat, round(st_x(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlng, round((st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102)::numeric, 3) as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on city_id = holc_polygons.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = city_id join holc_maps on holc_maps.map_id = holc_maps_ads_join.map_id and parent_id is null where holc_ads.city_id =' + adId,
+					query: 'SELECT holc_ads.city_id as ad_id, dir_name, holc_ads.year, holc_ads.state, holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, round(st_xmin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmin, round(st_ymin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymin, round(st_xmax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmax, round(st_ymax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymax, round(st_y(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlat, round(st_x(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlng, round((st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102)::numeric, 3) as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on city_id = holc_polygons.ad_id where holc_ads.city_id =' + adId,
 					format: 'JSON'
 				});
 			}
@@ -61,7 +61,7 @@ const AreaDescriptionsStore = {
 
 		for(var row in rawAdData) {
 			let d = rawAdData[row],
-				urlPath = d.state + '/' + d.file_name.replace(/\s+/g, '')  + '/' + d.year + '/',
+				urlPath = d.state + '/' + d.dir_name + '/' + d.year + '/',
 				adImageUrl = bucketUrl + 'ads/' + urlPath + d.holc_id;
 
 			// define id if undefined
