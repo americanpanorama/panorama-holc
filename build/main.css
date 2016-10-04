@@ -1281,8 +1281,7 @@ body {
 
 .download_menu_left {
   padding-bottom: 10px;
-  float: left;
-  margin-top: -80px; }
+  float: left; }
   .download_menu_left h3 {
     font-size: .9em;
     line-height: .8;
@@ -1293,9 +1292,7 @@ body {
     margin-bottom: .5em; }
 
 .download_menu_right {
-  float: right;
-  padding-left: 144px;
-  height: 80px; }
+  float: right; }
   .download_menu_right h3 {
     font-size: .9em;
     line-height: .8;
@@ -1304,6 +1301,10 @@ body {
     font-size: .9em;
     line-height: .8;
     margin-bottom: .5em; }
+
+.ad-polygon-exp {
+  color: #adacac;
+  font-size: .9em; }
 
 .areaDescription,
 .ADCategory {
