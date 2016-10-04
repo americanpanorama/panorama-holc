@@ -28,7 +28,8 @@ export const AppActionTypes = {
 	windowResized: 'windowResized',
 	stateSelected: 'stateSelected',
 	countrySelected: 'countrySelected',
-	mapClicked: 'mapClicked'
+	mapClicked: 'mapClicked',
+	toggleADView: 'toggleADView'
 
 };
 
@@ -182,6 +183,12 @@ export const AppActions = {
 	windowResized: () => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.windowResized
+		});
+	},
+
+	toggleADView: () => {
+		AppDispatcher.dispatch({
+			type: AppActionTypes.toggleADView
 		});
 	}
 };

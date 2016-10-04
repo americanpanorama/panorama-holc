@@ -130,7 +130,7 @@ export default class CityStats extends React.Component {
 					<div className='adInstructions'>area descriptions aren't available for this city, but will be soon</div>
 				}
 
-				{ (this.props.popStats) ? 
+				{ (this.props.popStats && this.props.popStats[1930].total && this.props.popStats[1940].total) ? 
 					<table className='population-stats'>
 						<tbody>
 							<tr>
@@ -358,31 +358,29 @@ export default class CityStats extends React.Component {
 			  .attr('y', scope.HEADER + scope.MARGIN)
 			  .attr('x', d => Math.round(d.xOffset * scope.WIDTH))
 			  .attr('fill', d => colorGrade(d.grade))
-			  .on('mouseover', function(d,i,j) {
-				let grade = ['A','B','C','D'][j];
+			  .on('mouseover', function(d,i) {
 				d3.selectAll('.areaBar')
 				  .transition()
 				  .duration(1000)
 				  .attr('opacity', .4);
-				d3.selectAll('rect.barGrade' + grade)
+				d3.selectAll('rect.barGrade' + d.grade)
 				  .transition()
 				  .duration(1000)
 				  .attr('opacity', 1);
 				d3.selectAll('.sliceBorder')
-				  .filter('.grade' + grade)
+				  .filter('.grade' + d.grade)
 				  .transition()
 				  .duration(1000)
 				  .attr('stroke-width', 5);
 				d3.selectAll('.burgessSlicePercent')
-				  .filter('.grade' + grade)
+				  .filter('.grade' + d.grade)
 				  .filter((d) => d.data.percent > .06)
 				  .transition()
 				  .attr('fill', 'black')
 				  .attr('opacity', 1);
 				scope.onGradeHover(d.grade);
 			  }).
-			  on('mouseout', function(d,i,j) {
-				let grade = ['A','B','C','D'][j];
+			  on('mouseout', function(d,i) {
 				d3.selectAll('.areaBar')
 				  .transition()
 				  .attr('opacity', .7);

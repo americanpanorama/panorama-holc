@@ -179,6 +179,18 @@
 			"Security Grade",
 			"Area No."
 		],
+	},
+	"1939": {
+		"1": {
+			"header": "Population",
+			"subcats": {
+				"b": "Class and Occupation",
+				"d": "Negro",
+				"e": "Shifting or Infiltration"
+			}
+		},
+		"6": "Mortgage Funds",
+		"8": "Description and Characteristics of Area" 
 	}
 
 }

@@ -48,6 +48,7 @@ const RasterStore = {
 					sortLng: mapData.sortlng,
 					inset: mapData.inset,
 					url: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
+					retinaUrl: '//holc.s3-website-us-east-1.amazonaws.com/tiles_retina/' + mapData.state + '/' +mapData.	file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/{z}/{x}/{y}.png',
 					mapUrl: (!mapData.inset) ? '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' +mapData	.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/holc-scan.jpg' : null,
 					rectifiedUrl: '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + mapData.state + '/' + 	mapData.file_name.replace(/\s+/g, '')  + '/' + mapData.year + '/rectified.zip'
 				});

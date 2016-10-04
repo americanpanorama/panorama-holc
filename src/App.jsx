@@ -47,7 +47,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBringToFrontClick', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onUserCityResponse', 'onWindowResize', 'storeChanged','onMapClick'];
+		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBringToFrontClick', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onToggleADView', 'onUserCityResponse', 'onWindowResize', 'storeChanged','onMapClick'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -256,6 +256,10 @@ export default class App extends React.Component {
 		AppActions.stateSelected(abbr);
 	}
 
+	onToggleADView () {
+		AppActions.toggleADView();
+	}
+
 	onUserCityResponse(event) {
 		if (event.target.value == 'yes') {
 			AppActions.citySelected(UserLocationStore.getAdId(), true);
@@ -285,7 +289,8 @@ export default class App extends React.Component {
 			},
 			opacity: this.state.rasterOpacity,
 			text: this.state.text,
-			sort: (MapStateStore.getSortOrder().length > 0) ? MapStateStore.getSortOrder() : null
+			sort: (MapStateStore.getSortOrder().length > 0) ? MapStateStore.getSortOrder() : null,
+			adview: (AreaDescriptionsStore.show() == 'full') ? 'full' : null
 		});
 	}
 
@@ -527,10 +532,12 @@ export default class App extends React.Component {
 									onCategoryClick={ this.onCategoryClick } 
 									onHOLCIDClick={ this.onHOLCIDClick } 
 									onAdImageClicked={ this.onAdImageClicked }
+									onToggleADView={ this.onToggleADView }
 									onClose={ this.onNeighborhoodClose }
 									ref={'areadescription' + this.state.selectedNeighborhood } 
 									previousStyle={ DimensionsStore.getADNavPreviousStyle() }
 									nextStyle={ DimensionsStore.getADNavNextStyle() }
+									show={ AreaDescriptionsStore.show() }
 								/> : 
 								''
 							}

@@ -13,6 +13,7 @@
         }
     }
 
+
     .downloadicon {
         margin-left: -30px;
         margin-top: -2px;
@@ -27,6 +28,11 @@
 
     .downloadicon:hover {
         opacity: 1.0;
+    }
+
+    h4.shown {
+        text-align: center;
+        font-size: 1.2vmax;
     }
     
     .adNav {
