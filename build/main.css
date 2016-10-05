@@ -1281,7 +1281,8 @@ body {
 
 .download_menu_left {
   padding-bottom: 10px;
-  float: left; }
+  float: left;
+  margin-top: -80px; }
   .download_menu_left h3 {
     font-size: .9em;
     line-height: .8;
@@ -1292,7 +1293,9 @@ body {
     margin-bottom: .5em; }
 
 .download_menu_right {
-  float: right; }
+  float: right;
+  padding-left: 144px;
+  height: 80px; }
   .download_menu_right h3 {
     font-size: .9em;
     line-height: .8;
@@ -1302,7 +1305,7 @@ body {
     line-height: .8;
     margin-bottom: .5em; }
 
-.ad-polygon-exp {
+.ad_polygon_exp h3 {
   color: #adacac;
   font-size: .9em; }
 
@@ -1380,6 +1383,10 @@ body {
   .areaDescription .downloadicon:hover,
   .ADCategory .downloadicon:hover {
     opacity: 1.0; }
+  .areaDescription h4.shown,
+  .ADCategory h4.shown {
+    text-align: center;
+    font-size: 1.2vmax; }
   .areaDescription .adNav,
   .ADCategory .adNav {
     position: fixed;

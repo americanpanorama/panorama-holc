@@ -45,7 +45,7 @@ export default class Downloader extends React.Component {
 								</a>
 							</h4> 
 						</div> :
-						<div className='ad-polygon-exp'>These will be added when the area descriptions have been transcribed.</div>
+						<div className='ad_polygon_exp'><h3>These will be added when the area descriptions have been transcribed.</h3></div>
 					}
 				</div>
 				<div className='download_menu_left'>
