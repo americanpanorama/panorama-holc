@@ -14,13 +14,13 @@ import TextsStore from './stores/TextsStore';
 // components (views)
 import ADCat from './components/ADCat.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
+import Burgess from './components/Burgess.jsx';
 import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
 import ContactUs from './components/ContactUs.jsx';
 import { icon } from 'leaflet';
 import { Map, LayerGroup, TileLayer } from 'react-leaflet';
-import Modal from 'react-modal';
 import Slider from 'rc-slider';
 import StateList from './components/StateList.jsx';
 import { Typeahead } from 'react-typeahead';
@@ -175,6 +175,7 @@ export default class App extends React.Component {
 	onCitySelected (event) {
 		event.preventDefault(); /* important as this is sometimes used in an a href there only for indexing */
 		this.closeADImage();
+		AppActions.onModalClick(null);
 		AppActions.citySelected(event.target.id, true);
 	}
 
@@ -450,10 +451,20 @@ export default class App extends React.Component {
 								</Map> 
 							}
 
-							{ TextsStore.mainModalIsOpen() ?
+							{ TextsStore.mainModalIsOpen() && TextsStore.getSubject() !== 'burgess' ?
 								<div className='longishform'>
 									<button className='close' onClick={ this.onModalClick }><span>×</span></button>
 									<div className='content' dangerouslySetInnerHTML={ TextsStore.getModalContent() } />
+								</div> :
+								null
+							}
+
+							{ TextsStore.mainModalIsOpen() && TextsStore.getSubject() == 'burgess' ?
+								<div className='longishform'>
+									<Burgess 
+										onCitySelected={ this.onCitySelected } 
+										onModalClick={ this.onModalClick }
+									/>
 								</div> :
 								null
 							}

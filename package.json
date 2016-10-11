@@ -33,7 +33,6 @@
     "react": "^15.0.1",
     "react-dom": "^0.14.0",
     "react-leaflet": "^0.11.4",
-    "react-modal": "^0.6.1",
     "queue-async": "^1.0.7"
   },
   "devDependencies": {

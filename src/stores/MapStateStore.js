@@ -134,7 +134,7 @@ const MapStateStore = {
 
 		let	selectedMaps = CitiesStore.getMapIds(CityStore.getId()),
 			sortedIndices = this.data.sortOrder.map(mapId => list.findIndex(map => (map.id == mapId))).reverse(),
-			selectedIndices = selectedMaps.map(mapId => list.findIndex(map => (map.id == mapId))).filter(mapId => sortedIndices.indexOf(mapId == -1));
+			selectedIndices = selectedMaps.map(mapId => list.findIndex(map => (map.id == mapId))).filter(mapId => mapId !== -1).filter(mapId => sortedIndices.indexOf(mapId !== -1));
 
 		// move the selected and then the sorted maps (which has been reversed) to the end of the list so they appear at the top of the sort order
 		selectedIndices.forEach(i => {
