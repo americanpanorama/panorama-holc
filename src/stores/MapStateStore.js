@@ -192,6 +192,18 @@ MapStateStore.dispatchToken = AppDispatcher.register((action) => {
 			MapStateStore.addToSort(action.value);
 			break;
 
+		// case AppActionTypes.neighborhoodSelected:
+		// 	let applicableMapIds = CitiesStore.getMapIds(action.adId),
+		// 		sortOrder = MapStateStore.getSortOrder();
+
+		// 	console.log(sortOrder, applicableMapIds[0]);
+		// 	// if there's only one map, bring it to the front if it isn't there already
+		// 	if (sortOrder.length == 0 || sortOrder[0] !== applicableMapIds[0]) {
+		// 		console.log(applicableMapIds[0]);
+		// 		MapStateStore.addToSort(applicableMapIds[0]);
+		// 	}
+		// 	break;
+
 		case AppActionTypes.mapInitialized:
 			MapStateStore.setTheMap(action.theMap);
 

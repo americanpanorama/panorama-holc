@@ -81,6 +81,8 @@ const RasterStore = {
 
 	getMapUrl: function (mapId) { return this.data.maps[mapId].mapUrl; },
 
+	getOverlappingMapIds: function() { return this.data.maps.filter(cityData => cityData.overlaps).map(cityData => cityData.id ) },
+
 	getRectifiedUrl: function (mapId) { return this.data.maps[mapId].rectifiedUrl; },
 
 	getSortPoint: function (mapId) { return (this._getDataForMap(mapId) && this._getDataForMap(mapId).sortLat && this._getDataForMap(mapId).sortLng) ? [ this._getDataForMap(mapId).sortLat, this._getDataForMap(mapId).sortLng ] : null; },

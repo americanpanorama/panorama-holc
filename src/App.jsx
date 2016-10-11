@@ -152,8 +152,7 @@ export default class App extends React.Component {
 	onAreaChartOff () { AppActions.gradeSelected(null); }
 
 	onBringToFrontClick (event) {
-		console.log(event.target.options.id);
-		AppActions.mapClicked()
+		AppActions.mapClicked();
 	}
 
 	onBurgessChartHover (ringId, grade) { AppActions.ringGradeSelected({ringId: ringId, grade: grade}); }
@@ -218,6 +217,7 @@ export default class App extends React.Component {
 
 	onNeighborhoodHighlighted (event) {
 		AppActions.neighborhoodHighlighted(event.target.id);
+		this.bringMapForNeighborhoodToFront(this.selectedCity, event.target.id);
 	}
 
 	onNeighborhoodUnhighlighted () {
@@ -228,13 +228,14 @@ export default class App extends React.Component {
 		let neighborhoodId = event.target.options.neighborhoodId,
 			adId = parseInt(event.target.options.adId);
 
-		// clicking on a selected neighborhood deselects it and closeds the adImage if it's open
+		// clicking on a selected neighborhood deselects it and closes the adImage if it's open
 		if (neighborhoodId == this.state.selectedNeighborhood && adId == this.state.selectedCity) {
 			neighborhoodId = null;
 			this.closeADImage();
 		} 
-
 		AppActions.neighborhoodSelected(neighborhoodId, adId);
+
+		this.bringMapForNeighborhoodToFront(adId, neighborhoodId);
 	}
 
 	onPanoramaMenuClick () {
@@ -273,6 +274,19 @@ export default class App extends React.Component {
 		this.setState({
 			adImageOpen: false
 		});
+	}
+
+	bringMapForNeighborhoodToFront(adId, neighborhoodId) {
+		const mapIds = AreaDescriptionsStore.getNeighborhoodMapIds(adId, neighborhoodId),
+			sortOrder = MapStateStore.getSortOrder();
+		// check to see if the top maps match the applicable ones; do if they don't bring them to the top
+		if (mapIds.length > 0 && neighborhoodId !== null && JSON.stringify(mapIds.concat().sort()) !== JSON.stringify(sortOrder.slice(0, mapIds.length).sort())) {
+			// if there's only one map, bring it to the front if it isn't already
+			mapIds.reverse().forEach(mapId => {
+				this.refs.holc_map.refs['holctiles' + mapId].leafletElement.bringToFront();
+				AppActions.mapClicked(mapId);
+			});
+		}
 	}
 
 	/* manage hash */

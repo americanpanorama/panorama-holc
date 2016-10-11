@@ -5,6 +5,7 @@ import CartoDBLoader from '../utils/CartoDBLoader';
 import formsMetadata from '../../data/formsMetadata.json';
 import CitiesStore from './CitiesStore';
 import MapStateStore from './MapStateStore';
+import RasterStore from './RasterStore';
 import stateAbbrs from '../../data/state_abbr.json';
 
 const AreaDescriptionsStore = {
@@ -29,19 +30,55 @@ const AreaDescriptionsStore = {
 					query: 'SELECT holc_ads.city_id as ad_id, dir_name, holc_ads.year, holc_ads.state, holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, round(st_xmin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmin, round(st_ymin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymin, round(st_xmax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmax, round(st_ymax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymax, round(st_y(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlat, round(st_x(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlng, round((st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102)::numeric, 3) as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on city_id = holc_polygons.ad_id where holc_ads.city_id =' + adId,
 					format: 'JSON'
 				});
+
+				// add a query to associate neighborhoods with one or more maps if the maps for the ad overlap
+				let mapIds = CitiesStore.getMapIds(adId),
+					overlaps = mapIds.filter(mapId => RasterStore.getOverlappingMapIds().indexOf(mapId) != -1).length > 0;
+				if (overlaps) {
+					queries.push({
+						query: 'with the_overlaps as (SELECT holc_polygons.the_geom as neighborhood_geom, holc_maps.the_geom as map_geom,  holc_maps.map_id, holc_id, holc_polygons.ad_id FROM holc_maps, holc_polygons, holc_maps_ads_join hmaj WHERE ST_intersects(holc_maps.the_geom, holc_polygons.the_geom)  and holc_polygons.ad_id = hmaj.ad_id and hmaj.map_id = holc_maps.map_id and holc_maps.map_id in (SELECT distinct(hm1.map_id) as overlapping_map_id FROM holc_maps AS hm1, holc_maps AS hm2 WHERE hm1.map_id <> hm2.map_id AND ST_Overlaps(hm1.the_geom, hm2.the_geom)) and holc_polygons.ad_id = ' + adId + '), counts as (select count(holc_id) as the_count, holc_id  from the_overlaps  group by holc_id) select ad_id, the_overlaps.holc_id, map_id, case when the_count > 1 then st_area(st_intersection(map_geom, neighborhood_geom)) / st_area(neighborhood_geom) else 1 end as area from the_overlaps join counts on the_overlaps.holc_id = counts.holc_id order by the_overlaps.holc_id, area desc',
+						format: 'JSON'
+					});
+				}
 			}
 		});
 
+		
+
 		this.dataLoader.query(queries).then((responses) => {
+			// separate the ad responses from the map_id responses
+			let responsesADs = [],
+				responsesMapIds = [];
 			responses.forEach(response => {
+				if (responses.length > 0 && response[0].state) {
+					responsesADs.push(response);
+				} else if (responses.length > 0 && response[0].map_id) {
+					responsesMapIds.push(response);
+				}
+			});
+
+			responsesADs.forEach(response => {
 				if (response.length > 0) {
-					const adId = response[0].ad_id;
+					let adId = response[0].ad_id;
 					this.data.areaDescriptions[adId] = {
 						formId: response[0].form_id,
 						byNeighborhood: this.parseAreaDescriptions(response)
 					};
 					this.data.areaDescriptions[adId].byCategory = this.parseADsByCat(this.data.areaDescriptions[adId].byNeighborhood);
 					this.data.areaDescriptions[adId].area = Object.keys(this.data.areaDescriptions[adId].byNeighborhood).map((HOLCId, i) => this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sqmi ).reduce((a,b) => a+b, 0);
+				}
+			});
+
+			responsesMapIds.forEach(response => {
+				if (response.length > 0) {
+					let adId = response[0].ad_id;
+					response.forEach(neighborhoodData => {
+						if (!this.data.areaDescriptions[adId].byNeighborhood[neighborhoodData.holc_id].mapIds) {
+							this.data.areaDescriptions[adId].byNeighborhood[neighborhoodData.holc_id].mapIds = [neighborhoodData.map_id];
+						} else {
+							this.data.areaDescriptions[adId].byNeighborhood[neighborhoodData.holc_id].mapIds.push(neighborhoodData.map_id);
+						}
+					});
 				}
 			});
 
@@ -314,6 +351,8 @@ const AreaDescriptionsStore = {
 
 	getNeighborhoodCenter: function (adId, holcId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null; },
 
+	getNeighborhoodMapIds: function(adId, holcId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].mapIds : [];}, 
+
 	getNeighborhoodNames: function (adId) {
 		let names = {};
 		if (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood) {
@@ -400,6 +439,10 @@ const AreaDescriptionsStore = {
 
 	show: function () { return (this.data.showSelection) ? 'selection' : 'full' },
 
+	overlapsMap: function(adId, HOLCId, mapId) {
+
+	},
+
 	/* alphanum.js (C) Brian Huisman * Based on the Alphanum Algorithm by David Koelle * The Alphanum Algorithm is discussed at http://www.DaveKoelle.com * * Distributed under same license as original * * This library is free software; you can redistribute it and/or * modify it under the terms of the GNU Lesser General Public * License as published by the Free Software Foundation; either * version 2.1 of the License, or any later version. * * This library is distributed in the hope that it will be useful, * but WITHOUT ANY WARRANTY; without even the implied warranty of * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU * Lesser General Public License for more details. * * You should have received a copy of the GNU Lesser General Public * License along with this library; if not, write to the Free Software * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */ 
 	alphanumCase: function(a, b) {
 		function chunkify(t) {
@@ -449,7 +492,7 @@ AppDispatcher.register((action) => {
 			// you have to wait for initial load of CitiesStore before you can use the slug to get the city if one's requested
 			if (action.hashState.city) {
 				const waitingCities = setInterval(() => {
-					if (CitiesStore.hasLoaded()) {
+					if (CitiesStore.hasLoaded() && RasterStore.hasLoaded()) {
 						clearInterval(waitingCities);
 
 						if (CitiesStore.getADIdFromSlug(action.hashState.city)) {
