@@ -309,8 +309,8 @@ export default class HOLCMap extends React.Component {
 				}
 
 				{/* marker for user's location */}
-				{ (this.props.state.userLocation) ?
-					<Marker position={ this.props.state.userLocation } /> :
+				{ (aboveThreshold && UserLocationStore.getPoint()) ?
+					<Marker position={ UserLocationStore.getPoint() } /> :
 					null
 				}
 

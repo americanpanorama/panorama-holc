@@ -57,13 +57,14 @@ export default class App extends React.Component {
 		AppActions.loadInitialData(this.state, HashManager.getState());
 
 		//try to retrieve the users location
-		// if (navigator.geolocation) {
-		// 	navigator.geolocation.getCurrentPosition((position) => {
-		// 		AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
-		// 	}, (error) => {
-		// 		console.warn('Geolocation error occurred. Error code: ' + error.code);
-		// 	});
-		// }
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition((position) => {
+				console.log(position);
+				AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
+			}, (error) => {
+				console.warn('Geolocation error occurred. Error code: ' + error.code);
+			});
+		}
 	}
 
 	componentDidMount () {
@@ -280,7 +281,6 @@ export default class App extends React.Component {
 		const mapIds = AreaDescriptionsStore.getNeighborhoodMapIds(adId, neighborhoodId),
 			sortOrder = MapStateStore.getSortOrder();
 
-		console.log(mapIds);
 		// check to see if the top maps match the applicable ones; do if they don't bring them to the top
 		if (mapIds.length > 0 && neighborhoodId !== null && JSON.stringify(mapIds.concat().sort()) !== JSON.stringify(sortOrder.slice(0, mapIds.length).sort())) {
 			// if there's only one map, bring it to the front if it isn't already
@@ -463,6 +463,15 @@ export default class App extends React.Component {
 								''
 							}
 
+							{ UserLocationStore.getOfferZoomTo() ?
+								<div className='longishform'>
+									<p>Would you like to zoom to { UserLocationStore.getCity() }?</p>
+									<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
+									<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
+								</div> :
+								null
+							}
+
 						</div>
 					</div>
 
@@ -618,14 +627,6 @@ export default class App extends React.Component {
 
 						</div>
 					</div>
-
-					<Modal 
-						isOpen={ UserLocationStore.getOfferZoomTo() } 
-					>
-						<p>Would you like to zoom to { UserLocationStore.getCity() }?</p>
-						<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
-						<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
-					</Modal>
 				</div>
 			</div> 
 		);
