@@ -21,7 +21,6 @@ import CityStats from './components/CityStats.jsx';
 import ContactUs from './components/ContactUs.jsx';
 import { icon } from 'leaflet';
 import { Map, LayerGroup, TileLayer } from 'react-leaflet';
-import Modal from 'react-modal';
 import Slider from 'rc-slider';
 import StateList from './components/StateList.jsx';
 import { Typeahead } from 'react-typeahead';
@@ -176,6 +175,7 @@ export default class App extends React.Component {
 	onCitySelected (event) {
 		event.preventDefault(); /* important as this is sometimes used in an a href there only for indexing */
 		this.closeADImage();
+		AppActions.onModalClick(null);
 		AppActions.citySelected(event.target.id, true);
 	}
 
@@ -461,7 +461,10 @@ export default class App extends React.Component {
 
 							{ TextsStore.mainModalIsOpen() && TextsStore.getSubject() == 'burgess' ?
 								<div className='longishform'>
-									<Burgess onCitySelected={ this.onCitySelected } />
+									<Burgess 
+										onCitySelected={ this.onCitySelected } 
+										onModalClick={ this.onModalClick }
+									/>
 								</div> :
 								null
 							}
