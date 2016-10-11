@@ -14,6 +14,7 @@ import TextsStore from './stores/TextsStore';
 // components (views)
 import ADCat from './components/ADCat.jsx';
 import AreaDescription from './components/AreaDescription.jsx';
+import Burgess from './components/Burgess.jsx';
 import { CartoDBTileLayer, HashManager, Legend, Navigation } from '@panorama/toolkit';
 import CitySnippet from './components/CitySnippet.jsx';
 import CityStats from './components/CityStats.jsx';
@@ -450,10 +451,17 @@ export default class App extends React.Component {
 								</Map> 
 							}
 
-							{ TextsStore.mainModalIsOpen() ?
+							{ TextsStore.mainModalIsOpen() && TextsStore.getSubject() !== 'burgess' ?
 								<div className='longishform'>
 									<button className='close' onClick={ this.onModalClick }><span>×</span></button>
 									<div className='content' dangerouslySetInnerHTML={ TextsStore.getModalContent() } />
+								</div> :
+								null
+							}
+
+							{ TextsStore.mainModalIsOpen() && TextsStore.getSubject() == 'burgess' ?
+								<div className='longishform'>
+									<Burgess onCitySelected={ this.onCitySelected } />
 								</div> :
 								null
 							}
