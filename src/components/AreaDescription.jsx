@@ -78,12 +78,12 @@ export default class AreaDescription extends React.Component {
 				}
 
 				{ (this.props.areaDescriptions && this.props.show == 'selection' ) ?
-					<h4 className='shown' onClick={ this.props.onToggleADView }>Curated Selections from Area Description<br />(click to show full)</h4> :
+					<h4 className='shown' onClick={ this.props.onToggleADView }>Curated Selections from Area Description<br />(click here to show full)</h4> :
 					null
 				}
 
 				{ (this.props.areaDescriptions && this.props.show == 'full' ) ?
-					<h4 className='shown' onClick={ this.props.onToggleADView }>Complete Area Description<br />(click to show curated selection)</h4> :
+					<h4 className='shown' onClick={ this.props.onToggleADView }>Complete Area Description<br />(click here to show curated selection)</h4> :
 					null
 				}
 

@@ -279,6 +279,8 @@ export default class App extends React.Component {
 	bringMapForNeighborhoodToFront(adId, neighborhoodId) {
 		const mapIds = AreaDescriptionsStore.getNeighborhoodMapIds(adId, neighborhoodId),
 			sortOrder = MapStateStore.getSortOrder();
+
+		console.log(mapIds);
 		// check to see if the top maps match the applicable ones; do if they don't bring them to the top
 		if (mapIds.length > 0 && neighborhoodId !== null && JSON.stringify(mapIds.concat().sort()) !== JSON.stringify(sortOrder.slice(0, mapIds.length).sort())) {
 			// if there's only one map, bring it to the front if it isn't already

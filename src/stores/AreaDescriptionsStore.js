@@ -508,6 +508,7 @@ AppDispatcher.register((action) => {
 
 			const waitingMapState = setInterval(() => {
 				if (MapStateStore.hasLoaded()) {
+					clearInterval(waitingMapState);
 					let visibleADIds = MapStateStore.getVisibleAdIds();
 
 					if (visibleADIds && MapStateStore.isAboveZoomThreshold()) {
