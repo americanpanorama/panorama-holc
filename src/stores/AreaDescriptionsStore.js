@@ -501,22 +501,29 @@ AppDispatcher.register((action) => {
 					}
 				}, 10);
 			}
+			// no break as the following needs to execute;
+		case AppActionTypes.loadInitialData:
+		case AppActionTypes.mapMoved:
+			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
+
+			const waitingMapState = setInterval(() => {
+				if (MapStateStore.hasLoaded()) {
+					let visibleADIds = MapStateStore.getVisibleAdIds();
+
+					if (visibleADIds && MapStateStore.isAboveZoomThreshold()) {
+						AreaDescriptionsStore.loadData(visibleADIds);
+					}
+				}
+			}, 10);
+
+
 			break;
 
 		case AppActionTypes.toggleADView:
 			AreaDescriptionsStore.toggleView();
 			break;
 
-		case AppActionTypes.mapMoved:
-			AppDispatcher.waitFor([MapStateStore.dispatchToken]);
 
-			let visibleHOLCMapsIds = MapStateStore.getVisibleHOLCMapsIds(),
-				visibleADIds = MapStateStore.getVisibleAdIds();
-
-			if (visibleADIds && MapStateStore.isAboveZoomThreshold()) {
-				AreaDescriptionsStore.loadData(visibleADIds);
-			}
-			break;
 	}
 
 
