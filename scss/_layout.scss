@@ -242,18 +242,18 @@ header {
 }
 
 #nav_header h1 {
-	font-size: 24px;
-	margin-left: 120px;
+	font-size: 30px;
+	left: 80px;
+	top: 20px;
 	font-family: 'Oswald';
 	color: #28668a;
-	opacity: 0.5;
 	clear: left;
 }
 
 #hamburger, #navburger {
 	position: fixed;
 	left: 12px;
-	top: 17px;
+	top: 19px;
 	z-index: 100;
 	cursor: pointer;
 }

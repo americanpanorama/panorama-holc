@@ -1305,6 +1305,10 @@ body {
     line-height: .8;
     margin-bottom: .5em; }
 
+.ad_polygon_exp h3 {
+  color: #adacac;
+  font-size: .9em; }
+
 .areaDescription,
 .ADCategory {
   /* .area_description {
@@ -1379,6 +1383,10 @@ body {
   .areaDescription .downloadicon:hover,
   .ADCategory .downloadicon:hover {
     opacity: 1.0; }
+  .areaDescription h4.shown,
+  .ADCategory h4.shown {
+    text-align: center;
+    font-size: 1.2vmax; }
   .areaDescription .adNav,
   .ADCategory .adNav {
     position: fixed;
