@@ -475,10 +475,13 @@ export default class App extends React.Component {
 							}
 
 							{ UserLocationStore.getOfferZoomTo() ?
-								<div className='longishform'>
-									<p>Would you like to zoom to { UserLocationStore.getCity() }?</p>
-									<button onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
-									<button onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
+								
+								<div className='arealocation'>
+									<div className='arealocationPrompt'>
+										<p>Would you like to zoom to { UserLocationStore.getCity() }?</p>
+										<button className='sure' onClick={ this.onUserCityResponse } value={ 'yes' }>Sure</button>
+										<button className='nope' onClick={ this.onUserCityResponse } value={ 'no' }>No thanks</button>
+									</div>
 								</div> :
 								null
 							}

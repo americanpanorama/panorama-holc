@@ -279,7 +279,8 @@ header {
 }
 
 .longishform,
-.contactUs {
+.contactUs,
+.arealocation {
 	position: absolute;
 	bottom: 20px;
 	top: 20px;
@@ -318,6 +319,23 @@ header {
 
 	}
 
+	.arealocation,
+		button.sure, button.nope {
+			margin: 0 10px;
+			border: 1px solid #e4e1e1;
+		
+		}
+
+		button.sure:hover, button.nope:hover {
+			border: 1px solid #bfbfbf;
+		}
+
+	 .arealocationPrompt p {
+
+		text-align: center;
+		padding-top: 20px;
+	}
+
 }
 
 
@@ -349,7 +367,6 @@ header {
 		}
 	}
 }
-
 
 
 
