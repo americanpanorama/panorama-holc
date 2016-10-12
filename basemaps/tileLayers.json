@@ -1,8 +1,8 @@
 {
 	"layers": [
 		{
-			"urlNoLabels": "http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
-			"urlLabels": "http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+			"urlNoLabels": "{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+			"urlLabels": "{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
 		}
 	]
 }

@@ -34,6 +34,7 @@ const RasterStore = {
 					overlaps: (overlaps.indexOf(mapData.map_id) !== -1),
 					city: mapData.name,
 					state: mapData.state,
+					file_name: mapData.file_name,
 					name: mapData.name, // + ", " + mapData.state,
 					minZoom: mapData.minzoom,
 					maxZoom: mapData.maxzoom,

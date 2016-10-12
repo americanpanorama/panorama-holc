@@ -1,5 +1,5 @@
 import * as React from 'react';
-//import "babel-polyfill";
+import "babel-polyfill";
 
 // stores
 import AreaDescriptionsStore from './stores/AreaDescriptionsStore';

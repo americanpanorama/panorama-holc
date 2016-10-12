@@ -38,7 +38,7 @@ export default class Downloader extends React.Component {
 							</h4> 
 							<h4>
 								<a 
-									href={ this.props.bucketPath + 'area_descriptions.zip' }
+									href={ this.props.bucketPath + 'area-descriptions.zip' }
 									download={ this.props.name.replace(/\s+/g, '') + '_area_descriptions.zip' }
 								>
 									Shapefile

@@ -28,6 +28,8 @@ const UserLocationStore = {
 			this.data.adId = response[0][0].ad_id;
 			this.data.offerZoomTo = true;
 
+			console.log(this.data);
+
 			this.emit(AppActionTypes.storeChanged);
 		}, (error) => {
 			// TODO: handle this.
