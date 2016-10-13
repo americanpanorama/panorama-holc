@@ -15,7 +15,7 @@ const UserLocationStore = {
 
 	dataLoader: CartoDBLoader,
 
-	loadData: function (point) {
+	loadData: function (point, selectedCity) {
 		this.data.latLng = point;
 
 		this.dataLoader.query([
@@ -26,9 +26,8 @@ const UserLocationStore = {
 		]).then((response) => {
 			this.data.city = response[0][0].city;
 			this.data.adId = response[0][0].ad_id;
-			this.data.offerZoomTo = true;
-
-			console.log(this.data);
+			// offer zoom if any city isn't already selected
+			this.data.offerZoomTo = !selectedCity;
 
 			this.emit(AppActionTypes.storeChanged);
 		}, (error) => {
@@ -75,7 +74,7 @@ AppDispatcher.register((action) => {
 
 		case AppActionTypes.userLocated:
 			if (action.point) {
-				UserLocationStore.loadData(action.point);
+				UserLocationStore.loadData(action.point, action.selectedCity);
 			}
 			break;
 

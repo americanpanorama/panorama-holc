@@ -92,7 +92,7 @@ const AreaDescriptionsStore = {
 	},
 
 	parseAreaDescriptions: function(rawAdData) {
-		const bucketUrl = 'http://holc.s3-website-us-east-1.amazonaws.com/';
+		const bucketUrl = '//holc.s3-website-us-east-1.amazonaws.com/';
 
 		let adData = {};
 

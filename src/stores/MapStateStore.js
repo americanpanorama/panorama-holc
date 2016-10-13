@@ -161,6 +161,8 @@ const MapStateStore = {
 
 	isAboveZoomThreshold() { return this.data.zoom >= this.data.adZoomThreshold; },
 
+	cityIsVisible(adId) { return this.data.visibleAdIds.indexOf(adId) !== -1; },
+
 	hasLoaded() { return this.data.hasLoaded; },
 
 	initialViewLoaded() { return this.data.initialViewLoaded; }

@@ -127,10 +127,11 @@ export const AppActions = {
 		})
 	},
 
-	userLocated: (point) => {
+	userLocated: (point, selectedCity) => {
 		AppDispatcher.dispatch({
 			type: AppActionTypes.userLocated,
-			point: point
+			point: point,
+			selectedCity: selectedCity
 		});
 	},
 

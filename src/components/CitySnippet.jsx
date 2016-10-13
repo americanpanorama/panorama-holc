@@ -67,7 +67,7 @@ export default class CitySnippet extends React.Component {
 				<h1>
 					{/* href for indexing */}
 					<a 
-						href={ 'http://dsl.richmond.edu/panorama/redlining/#city=' + this.props.cityData.slug }
+						href={ '//dsl.richmond.edu/panorama/redlining/#city=' + this.props.cityData.slug }
 						onClick={ ()=>false }
 					>
 						{ this.props.cityData.name + ((this.props.displayState) ? ', ' + this.props.cityData.state : '') }

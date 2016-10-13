@@ -34,7 +34,7 @@ export default class Downloader extends React.Component {
 					{ (this.props.hasADData) ?
 						<div>
 							<h4>
-								<a onClick={ this.props.downloadGeojson }>GeoJson</a>
+								<a onClick={ this.props.downloadGeojson } style={{ textDecoration: 'underline' }}>GeoJson</a>
 							</h4> 
 							<h4>
 								<a 

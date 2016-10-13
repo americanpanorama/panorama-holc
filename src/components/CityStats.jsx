@@ -126,7 +126,7 @@ export default class CityStats extends React.Component {
 				
 
 				{ (this.props.hasADData || this.props.hasADImages) ?
-					<div className='adInstructions'>click on neighborhoods on the map to read their area descriptions</div> : 
+					<div className='adInstructions'>click on neighborhoods to read their area descriptions</div> : 
 					<div className='adInstructions'>area descriptions aren't available for this city, but will be soon</div>
 				}
 

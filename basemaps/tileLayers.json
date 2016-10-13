@@ -1,8 +1,8 @@
 {
 	"layers": [
 		{
-			"urlNoLabels": "{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
-			"urlLabels": "{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+			"urlNoLabels": "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
+			"urlLabels": "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"
 		}
 	]
 }

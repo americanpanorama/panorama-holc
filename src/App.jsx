@@ -1,5 +1,6 @@
 import * as React from 'react';
 import "babel-polyfill";
+//import './utils/carto.js';
 
 // stores
 import AreaDescriptionsStore from './stores/AreaDescriptionsStore';
@@ -59,8 +60,7 @@ export default class App extends React.Component {
 		//try to retrieve the users location
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition((position) => {
-				console.log(position);
-				AppActions.userLocated([position.coords.latitude, position.coords.longitude]);
+				AppActions.userLocated([position.coords.latitude, position.coords.longitude], this.state.selectedCity);
 			}, (error) => {
 				console.warn('Geolocation error occurred. Error code: ' + error.code);
 			});
