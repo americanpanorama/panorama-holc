@@ -32,7 +32,7 @@ const CitiesStore = {
 							state: response.state,
 							name: response.city,
 							year: response.year,
-							searchName: response.city + ', ' + stateAbbrs[response.state],
+							searchName: response.city + ' ' + stateAbbrs[response.state] + ' ' + response.state,
 							slug: response.city.toLowerCase().replace(/ +/g,'-') + '-' + response.state.toLowerCase(), 
 							form_id: response.form_id,
 							centerLat: response.looplat,
@@ -105,6 +105,11 @@ const CitiesStore = {
 							},
 							maps: [],
 							mapIds: response.map_ids
+						}
+
+						// refine search for NY Boroughs as many users probably search for New York
+						if (['Brooklyn', 'Manhattan', 'Staten Island', 'Bronx', 'Queens'].indexOf(response.city) !== -1) {
+							this.data.cities[response.ad_id].searchName = 'New York ' + this.data.cities[response.ad_id].searchName;
 						}
 
 						this.data.cities[response.ad_id].radii = (response.total_area) ? this.calculateSimpleRingsRadii(this.data.cities[response.ad_id].area) : null;

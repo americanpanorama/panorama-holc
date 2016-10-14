@@ -84,7 +84,7 @@ export default class HOLCMap extends React.Component {
 			legendData = {
 				items: [
 					'A "Best"',
-					'B "Still Desireable"',
+					'B "Still Desirable"',
 					'C "Definitely Declining"',
 					'D "Hazardous"',
 				]

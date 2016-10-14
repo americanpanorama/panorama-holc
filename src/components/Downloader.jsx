@@ -38,7 +38,7 @@ export default class Downloader extends React.Component {
 							</h4> 
 							<h4>
 								<a 
-									href={ this.props.bucketPath + 'area-descriptions.zip' }
+									href={ 'http:' + this.props.bucketPath + 'area-descriptions.zip' }
 									download={ this.props.name.replace(/\s+/g, '') + '_area_descriptions.zip' }
 								>
 									Shapefile
@@ -54,7 +54,7 @@ export default class Downloader extends React.Component {
 					{ (this.props.rasters.length == 1) ?
 						<h4>
 							<a 
-								href={ this.props.rasters[0].mapUrl } 
+								href={ 'http:' + this.props.rasters[0].mapUrl } 
 								download={ this.props.rasters[0].name.replace(/\s+/g, '') + '_scan.zip'}
 							>
 								Original Scan (.jpg)
@@ -72,7 +72,7 @@ export default class Downloader extends React.Component {
 										return <li key={ 'ungeorectifiedDownload' + map.id }>
 											<h3>
 												<a 
-													href={ map.mapUrl } 
+													href={ 'http:' + map.mapUrl } 
 													download={ map.name.replace(/\s+/g, '') + '_scan.zip'}
 												>
 													{ map.name } (.jpg)

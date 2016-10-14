@@ -124,7 +124,7 @@ const CityStore = {
 			this.data.year = CitiesStore.getYear(this.data.id);
 			this.data.slug = CitiesStore.getSlug(this.data.id);
 			this.data.form_id = CitiesStore.getFormId(this.data.id);
-			this.data.bucketPath = '//holc.s3-website-us-east-1.amazonaws.com/tiles/' + CitiesStore.getState(this.data.id) + '/' + CitiesStore.getMapParentFileName(this.data.id) + '/' + CitiesStore.getYear(this.data.id) + '/';
+			this.data.bucketPath = '//s3.amazonaws.com/holc/tiles/' + CitiesStore.getState(this.data.id) + '/' + CitiesStore.getMapParentFileName(this.data.id) + '/' + CitiesStore.getYear(this.data.id) + '/';
 			this.data.loopLatLng = CitiesStore.getCenterPoint(this.data.id);
 
 			const ringData = response[0];
