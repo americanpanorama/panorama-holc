@@ -419,7 +419,7 @@ const AreaDescriptionsStore = {
 		}
 	},
 
-	getSheets: function(adId, HOLCId) { return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : null; },
+	getSheets: function(adId, HOLCId) { return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : 0; },
 
 	getThumbnailUrl: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null; },
 

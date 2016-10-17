@@ -1,3 +1,12 @@
-.longishform {
+.longishForm {
 	word-wrap:break-word;
+
+	&.noAD {
+		background-color: #444;
+		text-align: center;
+		color: #ddd;
+		font-size: 2em;
+		height: 100%;
+		padding-top: 100px;
+	}
 }

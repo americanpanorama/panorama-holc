@@ -423,32 +423,37 @@ export default class App extends React.Component {
 									onCountryClick={ this.onCountrySelected }
 									onMapClick={ this.onMapClick }
 								/> :
-								<Map 
-									ref='the_ad_tiles' 
-									center={ [this.getADY(),this.getADX()] } 
-									zoom={ this.getADZoom() }
-									minZoom={ 3 }
-									maxZoom={ 5 }
-									maxBounds={ this.getADMaxBounds() }
-									className='the_ad'
-									style={ DimensionsStore.getADViewerStyle() }
-									onMoveend={ this.changeHash }
-								>
-									{ (CitiesStore.hasADImages(this.state.selectedCity) && AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood)) ? 
-										<TileLayer
-											key='AD'
-											url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
-											zIndex={ 1000 }
-										/>:
-										null
-									}
+								(AreaDescriptionsStore.getSheets(this.state.selectedCity, this.state.selectedNeighborhood)) ?
+									<Map 
+										ref='the_ad_tiles' 
+										center={ [this.getADY(),this.getADX()] } 
+										zoom={ this.getADZoom() }
+										minZoom={ 3 }
+										maxZoom={ 5 }
+										maxBounds={ this.getADMaxBounds() }
+										className='the_ad'
+										style={ DimensionsStore.getADViewerStyle() }
+										onMoveend={ this.changeHash }
+									>
+										{ (CitiesStore.hasADImages(this.state.selectedCity) && AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood)) ? 
+											<TileLayer
+												key='AD'
+												url={ AreaDescriptionsStore.getAdTileUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
+												zIndex={ 1000 }
+											/>:
+											null
+										}
 
-									<Legend 
-										items={ [ 'Close' ] }
-										className='adClose' 
-										onItemSelected={ this.onAdImageClicked } 
-									/>
-								</Map> 
+										<Legend 
+											items={ [ 'Close' ] }
+											className='adClose' 
+											onItemSelected={ this.onAdImageClicked } 
+										/>
+									</Map>:
+									<div className='longishForm noAD'>
+										<p>An area description is not available for this neighborhood.</p>
+									</div>
+
 							}
 
 							{ TextsStore.mainModalIsOpen() && TextsStore.getSubject() !== 'burgess' ?
@@ -564,6 +569,7 @@ export default class App extends React.Component {
 									neighborhoodNames={ AreaDescriptionsStore.getNeighborhoodNames(this.state.selectedCity) }
 									areaDescriptions={ AreaDescriptionsStore.getADsForNeighborhood(this.state.selectedCity, this.state.selectedNeighborhood) } 
 									thumbnailUrl={ AreaDescriptionsStore.getThumbnailUrl(this.state.selectedCity, this.state.selectedNeighborhood) }
+									sheets={ AreaDescriptionsStore.getSheets(this.state.selectedCity, this.state.selectedNeighborhood) }
 									formId={ CityStore.getFormId() } 
 									cityId={ this.state.selectedCity }
 									citySlug={ CityStore.getSlug() }
