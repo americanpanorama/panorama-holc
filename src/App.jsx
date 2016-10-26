@@ -532,6 +532,7 @@ export default class App extends React.Component {
 									gradeSelected={ this.onAreaChartHover } 
 									gradeUnselected={ this.onAreaChartOff } 
 									openBurgess={ this.onModalClick }
+									hasPolygons={ CitiesStore.hasPolygons(this.state.selectedCity) }
 									hasADData={ CitiesStore.hasADData(this.state.selectedCity) }
 									hasADImages={ CitiesStore.hasADImages(this.state.selectedCity) }
 									onDownloadClicked={ this.onDownloadClicked }

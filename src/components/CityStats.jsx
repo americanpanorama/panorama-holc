@@ -117,9 +117,11 @@ export default class CityStats extends React.Component {
 					<Downloader 
 						rasters={ this.props.rasters }
 						hasADData={ this.props.hasADData }
+						hasPolygons={ this.props.hasPolygons }
 						downloadGeojson={ this.props.downloadGeojson }
 						bucketPath={ this.props.bucketPath }
 						name={ this.props.name }
+						id={ this.props.adId }
 					/> :
 					null
 				}

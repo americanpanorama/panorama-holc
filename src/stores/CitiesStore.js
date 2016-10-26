@@ -299,7 +299,9 @@ const CitiesStore = {
 
 	hasADData: function(adId) { return (this.data.cities[adId] && this.data.cities[adId].hasADs); },
 
-	hasADImages: function(adId) { return (this.data.cities [adId] && this.data.cities[adId].hasImages); }
+	hasADImages: function(adId) { return (this.data.cities [adId] && this.data.cities[adId].hasImages); },
+
+	hasPolygons: function(adId) { return (this.data.cities[adId] && this.data.cities[adId].hasPolygons); }
 
 };
 
