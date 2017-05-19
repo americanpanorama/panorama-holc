@@ -36,6 +36,7 @@ export default class AreaDescription extends React.Component {
 		let renderForm = () => null;
 		switch(parseInt(this.props.formId)) {
 			case 19370203:
+			case 19370601:
 			case 19370826:
 				renderForm = (this.props.show == 'full') ? this.renderNSForm8_19370203 : this.renderNSForm8_19370203_selections;
 				break;
