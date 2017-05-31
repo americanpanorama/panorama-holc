@@ -50,9 +50,9 @@ const AreaDescriptionsStore = {
 			let responsesADs = [],
 				responsesMapIds = [];
 			responses.forEach(response => {
-				if (responses.length > 0 && response[0].state) {
+				if (responses.length > 0 && responses[0].state) {
 					responsesADs.push(response);
-				} else if (responses.length > 0 && response[0].map_id) {
+				} else if (responses.length > 0 && responses[0].map_id) {
 					responsesMapIds.push(response);
 				}
 			});
