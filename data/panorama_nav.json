@@ -1,5 +1,13 @@
 [
 	{
+		"title"         : "Renewing Inequality",
+		"url"           : "http://dsl.richmond.edu/panorama/renewing/",
+		"screenshot"    : "http://dsl.richmond.edu/panorama/static/images/renewal-img.png",
+		"start_year"    : 1800,
+		"end_year"      : 1860,
+		"tags"          : []
+	},
+	{
 		"title"         : "The Forced Migration of Enslaved People",
 		"url"           : "http://dsl.richmond.edu/panorama/forcedmigration/",
 		"screenshot"    : "http://dsl.richmond.edu/panorama/static/images/forced-migration-img.png",
@@ -27,6 +35,14 @@
 		"title"         : "Canals",
 		"url"           : "http://dsl.richmond.edu/panorama/canals/",
 		"screenshot"    : "http://dsl.richmond.edu/panorama/static/images/canal-img.png",
+		"start_year"    : 1800,
+		"end_year"      : 1860,
+		"tags"          : []
+	},
+	{
+		"title"         : "The Executive Aboard",
+		"url"           : "http://dsl.richmond.edu/panorama/executiveabroad/",
+		"screenshot"    : "https://dsl.richmond.edu/panorama/static/images/execab-img.png",
 		"start_year"    : 1800,
 		"end_year"      : 1860,
 		"tags"          : []
