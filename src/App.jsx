@@ -58,7 +58,7 @@ export default class App extends React.Component {
 		AppActions.loadInitialData(this.state, HashManager.getState());
 
 		//try to retrieve the users location
-		if (navigator.geolocation) {
+		if (navigator.geolocation && !HashManager.getState().nogeo) {
 			navigator.geolocation.getCurrentPosition((position) => {
 				AppActions.userLocated([position.coords.latitude, position.coords.longitude], this.state.selectedCity);
 			}, (error) => {

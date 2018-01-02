@@ -29,6 +29,9 @@ const UserLocationStore = {
 			// offer zoom if any city isn't already selected
 			this.data.offerZoomTo = !selectedCity;
 
+			// also don't over zoom if the distance is greater than 65 miles (about 100000 meters)
+			this.data.offerZoomTo = (response[0][0].distance * 111.325 > 100) ? false : this.data.offerZoomTo;
+
 			this.emit(AppActionTypes.storeChanged);
 		}, (error) => {
 			// TODO: handle this.
