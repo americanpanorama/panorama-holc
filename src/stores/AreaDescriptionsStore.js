@@ -130,7 +130,7 @@ const AreaDescriptionsStore = {
 			// }
 			
 			// define area description if undefined
-			if(typeof adData[d.holc_id].areaDesc == 'undefined') {
+			if(typeof adData[d.holc_id].areaDesc == 'undefined' || typeof adData[d.holc_id].areaDesc == 'boolean') {
 				adData[d.holc_id].areaDesc = {};
 			}
 			
@@ -351,7 +351,7 @@ const AreaDescriptionsStore = {
 
 	getNeighborhoodCenter: function (adId, holcId) { return (this.data.areaDescriptions[adId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].center : null; },
 
-	getNeighborhoodMapIds: function(adId, holcId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId]) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].mapIds : [];}, 
+	getNeighborhoodMapIds: function(adId, holcId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[holcId] && this.data.areaDescriptions[adId].byNeighborhood[holcId].mapIds) ? this.data.areaDescriptions[adId].byNeighborhood[holcId].mapIds : [];}, 
 
 	getNeighborhoodNames: function (adId) {
 		let names = {};
@@ -419,7 +419,7 @@ const AreaDescriptionsStore = {
 		}
 	},
 
-	getSheets: function(adId, HOLCId) { return (this.data.areaDescriptions[adId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : 0; },
+	getSheets: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? parseInt(this.data.areaDescriptions[adId].byNeighborhood[HOLCId].sheets) : 0; },
 
 	getThumbnailUrl: function(adId, HOLCId) { return (this.data.areaDescriptions[adId] && this.data.areaDescriptions[adId].byNeighborhood && this.data.areaDescriptions[adId].byNeighborhood[HOLCId]) ? this.data.areaDescriptions[adId].byNeighborhood[HOLCId].thumbnailUrl : null; },
 

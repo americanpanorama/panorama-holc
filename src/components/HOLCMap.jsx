@@ -11,7 +11,7 @@ import RasterStore from '../stores/RasterStore';
 import UserLocationStore from '../stores/UserLocationStore';
 
 // components
-import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImagePath } from 'react-leaflet';
+import { Map, TileLayer, GeoJson, Circle, LayerGroup, Marker, setIconDefaultImagePath, CircleMarker } from 'react-leaflet';
 import { CartoDBTileLayer, Legend } from '@panorama/toolkit';
 //import CartoDBTileLayer from './CartoDBTileLayer.jsx';
 //import { CartoDBTileLayerProd, Legend } from '../../../panorama';

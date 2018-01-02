@@ -529,6 +529,16 @@
 			}
 		},
 		{
+			"contents": "Searching 8 files for \"st_\" (regex)\n\n/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/src/stores/AreaDescriptionsStore.js:\n   28  \t\t\tif (!this.data.areaDescriptions[adId]) {\n   29  \t\t\t\tqueries.push({\n   30: \t\t\t\t\tquery: 'SELECT holc_ads.city_id as ad_id, dir_name, holc_ads.year, holc_ads.state, holc_polygons.name, sheets, form_id, holc_id, holc_grade, polygon_id, cat_id, sub_cat_id, _order as order, data, ST_asgeojson (holc_polygons.the_geom, 4) as the_geojson, round(st_xmin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmin, round(st_ymin(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymin, round(st_xmax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbxmax, round(st_ymax(st_envelope(holc_polygons.the_geom))::numeric, 3) as bbymax, round(st_y(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlat, round(st_x(st_centroid(holc_polygons.the_geom))::numeric, 3) as centerlng, round((st_area(holc_polygons.the_geom::geography)/1000000 * 0.386102)::numeric, 3) as sqmi FROM holc_ad_data right join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id join holc_ads on city_id = holc_polygons.ad_id where holc_ads.city_id =' + adId,\n   31  \t\t\t\t\tformat: 'JSON'\n   32  \t\t\t\t});\n   ..\n   37  \t\t\t\tif (overlaps) {\n   38  \t\t\t\t\tqueries.push({\n   39: \t\t\t\t\t\tquery: 'with the_overlaps as (SELECT holc_polygons.the_geom as neighborhood_geom, holc_maps.the_geom as map_geom,  holc_maps.map_id, holc_id, holc_polygons.ad_id FROM holc_maps, holc_polygons, holc_maps_ads_join hmaj WHERE ST_intersects(holc_maps.the_geom, holc_polygons.the_geom)  and holc_polygons.ad_id = hmaj.ad_id and hmaj.map_id = holc_maps.map_id and holc_maps.map_id in (SELECT distinct(hm1.map_id) as overlapping_map_id FROM holc_maps AS hm1, holc_maps AS hm2 WHERE hm1.map_id <> hm2.map_id AND ST_Overlaps(hm1.the_geom, hm2.the_geom)) and holc_polygons.ad_id = ' + adId + '), counts as (select count(holc_id) as the_count, holc_id  from the_overlaps  group by holc_id) select ad_id, the_overlaps.holc_id, map_id, case when the_count > 1 then st_area(st_intersection(map_geom, neighborhood_geom)) / st_area(neighborhood_geom) else 1 end as area from the_overlaps join counts on the_overlaps.holc_id = counts.holc_id order by the_overlaps.holc_id, area desc',\n   40  \t\t\t\t\t\tformat: 'JSON'\n   41  \t\t\t\t\t});\n\n/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/src/stores/CitiesStore.js:\n   21  \t\tthis.dataLoader.query([\n   22  \t\t\t{\n   23: \t\t\t\tquery: \"WITH polygon_bounds as (select ad_id, st_xmin(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmin, st_ymin(st_envelope(st_collect(holc_polygons.the_geom))) as bbymin, st_xmax(st_envelope(st_collect(holc_polygons.the_geom))) as bbxmax, st_ymax(st_envelope(st_collect(holc_polygons.the_geom))) as bbymax FROM holc_polygons group by ad_id), has_ads as (select count(data), ad_id from holc_ad_data join holc_polygons on holc_ad_data.polygon_id = holc_polygons.neighborhood_id group by ad_id) SELECT holc_ads.city_id as ad_id, city, state, holc_ads.year, looplat::numeric, looplng::numeric, form_id, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930 as asian_pacific_islander_1930, asian_pacific_1940 as asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, images, case when has_ads.ad_id is not null then true else false end as has_ads, sum(st_area(holc_polygons.the_geom_webmercator)) / 1609.34^2 as total_area, sum(CASE WHEN holc_grade = 'A' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_a, sum(CASE WHEN holc_grade = 'B' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_b, sum(CASE WHEN holc_grade = 'C' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_c, sum(CASE WHEN holc_grade = 'D' THEN st_area(holc_polygons.the_geom_webmercator) ELSE 0 END) / 1609.34^2 as area_d, bbxmin, bbymin, bbxmax, bbymax, array_agg(distinct map_id) as map_ids FROM holc_polygons right join holc_ads on holc_polygons.ad_id = holc_ads.city_id left join polygon_bounds on holc_ads.city_id = polygon_bounds.ad_id join holc_maps_ads_join on holc_maps_ads_join.ad_id = holc_ads.city_id left join has_ads on has_ads.ad_id = holc_ads.city_id and holc_ads.looplng is not null and holc_ads.looplat is not null group by holc_ads.city_id, city, state, holc_ads.year, form_id, looplat, looplng, total_pop_1940, total_pop_1930, american_indian_eskimo_1930, american_indian_eskimo_1940, asian_pacific_1930, asian_pacific_1940, black_pop_1930, black_pop_1940, white_pop_1930, white_pop_1940, fb_30, fb30_afr_amer, fb30_all_other, fb30_chinese, fb30_indian, fb30_japanese, fb30_other_races, fb30_white, native_pop_1930, fb_40, fb40_afr_amer, fb40_all_other, fb40_chinese, fb40_indian, fb40_japanese, fb40_other_races, fb40_white, native_pop_1940, images, has_ads, bbxmin, bbymin, bbxmax, bbymax  order by state, city\",\n   24  \t\t\t\tformat: 'JSON'\n   25  \t\t\t}\n\n/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/src/stores/CityStore.js:\n  107  \t\t\t// get ring polygons\n  108  \t\t\t{\n  109: \t\t\t\tquery: 'WITH the_hull as (select ST_Collect(digitalscholarshiplab.holc_polygons.the_geom_webmercator) as hull, ad_id FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' GROUP BY ad_id), maxdist as (SELECT st_distance_sphere(st_transform(st_endpoint(st_longestline(st_transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857), hull)), 4326), ST_SetSRID(ST_MakePoint(looplng,looplat), 4326)) as outerringradius, st_length(st_longestline(st_transform(ST_SetSRID(ST_Point(looplng,looplat),4326),3857), hull)) / 3.5 as distintv, ST_Transform(ST_SetSRID(ST_MakePoint(looplng,looplat),4326),3857)::geometry as the_point from the_hull join holc_ads on the_hull.ad_id = holc_ads.city_id and holc_ads.city_id = ' + cityId + ' Order by distintv DESC Limit 1 ), city_buffers as (SELECT ST_Transform((ST_Buffer(the_point,distintv * 3.5,\\'quad_segs=32\\')::geometry),3857) as buffer4, ST_Transform((ST_Buffer(the_point,distintv * 2.5,\\'quad_segs=32\\')::geometry),3857) as buffer3, ST_Transform((ST_Buffer(the_point,distintv * 1.5,\\'quad_segs=32\\')::geometry),3857) as buffer2, ST_Transform((ST_Buffer(the_point,distintv * 0.5,\\'quad_segs=32\\')::geometry),3857) as buffer1 FROM maxdist), city_rings as (SELECT ST_Difference(buffer4, buffer3) as the_geom_webmercator, 4 as ring_id, st_area(ST_Difference(buffer4, buffer3)) as ring_area from city_buffers union all select ST_Difference(buffer3, buffer2) as the_geom_webmercator, 3 as ring_id, st_area(ST_Difference(buffer3, buffer2)) as ring_area from city_buffers union all select ST_Difference(buffer2, buffer1) as the_geom_webmercator, 2 as ring_id, st_area(ST_Difference(buffer2, buffer1)) as ring_area from city_buffers union all select buffer1 as the_webmercator, 1 as ring_id, st_area(buffer1) as ring_area from city_buffers ), combined_grades as (SELECT holc_grade, ST_union(the_geom_webmercator) as the_geom_webmercator FROM digitalscholarshiplab.holc_polygons where ad_id = ' + cityId + ' group by holc_grade) SELECT holc_grade as grade, ring_id as ring, ST_AsGeoJSON(ST_Transform(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as the_geojson, ST_AsGeoJSON(ST_Transform(ST_Difference(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator),4326), 4) as inverted_geojson, st_area(ST_Intersection(city_rings.the_geom_webmercator, combined_grades.the_geom_webmercator)) as area, ST_Area(city_rings.the_geom_webmercator) as ring_area, outerringradius FROM city_rings, combined_grades, maxdist',\n  110  \t\t\t\tformat: 'JSON'\n  111  \t\t\t},\n  112  \t\t\t{\n  113: \t\t\t\tquery: 'Select round(st_x(st_centroid(ST_SetSRID(st_extent(the_geom),4326)))::numeric, 3) as centerLng, round(st_y(st_centroid(ST_SetSRID(st_extent(the_geom),4326)))::numeric, 3) as centerLat, round(st_xmin(ST_SetSRID(st_extent(the_geom),4326))::numeric, 3) as minlng, round(st_ymin(ST_SetSRID(st_extent(the_geom),4326))::numeric, 3) as minlat, round(st_xmax(ST_SetSRID(st_extent(the_geom),4326))::numeric, 3) as maxlng, round(st_ymax(ST_SetSRID(st_extent(the_geom),4326))::numeric, 3) as maxlat from digitalscholarshiplab.holc_polygons where ad_id =' + cityId,\n  114  \t\t\t\tformat: 'JSON'\n  115  \t\t\t}\n  ...\n  288  \t\tthis.dataLoader.query([\n  289  \t\t\t{\n  290: \t\t\t\tquery: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_maps.looplng, holc_maps.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.city_id = holc_maps_ads_join.ad_id order by distance limit 1',\n  291  \t\t\t\tformat: 'JSON'\n  292  \t\t\t}\n\n/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/src/stores/RasterStore.js:\n   18  \t\tthis.dataLoader.query([\n   19  \t\t\t{\n   20: \t\t\t\tquery: 'SELECT holc_maps.*, ST_asgeojson(holc_maps.the_geom, 4) as the_geojson, st_xmin(holc_maps.the_geom) as minLng, st_xmax(holc_maps.the_geom) as maxLng, st_ymin(holc_maps.the_geom) as minLat, st_ymax(holc_maps.the_geom) as maxLat, st_x(st_centroid(holc_maps.the_geom)) as centerLng, st_y(st_centroid(holc_maps.the_geom)) as centerLat FROM holc_maps',\n   21  \t\t\t\tformat: 'JSON'\n   22  \t\t\t},\n   23  \t\t\t{\n   24: \t\t\t\tquery: 'SELECT distinct(hm1.map_id) FROM digitalscholarshiplab.holc_maps AS hm1, digitalscholarshiplab.holc_maps AS hm2 WHERE hm1.map_id <> hm2.map_id AND ST_Overlaps(hm1.the_geom, hm2.the_geom)',\n   25  \t\t\t\tformat: 'JSON'\n   26  \t\t\t}\n\n/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/src/stores/UserLocationStore.js:\n   21  \t\tthis.dataLoader.query([\n   22  \t\t\t{\n   23: \t\t\t\tquery: 'SELECT ad_id, city, ST_distance(ST_setsrid(ST_MakePoint(holc_ads.looplng, holc_ads.looplat),4326), ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326)) as distance, st_xmin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmin, st_xmax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbxmax, st_ymin( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymin, st_ymax( st_envelope(st_collect(ST_setsrid(ST_MakePoint(' + point[1] +', ' + point[0] + '),4326), holc_maps.the_geom))) as bbymax from holc_maps join holc_maps_ads_join on holc_maps.map_id = holc_maps_ads_join.map_id join holc_ads on holc_ads.city_id = holc_maps_ads_join.ad_id order by distance limit 1',\n   24  \t\t\t\tformat: 'JSON'\n   25  \t\t\t}\n\n162 matches across 5 files\n",
+			"settings":
+			{
+				"buffer_size": 11472,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
 			"contents": "http://digitalscholarshiplab.cartodb.com/api/v2/sql?q=select%20city,%20holc_polygons.the_geom,%20holc_grade,%20holc_id,%20name%20from%20holc_polygons%20join%20holc_ads%20on%20city_id%20=%20ad_id%20where%20ad_id%20=%20201&format=GeoJSON&filename=HOLC_Milwaukee\n\n\nselect the_geom, holc_grade, holc_id, name from holc_polygons where ad_id = 201",
 			"settings":
 			{
@@ -801,13 +811,14 @@
 	],
 	"find":
 	{
-		"height": 35.0
+		"height": 48.0
 	},
 	"find_in_files":
 	{
 		"height": 93.0,
 		"where_history":
 		[
+			"/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/src/stores",
 			"/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/scss/",
 			"/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc",
 			"/Users/rnelson2/Documents/projects/Digital Atlas/panorama/holc/scss",
@@ -838,6 +849,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"geojson",
+			"st_",
 			" ",
 			"console.log",
 			"data.rows[0]",
@@ -963,9 +976,7 @@
 			"download",
 			"downloader",
 			"citystats",
-			"style",
-			"withCityMarker",
-			"babel"
+			"style"
 		],
 		"highlight": false,
 		"in_selection": false,
@@ -999,7 +1010,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -1030,11 +1041,702 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11472,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										422,
+										425
+									],
+									[
+										485,
+										488
+									],
+									[
+										493,
+										496
+									],
+									[
+										560,
+										563
+									],
+									[
+										568,
+										571
+									],
+									[
+										635,
+										638
+									],
+									[
+										643,
+										646
+									],
+									[
+										710,
+										713
+									],
+									[
+										718,
+										721
+									],
+									[
+										785,
+										788
+									],
+									[
+										790,
+										793
+									],
+									[
+										860,
+										863
+									],
+									[
+										865,
+										868
+									],
+									[
+										936,
+										939
+									],
+									[
+										1541,
+										1544
+									],
+									[
+										1822,
+										1825
+									],
+									[
+										2070,
+										2073
+									],
+									[
+										2078,
+										2081
+									],
+									[
+										2126,
+										2129
+									],
+									[
+										2523,
+										2526
+									],
+									[
+										2531,
+										2534
+									],
+									[
+										2543,
+										2546
+									],
+									[
+										2591,
+										2594
+									],
+									[
+										2599,
+										2602
+									],
+									[
+										2611,
+										2614
+									],
+									[
+										2659,
+										2662
+									],
+									[
+										2667,
+										2670
+									],
+									[
+										2679,
+										2682
+									],
+									[
+										2727,
+										2730
+									],
+									[
+										2735,
+										2738
+									],
+									[
+										2747,
+										2750
+									],
+									[
+										3673,
+										3676
+									],
+									[
+										3781,
+										3784
+									],
+									[
+										3896,
+										3899
+									],
+									[
+										4011,
+										4014
+									],
+									[
+										4126,
+										4129
+									],
+									[
+										5431,
+										5434
+									],
+									[
+										5621,
+										5624
+									],
+									[
+										5640,
+										5643
+									],
+									[
+										5653,
+										5656
+									],
+									[
+										5665,
+										5668
+									],
+									[
+										5680,
+										5683
+									],
+									[
+										5693,
+										5696
+									],
+									[
+										5704,
+										5707
+									],
+									[
+										5762,
+										5765
+									],
+									[
+										5773,
+										5776
+									],
+									[
+										5831,
+										5834
+									],
+									[
+										5841,
+										5844
+									],
+									[
+										5856,
+										5859
+									],
+									[
+										5869,
+										5872
+									],
+									[
+										5880,
+										5883
+									],
+									[
+										5945,
+										5948
+									],
+									[
+										5958,
+										5961
+									],
+									[
+										5969,
+										5972
+									],
+									[
+										6195,
+										6198
+									],
+									[
+										6209,
+										6212
+									],
+									[
+										6291,
+										6294
+									],
+									[
+										6305,
+										6308
+									],
+									[
+										6387,
+										6390
+									],
+									[
+										6401,
+										6404
+									],
+									[
+										6483,
+										6486
+									],
+									[
+										6497,
+										6500
+									],
+									[
+										6615,
+										6618
+									],
+									[
+										6686,
+										6689
+									],
+									[
+										6694,
+										6697
+									],
+									[
+										6775,
+										6778
+									],
+									[
+										6846,
+										6849
+									],
+									[
+										6854,
+										6857
+									],
+									[
+										6935,
+										6938
+									],
+									[
+										7006,
+										7009
+									],
+									[
+										7014,
+										7017
+									],
+									[
+										7137,
+										7140
+									],
+									[
+										7227,
+										7230
+									],
+									[
+										7418,
+										7421
+									],
+									[
+										7431,
+										7434
+									],
+									[
+										7444,
+										7447
+									],
+									[
+										7557,
+										7560
+									],
+									[
+										7570,
+										7573
+									],
+									[
+										7583,
+										7586
+									],
+									[
+										7699,
+										7702
+									],
+									[
+										7707,
+										7710
+									],
+									[
+										7804,
+										7807
+									],
+									[
+										8002,
+										8005
+									],
+									[
+										8007,
+										8010
+									],
+									[
+										8019,
+										8022
+									],
+									[
+										8030,
+										8033
+									],
+									[
+										8091,
+										8094
+									],
+									[
+										8096,
+										8099
+									],
+									[
+										8108,
+										8111
+									],
+									[
+										8119,
+										8122
+									],
+									[
+										8180,
+										8183
+									],
+									[
+										8188,
+										8191
+									],
+									[
+										8199,
+										8202
+									],
+									[
+										8256,
+										8259
+									],
+									[
+										8264,
+										8267
+									],
+									[
+										8275,
+										8278
+									],
+									[
+										8332,
+										8335
+									],
+									[
+										8340,
+										8343
+									],
+									[
+										8351,
+										8354
+									],
+									[
+										8408,
+										8411
+									],
+									[
+										8416,
+										8419
+									],
+									[
+										8427,
+										8430
+									],
+									[
+										8671,
+										8674
+									],
+									[
+										8683,
+										8686
+									],
+									[
+										8694,
+										8697
+									],
+									[
+										8752,
+										8755
+									],
+									[
+										8763,
+										8766
+									],
+									[
+										8831,
+										8834
+									],
+									[
+										8840,
+										8843
+									],
+									[
+										8852,
+										8855
+									],
+									[
+										8863,
+										8866
+									],
+									[
+										8874,
+										8877
+									],
+									[
+										8962,
+										8965
+									],
+									[
+										8971,
+										8974
+									],
+									[
+										8983,
+										8986
+									],
+									[
+										8994,
+										8997
+									],
+									[
+										9005,
+										9008
+									],
+									[
+										9093,
+										9096
+									],
+									[
+										9102,
+										9105
+									],
+									[
+										9114,
+										9117
+									],
+									[
+										9125,
+										9128
+									],
+									[
+										9136,
+										9139
+									],
+									[
+										9224,
+										9227
+									],
+									[
+										9233,
+										9236
+									],
+									[
+										9245,
+										9248
+									],
+									[
+										9256,
+										9259
+									],
+									[
+										9267,
+										9270
+									],
+									[
+										9743,
+										9746
+									],
+									[
+										9795,
+										9798
+									],
+									[
+										9834,
+										9837
+									],
+									[
+										9873,
+										9876
+									],
+									[
+										9912,
+										9915
+									],
+									[
+										9951,
+										9954
+									],
+									[
+										9956,
+										9959
+									],
+									[
+										10003,
+										10006
+									],
+									[
+										10008,
+										10011
+									],
+									[
+										10288,
+										10291
+									],
+									[
+										10549,
+										10552
+									],
+									[
+										10561,
+										10564
+									],
+									[
+										10572,
+										10575
+									],
+									[
+										10628,
+										10631
+									],
+									[
+										10639,
+										10642
+									],
+									[
+										10707,
+										10710
+									],
+									[
+										10716,
+										10719
+									],
+									[
+										10728,
+										10731
+									],
+									[
+										10739,
+										10742
+									],
+									[
+										10750,
+										10753
+									],
+									[
+										10838,
+										10841
+									],
+									[
+										10847,
+										10850
+									],
+									[
+										10859,
+										10862
+									],
+									[
+										10870,
+										10873
+									],
+									[
+										10881,
+										10884
+									],
+									[
+										10969,
+										10972
+									],
+									[
+										10978,
+										10981
+									],
+									[
+										10990,
+										10993
+									],
+									[
+										11001,
+										11004
+									],
+									[
+										11012,
+										11015
+									],
+									[
+										11100,
+										11103
+									],
+									[
+										11109,
+										11112
+									],
+									[
+										11121,
+										11124
+									],
+									[
+										11132,
+										11135
+									],
+									[
+										11143,
+										11146
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								422,
+								434
+							]
+						],
+						"settings":
+						{
+							"default_dir": "/Users/rnelson2/Documents/projects/holc/site_diagnostics",
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
 					"semi_transient": false,
 					"settings":
 					{
@@ -1058,11 +1760,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 3,
 					"semi_transient": false,
 					"settings":
 					{
@@ -1086,11 +1788,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 4,
 					"file": "/Users/rnelson2/Documents/projects/holc/site_diagnostics/shpfiles/index.js",
 					"semi_transient": true,
 					"settings":
@@ -1115,7 +1817,7 @@
 						"translation.y": 240.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 4,
 					"type": "text"
 				}
 			]
