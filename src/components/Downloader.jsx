@@ -34,13 +34,10 @@ export default class Downloader extends React.Component {
 					<h3>Area Descriptions &amp; Polygons</h3>
 					<div>
 						<h4>
-							<a onClick={ this.props.downloadGeojson } style={{ textDecoration: 'underline' }}>GeoJson</a>
+							<a href={ 'http://digitalscholarshiplab.cartodb.com/api/v2/sql?q=with%20condensed_data%20as%20(with%20ad_data%20as%20(SELECT%20holc_polygons.the_geom%2C%20holc_polygons.name%2C%20holc_id%2C%20holc_grade%2C%20cat_id%2C%20sub_cat_id%2C%20_order%2C%20data%20FROM%20holc_ad_data%20right%20join%20holc_polygons%20on%20holc_ad_data.polygon_id%20%3D%20holc_polygons.neighborhood_id%20join%20holc_ads%20on%20city_id%20%3D%20holc_polygons.ad_id%20where%20holc_ads.city_id%20%3D%20' + this.props.id + '%20%20order%20by%20holc_id%2C%20cat_id%2C%20sub_cat_id%2C%20_order)%20SELECT%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%2C%20concat(cat_id%2C%20sub_cat_id)%20as%20the_id%2C%20array_to_string(array_agg(data)%2C%20%27%20%27)%20as%20the_data%20FROM%20ad_data%20group%20by%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%2C%20cat_id%2C%20sub_cat_id%20order%20by%20holc_id%2C%20the_id)%20select%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%2C%20json_object_agg(the_id%2C%20the_data)%20AS%20area_description_data%20from%20condensed_data%20group%20by%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%20order%20by%20holc_id&format=GeoJSON&filename=HOLC_' + this.props.name.replace(/\s+/g, '') }>GeoJson</a>
 						</h4> 
 						<h4>
-							<a 
-								href={ 'http:' + this.props.bucketPath + 'area-descriptions.zip' }
-								download={ this.props.name.replace(/\s+/g, '') + '_area_descriptions.zip' }
-							>
+							<a href={ 'http://digitalscholarshiplab.cartodb.com/api/v2/sql?q=with%20condensed_data%20as%20(with%20ad_data%20as%20(SELECT%20holc_polygons.the_geom%2C%20holc_polygons.name%2C%20holc_id%2C%20holc_grade%2C%20cat_id%2C%20sub_cat_id%2C%20_order%2C%20data%20FROM%20holc_ad_data%20right%20join%20holc_polygons%20on%20holc_ad_data.polygon_id%20%3D%20holc_polygons.neighborhood_id%20join%20holc_ads%20on%20city_id%20%3D%20holc_polygons.ad_id%20where%20holc_ads.city_id%20%3D%20' + this.props.id + '%20%20order%20by%20holc_id%2C%20cat_id%2C%20sub_cat_id%2C%20_order)%20SELECT%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%2C%20concat(cat_id%2C%20sub_cat_id)%20as%20the_id%2C%20array_to_string(array_agg(data)%2C%20%27%20%27)%20as%20the_data%20FROM%20ad_data%20group%20by%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%2C%20cat_id%2C%20sub_cat_id%20order%20by%20holc_id%2C%20the_id)%20select%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%2C%20json_object_agg(the_id%2C%20the_data)%20AS%20area_description_data%20from%20condensed_data%20group%20by%20the_geom%2C%20name%2C%20holc_id%2C%20holc_grade%20order%20by%20holc_id&format=SHP&filename=HOLC_' + this.props.name.replace(/\s+/g, '') }>
 								Shapefile
 							</a>
 						</h4> 
@@ -55,6 +52,9 @@ export default class Downloader extends React.Component {
 					<div>
 						<h4>
 							<a href={ 'http://digitalscholarshiplab.cartodb.com/api/v2/sql?q=select%20city,%20holc_polygons.the_geom,%20holc_grade,%20holc_id,%20name%20from%20holc_polygons%20join%20holc_ads%20on%20city_id=ad_id%20where%20ad_id%20=' + this.props.id + '&format=GeoJSON&filename=HOLC_' + this.props.name.replace(/\s+/g, '') }>GeoJson</a>
+						</h4> 
+						<h4>
+							<a href={ 'http://digitalscholarshiplab.cartodb.com/api/v2/sql?q=select%20city,%20holc_polygons.the_geom,%20holc_grade,%20holc_id,%20name%20from%20holc_polygons%20join%20holc_ads%20on%20city_id=ad_id%20where%20ad_id%20=' + this.props.id + '&format=SHP&filename=HOLC_' + this.props.name.replace(/\s+/g, '') }>Shapefile</a>
 						</h4> 
 					</div>
 				</div> :
