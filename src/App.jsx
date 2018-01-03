@@ -28,6 +28,8 @@ import { Typeahead } from 'react-typeahead';
 import TypeAheadCitySnippet from './components/TypeAheadCitySnippet.jsx';
 import HOLCMap from './components/HOLCMap.jsx';
 import SidebarMap from './components/SidebarMap.jsx';
+import IntroModal from './components/IntroModal.jsx';
+
 
 // utils
 import { AppActions, AppActionTypes } from './utils/AppActionCreator';
@@ -48,7 +50,7 @@ export default class App extends React.Component {
 		this.state = this.getDefaultState();
 
 		// bind handlers
-		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBringToFrontClick', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onToggleADView', 'onUserCityResponse', 'onWindowResize', 'storeChanged','onMapClick'];
+		const handlers = ['changeHash', 'downloadGeojson', 'getLeafletElementForMap', 'onAdImageClicked', 'onAreaChartHover', 'onAreaChartOff', 'onBringToFrontClick', 'onBurgessChartHover', 'onBurgessChartOff', 'onCategoryClick', 'onCategoryClose', 'onCityMarkerSelected', 'onCitySelected', 'onContactUsToggle', 'onCountrySelected', 'onDownloadClicked', 'onGradeHover', 'onGradeUnhover', 'onHOLCIDClick', 'onMapMoved', 'onModalClick', 'onNeighborhoodClose', 'onNeighborhoodHighlighted', 'onNeighborhoodPolygonClick', 'onNeighborhoodUnhighlighted', 'onPanoramaMenuClick', 'onSliderChange', 'onStateSelected', 'onToggleADView', 'onUserCityResponse', 'onWindowResize', 'storeChanged','onMapClick','onDismissIntroModal'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -107,6 +109,7 @@ export default class App extends React.Component {
 				zoom: (hashState.loc && hashState.loc.zoom) ? hashState.loc.zoom : 5,
 				center: (hashState.loc && hashState.loc.center) ? hashState.loc.center : [39.1045,-94.5832] 
 			},
+			showIntroModal: window.localStorage.getItem('hasViewedIntroModal-redlining') !== 'true',
 			rasterOpacity: (hashState.opacity) ? parseFloat(hashState.opacity) : 0.8,
 			selectedCategory: (hashState.category) ? hashState.category : null,
 			selectedCity: null, 
@@ -290,6 +293,15 @@ export default class App extends React.Component {
 				AppActions.mapClicked(mapId);
 			});
 		}
+	}
+
+	onDismissIntroModal (persist) {
+		if (persist) {
+			window.localStorage.setItem('hasViewedIntroModal-redlining', 'true');
+		}
+		this.setState({
+			showIntroModal: false
+		});
 	}
 
 	/* manage hash */
@@ -649,6 +661,8 @@ export default class App extends React.Component {
 						</div>
 					</div>
 				</div>
+
+				{ this.state.showIntroModal ? <IntroModal onDismiss={ this.onDismissIntroModal } /> : '' }
 			</div> 
 		);
 

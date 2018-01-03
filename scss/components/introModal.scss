@@ -1,0 +1,262 @@
+.intro-modal {
+	$intro-text-color-light: $text-color;
+	$intro-text-color-dark: $text-color;
+	$intro-ui-border: 2px solid $text-color;
+
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+
+	z-index: 999999999;	// lift above map controls and introjs toggle buttons
+	overflow: auto;
+
+	background-color: $background;
+	text-align: center;
+	font-family: 'Lato', serif;
+	color: #111;
+
+	.item.text-overlay p {
+	    position: absolute;
+	    top: 44px;
+	}
+
+
+	.item.text-overlay4 p {
+	    position: absolute;
+	    top: 18px;
+	}
+
+	.page {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		min-height: 100%;
+		position: relative;
+		margin: 0 auto 20px auto;
+	}
+
+	.p0 {
+		color: #111;
+		$title-offset: 0px;
+
+		width: 600px;
+		margin-top: -$title-offset / 2;
+
+		.title-block {
+			transform: translateY($title-offset);
+		}
+
+		h1 {
+			font-family: "Lora", sans-serif;
+			font-size: 39px;
+			color: #111;
+			text-transform: uppercase;
+			margin: 0;
+			line-height: 1;
+		}
+
+		h3 {
+			font-family: "Lora", sans-serif;
+			font-size: 28px;
+			color: #eb3f3f;
+			margin: 0;
+			line-height: 1;
+		}
+
+		img {
+			width: 100%;
+			border: 2px solid #111;
+
+			&.loading {
+				height: 391px;	// avoid collapsing while loading image
+			}
+		}
+		p {
+			font-size: 15px;
+			font-family: "Lato", sans-serif;
+			width: 550px;
+			margin: 10px auto;
+		}
+	}
+
+	.p1 {
+		$title-offset: 30px;
+
+		width: 900px;
+		margin-top: -$title-offset / 2;
+
+		.title-block {
+			transform: translateY($title-offset);
+		}
+
+		h2 {
+			font-family: Lora, sans-serif;
+			font-size: 24px;
+			color: #eb3f3f;
+			text-transform: uppercase;
+			margin: 0;
+			background-color: transparent;
+		}
+
+		h3 {
+			font-family: Lora, sans-serif;
+			font-size: 18px;
+			color: #111;
+			text-transform: uppercase;
+			margin: 0;
+		}
+
+		.content {
+			width: 100%;
+			height: 480px;
+			box-sizing: border-box;
+			padding: 84px 44px 60px 44px;
+			border: 2px solid #111;
+		}
+
+		ol {
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: space-between;
+			width: 100%;
+			height: 100%;
+
+			text-align: left;
+		}
+
+		$intro-item-height: 140px;
+		$descender-height: 48px;
+		li {
+			position: relative;
+			display: inline-block;
+			flex: 0 0 365px;
+			height: $intro-item-height;
+
+			.ordinal {
+				font-family: Lora, sans-serif;
+				position: absolute;
+				left: 0;
+				top: 0;
+				line-height: $intro-item-height;
+				font-style: italic;
+
+				font-size: 140px;
+				opacity: 0.7;
+
+				&.descender {
+					line-height: $intro-item-height - $descender-height;
+				}
+			}
+
+			&.wider {
+				flex: 0 0 380px;
+			}
+
+			.item {
+				width: 250px;
+				position: absolute;
+				bottom: 4px;
+				right: 0;
+
+				p {
+					width: 100%;
+					margin: 0 0 0px 0;
+
+					font-size: 15px;
+
+					&.no-margin {
+						margin: 0;
+					}
+				}
+
+				img {
+					width: 100%;
+				}
+			}
+		}
+
+	}
+
+	p {
+		width: 400px;
+		margin: 24px 0;
+		line-height: 20px;
+
+		font-size: 14px;
+		color: #111;
+		font-family: 'Roboto Condensed', sans-serif;
+	}
+
+	.intro-modal-button {
+		width: 100px;
+		border: $intro-ui-border;
+		padding: 6px 0;
+		color: #eb3f3f;
+
+		font-size: 18px;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.footer {
+		$intro-footer-font-size: 13px;
+		margin-top: 12px;
+
+		> div {
+			display: inline-block;
+			margin-right: 24px;
+
+			font-size: 13px;
+			cursor: pointer;
+		}
+
+		label {
+			$checkbox-size: 20px;
+			$checkbox-inner-padding: 2px;
+			$checkbox-margin-right: 6px;
+			$checkbox-offset-vert: -4px;
+
+			display: inline-block;
+			position: relative;
+			margin-left: $checkbox-size;
+
+
+			font-size: $intro-footer-font-size;
+			cursor: pointer;
+
+			&::before,
+			&.checked::after {
+				display: block;
+				position: absolute;
+				box-sizing: content-box;
+				content: '';
+			}
+			&::before {
+				left: -$checkbox-size - $checkbox-margin-right;
+				top: $checkbox-offset-vert;
+				width: $intro-footer-font-size;
+				height: $intro-footer-font-size;
+				border: $intro-ui-border;
+				padding: $checkbox-inner-padding;
+			}
+			&.checked::after {
+				left: -($checkbox-size - 2*$checkbox-inner-padding) - $checkbox-margin-right;
+				top: $checkbox-offset-vert + 2*$checkbox-inner-padding;
+				width: $intro-footer-font-size;
+				height: $intro-footer-font-size;
+				padding: 0;
+				background-color: $text-color;
+				opacity: 0.8;
+			}
+
+		}
+
+		input {
+			display: none;
+		}
+	}
+	
+}
