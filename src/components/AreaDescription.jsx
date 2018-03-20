@@ -22,7 +22,7 @@ export default class AreaDescription extends React.Component {
 		super();
 
 		// bind handlers
-		const handlers = ['renderNSForm8_19370203','renderNSForm8_19371001','render1939','renderNSForm8_19371001_selections', 'renderNSForm8_19370203_selections', 'render1939_selection'];
+		const handlers = ['renderNSForm8_19370203','renderNSForm8_19371001','render1939','renderNSForm8_19371001_selections', 'renderNSForm8_19370203_selections', 'render1939_selection', 'renderQualitative'];
 		handlers.map(handler => { this[handler] = this[handler].bind(this); });
 	}
 
@@ -44,6 +44,9 @@ export default class AreaDescription extends React.Component {
 				break;
 			case 1939:
 				renderForm = (this.props.show == 'full') ? this.render1939 : this.render1939_selection;
+				break;
+			case 1: 
+				renderForm = this.renderQualitative;
 				break;
 		}
 
@@ -77,7 +80,7 @@ export default class AreaDescription extends React.Component {
 					''
 				}
 
-				{ (this.props.areaDescriptions && this.props.show == 'selection' ) ?
+				{ (this.props.areaDescriptions && this.props.show == 'selection' && this.props.formId !== 1) ?
 					<h4 className='shown' onClick={ this.props.onToggleADView }>Curated Selections from Area Description<br /><span className='instructions'>(click here to show full)</span></h4> :
 					null
 				}
@@ -150,6 +153,20 @@ export default class AreaDescription extends React.Component {
 				{ this.renderSimpleCategory(2, 'Description of Terrain') }
 			</ul>
 		);
+	}
+
+	renderQualitative() {
+		let AD = this.props.areaDescriptions;
+
+		if (AD === false || !AD[1]) {
+			return;
+		}
+
+		return(
+			<div className='area_description qualitative'>
+				{ AD[1] }
+			</div>
+		)
 	}
 
 

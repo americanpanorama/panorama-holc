@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import AppDispatcher from '../utils/AppDispatcher';
 import { AppActionTypes } from '../utils/AppActionCreator';
 import CartoDBLoader from '../utils/CartoDBLoader';
-import formsMetadata from '../../data/formsMetadata.json';
 import MapStateStore from '../stores/MapStateStore';
 import RasterStore from './RasterStore';
 import stateAbbrs from '../../data/state_abbr.json';

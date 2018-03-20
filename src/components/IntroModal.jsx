@@ -79,7 +79,11 @@ export default class IntroModal extends React.Component {
 							<h1>Mapping Inequality</h1>
 							<h3>Redlining in New Deal America</h3>
 						</div>
-						<img src={ './static/the_hill_pittsburg.png' } className={ this.state.coverImgLoaded ? '' : 'loading' } />
+						<img 
+							src={ './static/the_hill_pittsburg.png' } 
+							className={ this.state.coverImgLoaded ? '' : 'loading' } 
+							title='Arthur Rothstein, "Houses on The Hill slum section, Pittsburg, Pennsylvania," July 1938'
+						/>
 						<p><cite>Mapping Inequality</cite> introduces viewer to the records of the Home Owners' Loan Corporation on a scale that is unprecedented. Here you can browse more than 150 interactive maps and thousands of "area descriptions." These materials afford an extraordinary view of the contours of wealth and racial inequality in Depression-era American cities and insights into discriminatory policies and practices that so profoundly shaped cities that we feel their legacy to this day.</p>
 						<div className='intro-modal-button' onClick={ () => this.setPage(1) }>Next</div>
 					</div>
